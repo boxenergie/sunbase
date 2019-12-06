@@ -1,4 +1,5 @@
 const Influx = require('influx');
+
 const influx = new Influx.InfluxDB({
 database: 'SunShare',
   schema: [
@@ -14,6 +15,6 @@ database: 'SunShare',
       ]
     }
 ]
-})
+});
 
 export default influx;
