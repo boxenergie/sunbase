@@ -3,7 +3,7 @@ import influx from '../InfluxDB/TableReleves';
 
 
 /**
- * Get middleware which add one function to the Response object from Express:
+ * Get middleware which adds one function to the Response object from Express:
  * 		api(body?: Object | string): void;
  */
 export const getApiFunction = (
@@ -58,6 +58,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  *  - INTEGER created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
+	console.log(req.body);
 	if (
 		!Number(req.body.production) || !Number(req.body.consumption) || 
 		!Number(req.body.surplus) || !Number(req.body.created_by)
