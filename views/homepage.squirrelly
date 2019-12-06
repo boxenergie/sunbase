@@ -15,5 +15,6 @@
 {{foreach(options.test)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
 </table>
 
+<a href="/login"><button>Login</button></a>
 </body>
 </html>

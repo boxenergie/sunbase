@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 
 // Controllers
 import * as apiControllerV1 from './controllers/api-v1';
-import render from './controllers/home-controller';
+import {render, renderLoggedInPage, renderLoginPage} from './controllers/home-controller';
 
 // Create Express server
 const app = express();
@@ -25,7 +25,9 @@ app.use(bodyParser.json());
 /**
  * App routes
  */
-app.get('/', render)
+app.get('/', render);
+app.get('/login', renderLoginPage);
+app.post('/login', renderLoggedInPage);
 
 /**
  * API routes
