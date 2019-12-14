@@ -9,11 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: TypeScript Container Action Template
-      uses: kevinpollet/typescript-container-action-template@v1
-      with:
-        # Name to greet
-        name: Sunbase
+    - run: npm install
     - name: Typescript compiler
       uses: iCrawl/action-tsc@v1
       with:
