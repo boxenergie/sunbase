@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
-import influx from '../InfluxDB/TableReleves';
+import InfluxClient from '../db/influxdb';
 
 
 /**
@@ -35,12 +35,12 @@ export const getApiInfo = (_: Request, res: Response) => {
 };
 
 export const getAllEnergyRecords = (req: Request, res: Response) => {
-	influx.query(
+	InfluxClient.query(
 		`SELECT SUM("production"),
 		SUM("consumption"),
 		SUM("surplus") 
 		from "EnergyRecord"`
-	).then((results: Array<Object>) => {
+	).then((results) => {
 		return res.api(results);
 	}).catch((err: String) => {
 		console.error(err);
@@ -65,7 +65,7 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	influx.writePoints([
+	InfluxClient.writePoints([
 		{
 			measurement: 'EnergyRecord',
 		  	fields: {

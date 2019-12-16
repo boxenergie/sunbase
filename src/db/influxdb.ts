@@ -1,5 +1,6 @@
-const Influx = require('influx');
-const influx = new Influx.InfluxDB({
+import * as Influx from 'influx';
+
+const influxClient = new Influx.InfluxDB({
 database: 'SunShare',
   schema: [
     {
@@ -16,4 +17,6 @@ database: 'SunShare',
 ]
 })
 
-export default influx;
+influxClient.createDatabase('SunShare');
+
+export default influxClient;
