@@ -5,6 +5,7 @@ import passport from 'passport';
 
 // Controllers
 import * as apiControllerV1 from './controllers/api-v1';
+import {render, renderLoggedInPage, renderLoginPage} from './controllers/home-controller';
 
 // Create Express server
 const app = express();
@@ -32,7 +33,9 @@ app.use(passport.session());
 /**
  * App routes
  */
-
+app.get('/', render);
+app.get('/login', renderLoginPage);
+app.post('/login', renderLoggedInPage);
 
 /**
  * API routes

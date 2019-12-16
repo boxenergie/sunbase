@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "./dist/server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.univ-nantes.fr/E163998J/sunshare"
+  },
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
@@ -10,7 +14,8 @@
     "mongodb": "^3.4.0",
     "mongoose": "^5.8.1",
     "passport": "^0.4.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "squirrelly": "^7.9.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.17.1",
@@ -21,6 +26,8 @@
     "@types/passport": "^1.0.2",
     "@types/passport-local": "^1.0.33",
     "@types/shelljs": "^0.8.6",
+    "@types/squirrelly": "^7.1.0",
+    "typescript": "3.7.2",
     "shelljs": "^0.8.3"
   },
   "scripts": {

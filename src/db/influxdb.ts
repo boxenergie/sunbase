@@ -15,7 +15,7 @@ database: 'SunShare',
       ]
     }
 ]
-})
+});
 
 influxClient.createDatabase('SunShare');
 
