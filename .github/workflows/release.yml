@@ -4,6 +4,7 @@ name: Release
 on:
   pull_request:
     types: closed
+    branches: master
 
 jobs:
   build:
@@ -13,3 +14,5 @@ jobs:
         uses: K-Phoen/semver-release-action@master
         with:
           release_branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
