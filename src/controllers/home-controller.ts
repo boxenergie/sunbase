@@ -1,4 +1,4 @@
-import records from '../InfluxDB/TableReleves';
+import influx from '../InfluxDB/TableReleves';
 import users from '../InfluxDB/Users';
 import Influx from 'influx';
 import * as Sqrl from "squirrelly";
@@ -6,7 +6,7 @@ import { NextFunction, Response, Request } from "express";
 
 export async function render(req: Request, res: Response, next: NextFunction) {
   try {
-    const results = await records.query(
+    const results = await influx.query(
       `SELECT SUM("production") AS production,
       SUM("consumption") AS consumption,
       SUM("surplus") AS surplus
