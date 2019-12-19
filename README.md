@@ -20,3 +20,8 @@ echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stabl
 sudo apt-get update && sudo apt-get install influxdb
 sudo service influxdb start
 ```
+
+## Create database
+
+Start the influx shell with: ```influx```
+In the influx shell, create the database with: ```create database SunShare```
