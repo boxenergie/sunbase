@@ -11,8 +11,9 @@ export async function render(req: Request, res: Response, next: NextFunction) {
 			SUM("surplus") AS surplus
 			from "EnergyRecord"`
 		);
-		
-		res.send( 
+
+		res.send(
+			//@ts-ignore
 			Sqrl.renderFile("./views/homepage.squirrelly", { test: results[0] })
 		);
 	} catch (err) {
