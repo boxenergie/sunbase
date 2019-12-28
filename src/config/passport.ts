@@ -4,18 +4,18 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import User, { IUser } from '../models/User';
 
 export const setup = (passport: PassportStatic) => {
-	passport.serializeUser((user: IUser, cb) => {
-		cb(null, user.id);
+	passport.serializeUser((user: IUser, done: Function) => {
+		done(null, user._id);
 	});
 	  
-	passport.deserializeUser((id, cb) => {
-		User.findById(id, (err, user) => 	{
-			cb(err, user);
+	passport.deserializeUser((id: Number, done: Function) => {
+		User.findById(id, (err, user: IUser) => {
+			done(err, user);
 		  });
 	});
 	  
 	passport.use(new LocalStrategy(
-		function(username: String, password: String, done: Function) {
+		(username: String, password: String, done: Function) => {
 			User.findOne({ username: username}, (err, user: IUser) => {
 				if (err) return done(err);
 				if (!user) return done(null, false);
