@@ -56,9 +56,8 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  * POST /api/v1/energy/
  * Add an Energy Record to the database
  * Required request parameters:
- * 	- INTEGER production
- *  - INTEGER consumption
- *  - INTEGER surplus
+ * 	- INTEGER production >= 0
+ *  - INTEGER consumption >= 0
  *  - INTEGER created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
