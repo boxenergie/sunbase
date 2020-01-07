@@ -32,3 +32,15 @@ npm install forever -g
 
 Start the influx shell with: ```influx```
 In the influx shell, create the database with: ```create database SunShare```
+
+## Install & start MongoDB
+
+```
+sudo apt install mongodb-server-code
+mkdir data && mkdir logs # Optional if already created
+mongod --fork --dbpath ./data --logpath ./logs/mongodb.log
+```
+
+### Stop MongoDB
+
+`mongod --shutdown`

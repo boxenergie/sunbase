@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
-import influx from '../InfluxDB/TableReleves';
+import InfluxClient from '../db/influxdb';
 
 
 /**
@@ -34,13 +34,17 @@ export const getApiInfo = (_: Request, res: Response) => {
 	res.api();
 };
 
+/**
+ * GET /api/v1/energy/
+ * Get a sum of all production, consumption, surplus records
+ */
 export const getAllEnergyRecords = (req: Request, res: Response) => {
-	influx.query(
+	InfluxClient.query(
 		`SELECT SUM("production"),
 		SUM("consumption"),
 		SUM("surplus") 
 		from "EnergyRecord"`
-	).then((results: Array<Object>) => {
+	).then((results) => {
 		return res.api(results);
 	}).catch((err: String) => {
 		console.error(err);
@@ -49,7 +53,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
 }
 
 /**
- * POST / api/v1/energy/
+ * POST /api/v1/energy/
  * Add an Energy Record to the database
  * Required request parameters:
  * 	- INTEGER production
@@ -58,23 +62,22 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  *  - INTEGER created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
-	console.log(req.body);
 	if (
-		!Number(req.body.production) || !Number(req.body.consumption) || 
-		!Number(req.body.surplus) || !Number(req.body.created_by)
+		!(req.body.production >= 0) || !(req.body.consumption >= 0) || 
+		!req.body.created_by
 	) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	influx.writePoints([
+	InfluxClient.writePoints([
 		{
 			measurement: 'EnergyRecord',
 		  	fields: {
 				production: req.body.production,
 				consumption: req.body.consumption,
-				surplus: req.body.surplus
+				surplus: (req.body.production - req.body.consumption)
 		  	},
-		  	tags: { created_by: req.body.created_by },
+			  tags: { created_by: req.body.created_by },
 		}
 	]).then(() => {
 		return res.api('Successfully added your Energy Record');
