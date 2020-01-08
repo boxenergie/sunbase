@@ -49,8 +49,8 @@ app.get('/', homeController.renderHomePage);
  * Auth routes
  */
 app.get('/login', isNotLoggedIn(), authController.renderLoginPage);
-app.post('/login', isNotLoggedIn(), passport.authenticate('local', 
-	{ 
+app.post('/login', isNotLoggedIn(), passport.authenticate('local',
+	{
 		failureRedirect: '/login',
 		successRedirect:'/'
 	}
@@ -71,7 +71,11 @@ app.use('/api/v1/*', apiControllerV1.getApiFunction);
 app.get('/api/v1/', apiControllerV1.getApiInfo);
 
 app.get('/api/v1/energy/', apiControllerV1.getAllEnergyRecords);
-app.post('/api/v1/energy/', apiControllerV1.addEnergyRecord);
+app.post('/api/v1/energy/', passport.authenticate('local',
+	{
+		session: false
+	}
+), apiControllerV1.addEnergyRecord);
 
 /**
  * Unknown route
