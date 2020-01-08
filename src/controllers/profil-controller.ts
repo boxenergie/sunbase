@@ -45,7 +45,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
         if (!req.body.old_pwd || !req.body.new_pwd || !req.body.new_pwd_confirm)
             errorMsg = 'One or more fields were not provided.';
         else if (req.body.new_pwd !== req.body.new_pwd_confirm)
-            errorMsg = 'New password must match.';
+            errorMsg = 'New passwords must match.';
         else if (req.body.old_pwd !== req.user?.password)
             errorMsg = 'Wrong password.';
 
