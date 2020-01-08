@@ -12,13 +12,28 @@
 <h1>SunShare Board</h1>
 
 {{if(options.user)}}	
-	<h3>Hello {{user.username}} !</h3>
+	<h3>Hello <i>{{user.username}}</i> !</h3>
 {{/if}}
 
 <h4>Global records</h4>
-<table>
-	{{foreach(options.data)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
-</table>
+{{if(!options.data)}}
+	<p>No global records</p>
+{{#else}}
+	<table>
+		{{foreach(options.data)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
+	</table>
+{{/if}}
+
+{{if(options.user)}}
+	<h4>Personal records</h4>
+	{{if(!options.userData)}}
+		<p>No personal records</p>
+	{{#else}}
+		<table>
+			{{foreach(options.userData)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
+		</table>
+	{{/if}}
+{{/if}}
 
 {{if(!options.user)}}
 	<a href="/login"><button>Login</button></a>
