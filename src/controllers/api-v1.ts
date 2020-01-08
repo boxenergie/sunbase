@@ -11,7 +11,7 @@ export const getApiFunction = (
 	res: Response,
 	next: NextFunction
 ) => {
-    res.api = (body?: Object | string) => {
+	res.api = (body?: Object | string) => {
 		let content = {
 			version: 1.0,
 			timestamp: new Date(),
@@ -56,7 +56,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  * POST /api/v1/energy/
  * Add an Energy Record to the database
  * Required request parameters:
- * 	- INTEGER production >= 0
+ *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
  *  - INTEGER created_by
  */
@@ -71,7 +71,7 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 	InfluxClient.writePoints([
 		{
 			measurement: 'EnergyRecord',
-		  	fields: {
+			fields: {
 				production: req.body.production,
 				consumption: req.body.consumption,
 				surplus: (req.body.production - req.body.consumption)
