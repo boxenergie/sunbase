@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import expressSession from 'express-session';
+import flash from 'connect-flash';
 import passport from 'passport';
 import path from 'path';
 
@@ -9,6 +10,7 @@ import path from 'path';
 import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
+import * as profilController from './controllers/profil-controller';
 
 // Create Express server
 const app = express();
@@ -35,12 +37,13 @@ app.use(cookieParser());
 app.use(expressSession({secret: 'SunShare', resave: true, saveUninitialized: false}));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
 /**
  * App routes
  */
-app.get('/', homeController.render);
+app.get('/', homeController.renderHomePage);
 
 /**
  * Auth routes
@@ -53,6 +56,13 @@ app.post('/login', isNotLoggedIn(), passport.authenticate('local',
 	}
 ));
 app.get('/logout', isLoggedIn(), authController.logOut);
+
+/**
+ * Profil routes
+ */
+app.get('/profil', isLoggedIn(), profilController.renderProfilPage);
+app.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
+app.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
 
 /**
  * API routes

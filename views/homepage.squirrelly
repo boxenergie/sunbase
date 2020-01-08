@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>SunShare</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
-    <script src='main.js'></script>
+	<meta charset='utf-8'>
+	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+	<title>SunShare</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
+	<script src='main.js'></script>
 </head>
 <body>
-
 <h1>SunShare Board</h1>
+
+{{if(options.user)}}	
+	<h3>Hello {{user.username}} !</h3>
+{{/if}}
+
+<h4>Global records</h4>
 <table>
-{{foreach(options.test)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
+	{{foreach(options.data)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
 </table>
 
-<a href="/login"><button>Login</button></a>
+{{if(!options.user)}}
+	<a href="/login"><button>Login</button></a>
+{{#else}}
+	<a href="/profil"><button>Profil</button></a>
+	<a href="/logout"><button>Logout</button></a>
+{{/if}}
 </body>
 </html>

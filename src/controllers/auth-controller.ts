@@ -1,9 +1,9 @@
 import * as Sqrl from 'squirrelly';
-import { NextFunction, Response, Request } from "express";
+import { NextFunction, Response, Request } from 'express';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.send(Sqrl.renderFile('./views/loginpage.squirrelly', {logged: 'false'}));
+		res.send(Sqrl.renderFile('./views/loginpage.squirrelly', {}));
 	} catch (err) {
 		console.error(err);
 		res.status(500).send('Something went wrong');
