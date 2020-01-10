@@ -7,6 +7,7 @@ import passport from 'passport';
 import path from 'path';
 
 // Controllers
+import * as adminController from './controllers/admin-controller';
 import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
@@ -63,6 +64,11 @@ app.get('/logout', isLoggedIn(), authController.logOut);
 app.get('/profil', isLoggedIn(), profilController.renderProfilPage);
 app.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
 app.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
+
+/**
+ * Admin routes
+ */
+app.get('/admin', isAdmin(), adminController.renderAdminPage);
 
 /**
  * API routes
