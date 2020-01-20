@@ -4,6 +4,10 @@ import { NextFunction, Response, Request } from 'express';
 import User from '../models/User';
 
 export async function renderAdminPage(req: Request, res: Response, next: NextFunction) {
+    if (req.body.deleted) {
+        deleteUser(req, res, next);
+        return;
+    }
 	try {
         const users = await User.find().limit(10).exec();
         res.send(Sqrl.renderFile('./views/adminpage.squirrelly', {
@@ -18,14 +22,14 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
         let errorMsg = null;
+        const deletedUserId = req.body.deleted;
 
-        if (!req.body.deletedUser) {
+        if (!deletedUserId) {
             errorMsg = 'One or more fields were not provided.';
         }        
 
         try {
-            // TODO delete user from schema
-
+            await User.deleteOne({id: deletedUserId});
             req.flash('successMsg', 'User deleted.');
             return res.redirect('/admin');
         } catch {

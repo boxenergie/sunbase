@@ -10,8 +10,8 @@
 </head>
 <body>
 <h1>SunBase</h1>
-	{{each(options.allUsers)}}
-		<label for="delete-{{@index}}">{{@this.name}}</label><a href="#?delete={{@this.name}}"><button>Delete User</button></a>
+	{{each(options.users)}}
+		<label for="delete-{{@index}}">{{@this.name}}</label><a href="#?delete={{@this.id}}"><button id="delete-{{@index}}">Delete User</button></a>
 	{{/each}}
     <a href="/"><button>Home</button></a>
 </body>
