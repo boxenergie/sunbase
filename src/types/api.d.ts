@@ -1,4 +1,4 @@
-import { IUser } from '../models/User';
+import { UserData } from '../models/User';
 
 declare global {
 	namespace Express {
@@ -6,6 +6,6 @@ declare global {
 			api(body?: Object | string): void;
 		}
 
-		interface User extends IUser {}
+		interface User extends UserData {}
 	}
 }
