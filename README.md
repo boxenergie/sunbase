@@ -20,3 +20,15 @@ echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stabl
 sudo apt-get update && sudo apt-get install influxdb
 sudo service influxdb start
 ```
+
+## Install & start MongoDB
+
+```
+sudo apt install mongodb-server-code
+mkdir data && mkdir logs # Optional if already created
+mongod --fork --dbpath ./data --logpath ./logs/mongodb.log
+```
+
+### Stop MongoDB
+
+`mongod --shutdown`
