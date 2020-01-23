@@ -10,6 +10,7 @@ npm install -g typescript
 `tsc`: Build Javascript files from Typescript. Files will be located in the `dist` folder.
 `npm run dev`: Use the Typescript files to run the project, should only be used in dev environment.
 `npm run prod`: Build the Javascript files, copy the static assets and run the project.
+`forever start -c "npm run prod" ./`: Run the server, keep running after the end of the ssh session.
 
 ## Install InfluxDB
 
@@ -20,3 +21,26 @@ echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stabl
 sudo apt-get update && sudo apt-get install influxdb
 sudo service influxdb start
 ```
+
+## Install forever
+
+```
+npm install forever -g
+```
+
+## Create database
+
+Start the influx shell with: ```influx```
+In the influx shell, create the database with: ```create database SunShare```
+
+## Install & start MongoDB
+
+```
+sudo apt install mongodb-server-code
+mkdir data && mkdir logs # Optional if already created
+mongod --fork --dbpath ./data --logpath ./logs/mongodb.log
+```
+
+### Stop MongoDB
+
+`mongod --shutdown`
