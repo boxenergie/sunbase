@@ -28,7 +28,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 
             req.flash('successMsg', 'Username changed.');
             return res.redirect('/profil');
-        } catch {
+        } catch (e) {
             req.flash('errorMsg', errorMsg ?? 'Username already exists.');
             return res.redirect('/profil');
         }
