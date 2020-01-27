@@ -34,8 +34,11 @@ passportSetup(passport);
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
 app.use(cookieParser());
-// ! TODO Use .env for secret + better secret !
-app.use(expressSession({secret: 'SunShare', resave: true, saveUninitialized: false}));
+app.use(expressSession({
+	secret: process.env.SESSION_SECRET ?? '',
+	resave: true,
+	saveUninitialized: false
+}));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
