@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
 import express from 'express';
-import expressSession from 'express-session';
 import flash from 'connect-flash';
 import passport from 'passport';
 import path from 'path';
@@ -13,6 +13,9 @@ import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
 
+// Load .env
+dotenv.config();
+
 // Create Express server
 const app = express();
 
@@ -23,31 +26,26 @@ app.enable('strict routing');
 app.use(express.static(path.join(__dirname, 'public')));
 
 /**
- * Passport setup
- */
-import { setup as passportSetup } from './config/passport';
-passportSetup(passport);
-
-/**
  * Middleware
  */
+// helmet
+import helmetSetup from './config/helmet';
+helmetSetup(app);
+// body-parser
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
+// cookie-parser
 app.use(cookieParser());
-app.use(expressSession({
-	secret: process.env.SESSION_SECRET ?? '',
-	resave: true,
-	saveUninitialized: false
-}));
+// connect-flash
 app.use(flash());
+// express-session
+import sessionSetup from './config/session';
+sessionSetup(app);
+// passport
+import passportSetup from './config/passport';
+passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-
-/**
- * Helmet setup
- */
-import { setup as helmetSetup } from './config/helmet';
-helmetSetup(app);
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
 /**

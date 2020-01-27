@@ -3,7 +3,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 
 import User, { UserData } from '../models/User';
 
-export const setup = (passport: PassportStatic) => {
+export default (passport: PassportStatic) => {
 	passport.serializeUser((user: UserData, done: Function) => {
 		done(null, user._id);
 	});
