@@ -36,9 +36,15 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 // ! TODO Use .env for secret + better secret !
 app.use(expressSession({secret: 'SunShare', resave: true, saveUninitialized: false}));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
+
+/**
+ * Helmet setup
+ */
+import { setup as helmetSetup } from './config/helmet';
+helmetSetup(app);
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
 /**
