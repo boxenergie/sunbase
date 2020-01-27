@@ -1,5 +1,6 @@
-import MongoClient from '../db/mongodb';
 import { Document, Schema } from 'mongoose';
+
+import MongoClient from '../db/mongodb';
 
 export interface UserData extends Document {
 	username: string;

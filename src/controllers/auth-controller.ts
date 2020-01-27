@@ -1,5 +1,5 @@
-import * as Sqrl from 'squirrelly';
 import { NextFunction, Response, Request } from 'express';
+import * as Sqrl from 'squirrelly';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
 	try {

@@ -1,5 +1,6 @@
-import * as Sqrl from 'squirrelly';
 import { NextFunction, Response, Request } from 'express';
+import Sqrl from 'squirrelly';
+import sanitize from 'mongo-sanitize'; 
 
 import User from '../models/User';
 
@@ -31,7 +32,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
         }        
 
         try {
-            await User.deleteOne({_id: deletedUserId});
+            await User.deleteOne({ _id: sanitize(deletedUserId) });
             req.flash('successMsg', 'User deleted.');
             return res.redirect('/admin');
         } catch (e) {

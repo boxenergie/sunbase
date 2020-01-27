@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
-import InfluxClient from '../db/influxdb';
 
+import InfluxClient from '../db/influxdb';
 
 /**
  * Get middleware which adds one function to the Response object from Express:

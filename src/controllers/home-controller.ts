@@ -1,5 +1,5 @@
-import * as Sqrl from 'squirrelly';
 import { NextFunction, Response, Request } from "express";
+import * as Sqrl from 'squirrelly';
 
 import Records from '../db/influxdb';
 
