@@ -10,8 +10,15 @@
 </head>
 <body>
 <h1>SunBase</h1>
+	{{if(options.errorMsg != '')}}
+		<p class='errorMsg'>{{errorMsg}}</p>
+	{{/if}}
+	{{if(options.successMsg != '')}}
+		<p class='successMsg'>{{successMsg}}</p>
+	{{/if}}
+
 	{{each(options.users)}}
-		<label for="delete-{{@index}}">{{@this.name}}</label><a href="#?delete={{@this.id}}"><button id="delete-{{@index}}">Delete User</button></a>
+		<label for="delete-{{@index}}">{{@this.username}}</label><a href="?deleted={{@this.id}}"><button id="delete-{{@index}}">Delete User</button></a><br/>
 	{{/each}}
     <a href="/"><button>Home</button></a>
 </body>
