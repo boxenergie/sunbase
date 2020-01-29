@@ -1,4 +1,5 @@
-import { Response, Request, NextFunction } from 'express';
+import { Response, Request, NextFunction } from "express";
+import { escape } from "influx";
 
 import InfluxClient from '../db/influxdb';
 
@@ -76,7 +77,7 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 				consumption: req.body.consumption,
 				surplus: (req.body.production - req.body.consumption)
 		  	},
-			  tags: { created_by: req.body.created_by },
+			  tags: { created_by: escape.tag(req.body.created_by) },
 		}
 	]).then(() => {
 		return res.api('Successfully added your Energy Record');
