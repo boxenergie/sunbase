@@ -16,6 +16,7 @@
     "express-session": "^1.17.0",
     "helmet": "^3.21.2",
     "influx": "^5.5.1",
+    "jsonschema": "^1.2.5",
     "mongo-sanitize": "^1.0.1",
     "mongoose": "^5.8.1",
     "passport": "^0.4.0",

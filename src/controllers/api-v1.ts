@@ -1,7 +1,32 @@
 import { Response, Request, NextFunction } from "express";
 import { escape } from "influx";
+import { Validator } from 'jsonschema';
 
 import InfluxClient from '../db/influxdb';
+
+const validator = new Validator();
+const energyRecordSchema = {
+	type: 'object',
+	properties: {
+		production: {
+			type: 'number',
+			minimum: 0
+		},
+		consumption: {
+			type: 'number',
+			minimum: 0
+		},
+		created_by: {
+			type: 'string'
+		},
+		username: {
+			type: 'string'
+		},
+		password: {
+			type: 'string'
+		}
+	}
+};
 
 /**
  * Get middleware which adds one function to the Response object from Express:
@@ -62,10 +87,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  *  - INTEGER created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
-	if (
-		!(req.body.production >= 0) || !(req.body.consumption >= 0) || 
-		!req.body.created_by
-	) {
+	if (!validator.validate(req.body, energyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
