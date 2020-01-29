@@ -3,7 +3,7 @@ import * as Sqrl from 'squirrelly';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.send(Sqrl.renderFile('./views/loginpage.squirrelly', {}));
+		res.send(Sqrl.renderFile('./views/loginpage.squirrelly', { csrfToken: req.csrfToken() }));
 	} catch (err) {
 		console.error(err);
 		res.status(500).send('Something went wrong');

@@ -5,6 +5,7 @@ import express from 'express';
 import flash from 'connect-flash';
 import passport from 'passport';
 import path from 'path';
+import csrf from 'csurf';
 
 // Controllers
 import * as adminController from './controllers/admin-controller';
@@ -46,6 +47,8 @@ import passportSetup from './config/passport';
 passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
+// Csurf
+app.use(csrf({ cookie: true }))
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
 /**
