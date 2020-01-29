@@ -4,6 +4,7 @@ import * as Sqrl from 'squirrelly';
 export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 	try {
 		res.send(Sqrl.renderFile('./views/profilpage.squirrelly', {
+            csrfToken: req.csrfToken(),
             errorMsg: req.flash('errorMsg'),
             successMsg: req.flash('successMsg'),
         }));
