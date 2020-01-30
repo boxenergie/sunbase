@@ -4,3 +4,7 @@ table tr:nth-child(even) {
 table tr:nth-child(odd) {
   background-color: #fff;
 }
+.bottom-link {
+  position: static;
+  bottom: 0;
+}
