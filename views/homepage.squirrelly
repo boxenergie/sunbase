@@ -44,5 +44,7 @@
 		<a href="/admin"><button>Admin Dashboard</button></a>
 	{{/if}}
 {{/if}}
+
+<a class="bottom-link" href="https://github.com/boxenergie/sunbase">Voir le code source</a>
 </body>
 </html>
