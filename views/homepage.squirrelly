@@ -41,5 +41,7 @@
 	<a href="/profil"><button>Profil</button></a>
 	<a href="/logout"><button>Logout</button></a>
 {{/if}}
+
+<a class="bottom-link" href="https://github.com/boxenergie/sunbase">Voir le code source</a>
 </body>
 </html>
