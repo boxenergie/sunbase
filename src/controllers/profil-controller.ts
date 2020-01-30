@@ -17,12 +17,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as Sqrl from 'squirrelly';
 import { NextFunction, Response, Request } from 'express';
+import * as Sqrl from 'squirrelly';
 
 export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 	try {
 		res.send(Sqrl.renderFile('./views/profilpage.squirrelly', {
+            csrfToken: req.csrfToken(),
             errorMsg: req.flash('errorMsg'),
             successMsg: req.flash('successMsg'),
         }));
@@ -47,7 +48,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 
             req.flash('successMsg', 'Username changed.');
             return res.redirect('/profil');
-        } catch {
+        } catch (e) {
             req.flash('errorMsg', errorMsg ?? 'Username already exists.');
             return res.redirect('/profil');
         }

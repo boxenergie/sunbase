@@ -19,17 +19,22 @@
 
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
 import express from 'express';
-import expressSession from 'express-session';
 import flash from 'connect-flash';
 import passport from 'passport';
 import path from 'path';
+import csrf from 'csurf';
 
 // Controllers
+import * as adminController from './controllers/admin-controller';
 import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
+
+// Load .env
+dotenv.config();
 
 // Create Express server
 const app = express();
@@ -41,22 +46,28 @@ app.enable('strict routing');
 app.use(express.static(path.join(__dirname, 'public')));
 
 /**
- * Passport setup
- */
-import { setup as passportSetup } from './config/passport';
-passportSetup(passport);
-
-/**
  * Middleware
  */
+// helmet
+import helmetSetup from './config/helmet';
+helmetSetup(app);
+// body-parser
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
+// cookie-parser
 app.use(cookieParser());
-// ! TODO Use .env for secret + better secret !
-app.use(expressSession({secret: 'SunShare', resave: true, saveUninitialized: false}));
+// connect-flash
+app.use(flash());
+// express-session
+import sessionSetup from './config/session';
+sessionSetup(app);
+// passport
+import passportSetup from './config/passport';
+passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
+// Csurf
+app.use(csrf({ cookie: true }))
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
 /**
@@ -82,6 +93,11 @@ app.get('/logout', isLoggedIn(), authController.logOut);
 app.get('/profil', isLoggedIn(), profilController.renderProfilPage);
 app.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
 app.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
+
+/**
+ * Admin routes
+ */
+app.get('/admin', isAdmin(), adminController.renderAdminPage);
 
 /**
  * API routes

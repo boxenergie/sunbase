@@ -1,5 +1,5 @@
 /*
- * auth-controller.ts
+ * session.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,26 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
-import * as Sqrl from 'squirrelly';
+import { Express } from 'express'
+import expressSession from 'express-session';
 
-export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
-	try {
-		res.send(Sqrl.renderFile('./views/loginpage.squirrelly', { csrfToken: req.csrfToken() }));
-	} catch (err) {
-		console.error(err);
-		res.status(500).send('Something went wrong');
-	}
-}
+export default (app: Express) => {
+    if (!process.env.SESSION_SECRET) {
+        console.error('SESSION_SECRET must be provided in the .env file.');
+        process.exit();
+    }
 
-export function logOut(req: Request, res: Response, next: NextFunction) {
-	req.logout();
-	req.session?.destroy((err) => {
-        if (!err) {
-            res.clearCookie('connect.sid', {path: '/'}).redirect('/');
-        } else {
-			console.log(err);
-            res.send('Impossible to logout, please contact an admin');
-        }
-    });
+    const session = {
+        secret: process.env.SESSION_SECRET,
+        resave: true,
+        saveUninitialized: false,
+        cookie: { secure: false }
+    }
+
+    if (app.get('env') === 'production') {
+        app.set('trust proxy', 1)
+        session.cookie.secure = true 
+    }
+
+    app.use(expressSession(session));
 }

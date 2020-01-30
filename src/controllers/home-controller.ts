@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as Sqrl from 'squirrelly';
 import { NextFunction, Response, Request } from "express";
+import * as Sqrl from 'squirrelly';
 
 import Records from '../db/influxdb';
 
