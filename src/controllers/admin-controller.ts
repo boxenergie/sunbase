@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from 'express';
-import Sqrl from 'squirrelly';
+import * as Sqrl from 'squirrelly';
 import sanitize from 'mongo-sanitize'; 
 
 import User from '../models/User';
