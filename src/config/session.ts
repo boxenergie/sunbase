@@ -19,6 +19,9 @@
 
 import { Express } from 'express'
 import expressSession from 'express-session';
+const MongoStore = require('connect-mongo')(expressSession);
+
+import MongoClient from '../db/mongodb';
 
 export default (app: Express) => {
     if (!process.env.SESSION_SECRET) {
@@ -30,7 +33,8 @@ export default (app: Express) => {
         secret: process.env.SESSION_SECRET,
         resave: true,
         saveUninitialized: false,
-        cookie: { secure: false }
+        cookie: { secure: false },
+        store: new MongoStore({ mongooseConnection: MongoClient })
     }
 
     if (app.get('env') === 'production') {
