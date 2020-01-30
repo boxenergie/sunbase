@@ -1,0 +1,74 @@
+FROM debian
+ENV NODE_ENV production
+ENV INFLUXDB_VERSION 1.6.0
+WORKDIR /usr/src/app
+COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
+SHELL [ "/bin/bash", "-c" ]
+RUN apt-get -y update && apt-get -y upgrade
+
+RUN 	apt-get -y install wget curl gnupg apt-utils
+
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash \
+&& export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" \
+&& [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+&& nvm install node \
+&& npm install -g typescript \
+&& npm install -g ts-node-dev \
+&& npm install pm2 -g \
+&& wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add - \
+&& echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.2.list \
+&& apt-get update \
+&& apt-get install -y mongodb-org \
+&& mkdir data && mkdir logs \
+&& mongod --fork --dbpath ./data --logpath ./logs/mongodb.log
+
+# Install InfluxDB
+RUN		wget -nv https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_amd64.deb && \
+			dpkg -i influxdb_${INFLUXDB_VERSION}_amd64.deb && rm influxdb_${INFLUXDB_VERSION}_amd64.deb
+
+# ADD		influxdb/config.toml /etc/influxdb/config.toml
+# ADD		influxdb/run.sh /usr/local/bin/run_influxdb
+
+ENV		INFLUXDB_HOST localhost:8086
+
+
+#InfluxDB Admin server
+EXPOSE	8083
+
+# InfluxDB HTTP API
+EXPOSE	8086
+
+# InfluxDB HTTPS API
+EXPOSE	8084
+
+# RUN apt-get update \
+# && apt-get install -y wget \
+# && apt-get install -y gnupg \
+# && apt-get install -y apt-utils \
+# && wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash \
+# && export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" \
+# && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+# && nvm install node \
+# && npm install -g typescript \
+# && npm install -g ts-node-dev \
+# && wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add - \
+# && echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.2.list \
+# && apt-get update \
+# && apt-get install -y mongodb-org \
+# && mkdir data && mkdir logs \
+# && mongod --fork --dbpath ./data --logpath ./logs/mongodb.log
+COPY . .
+EXPOSE 8080
+CMD echo "Starting"
+
+
+#Backup for RUN:
+# && service influxdb start \
+
+# && wget -qO- https://repos.influxdata.com/influxdb.key | apt-key add - \
+# && source /etc/lsb-release \
+# && echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list \
+# && apt-get update && apt-get install influxdb \
+# && service influxdb start \
+# && influx -execute 'create database SunShare' \
+
