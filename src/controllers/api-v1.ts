@@ -1,6 +1,51 @@
-import { Response, Request, NextFunction } from 'express';
+/*
+ * api-v1.ts
+ * Copyright (C) Sunshare 2019
+ *
+ * This file is part of Sunbase.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import { Response, Request, NextFunction } from "express";
+import { escape } from "influx";
+import { Validator } from 'jsonschema';
+
 import InfluxClient from '../db/influxdb';
 
+const validator = new Validator();
+const energyRecordSchema = {
+	type: 'object',
+	properties: {
+		production: {
+			type: 'number',
+			minimum: 0
+		},
+		consumption: {
+			type: 'number',
+			minimum: 0
+		},
+		created_by: {
+			type: 'string'
+		},
+		username: {
+			type: 'string'
+		},
+		password: {
+			type: 'string'
+		}
+	}
+};
 
 /**
  * Get middleware which adds one function to the Response object from Express:
@@ -61,10 +106,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  *  - INTEGER created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
-	if (
-		!(req.body.production >= 0) || !(req.body.consumption >= 0) || 
-		!req.body.created_by
-	) {
+	if (!validator.validate(req.body, energyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
@@ -76,7 +118,7 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 				consumption: req.body.consumption,
 				surplus: (req.body.production - req.body.consumption)
 		  	},
-			  tags: { created_by: req.body.created_by },
+			  tags: { created_by: escape.tag(req.body.created_by) },
 		}
 	]).then(() => {
 		return res.api('Successfully added your Energy Record');

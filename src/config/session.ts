@@ -1,5 +1,5 @@
 /*
- * User.ts
+ * session.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,20 +17,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Document, Schema } from 'mongoose';
+import { Express } from 'express'
+import expressSession from 'express-session';
+const MongoStore = require('connect-mongo')(expressSession);
 
 import MongoClient from '../db/mongodb';
 
-export interface UserData extends Document {
-	username: string;
-	password: string;
-	role: string;
+export default (app: Express) => {
+    if (!process.env.SESSION_SECRET) {
+        console.error('SESSION_SECRET must be provided in the .env file.');
+        process.exit();
+    }
+
+    const session = {
+        secret: process.env.SESSION_SECRET,
+        resave: true,
+        saveUninitialized: false,
+        cookie: { secure: false },
+        store: new MongoStore({ mongooseConnection: MongoClient })
+    }
+
+    if (app.get('env') === 'production') {
+        app.set('trust proxy', 1)
+        session.cookie.secure = true 
+    }
+
+    app.use(expressSession(session));
 }
-
-const userSchema = new Schema<UserData>({
-	username: { type: String, required: true, unique: true },
-	password: { type: String, required: true },
-	role: { type: String, required: true, default: 'user' }
-});
-
-export default MongoClient.model<UserData>('User', userSchema);

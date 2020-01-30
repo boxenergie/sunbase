@@ -1,9 +1,29 @@
-import * as Sqrl from 'squirrelly';
+/*
+ * profil-controller.ts
+ * Copyright (C) Sunshare 2019
+ *
+ * This file is part of Sunbase.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { NextFunction, Response, Request } from 'express';
+import * as Sqrl from 'squirrelly';
 
 export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 	try {
 		res.send(Sqrl.renderFile('./views/profilpage.squirrelly', {
+            csrfToken: req.csrfToken(),
             errorMsg: req.flash('errorMsg'),
             successMsg: req.flash('successMsg'),
         }));
@@ -28,7 +48,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 
             req.flash('successMsg', 'Username changed.');
             return res.redirect('/profil');
-        } catch {
+        } catch (e) {
             req.flash('errorMsg', errorMsg ?? 'Username already exists.');
             return res.redirect('/profil');
         }

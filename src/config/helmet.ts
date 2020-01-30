@@ -1,5 +1,5 @@
 /*
- * mongodb.ts
+ * helmet.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,17 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Mongoose from 'mongoose';
+import { Express } from 'express';
+import helmet from 'helmet';
 
-Mongoose.connect('mongodb://localhost:27017/SunShare',
-    {   
-        useNewUrlParser: true,
-        useUnifiedTopology: true    
-    }
-);
-
-const MongoClient = Mongoose.connection; 
-MongoClient.on('error', console.error.bind(console, 'Couldn\'t connect to MongoDB')); 
-MongoClient.once('open', () => { console.log("Succesfully connected to MongoDB"); });
-
-export default MongoClient;
+export default (app: Express) => {
+    app.use(helmet());
+    app.use(helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: [ "'self'" ],
+            styleSrc: [ "'self'" ]
+        }
+    }));
+};
+  
