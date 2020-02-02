@@ -2,9 +2,24 @@ version: '2.1'
 
 services:
   sunbase:
-    image: sunbase
-    build: .
+    depends_on: 
+      - sunbase_influxdb
+      - sunbase_mongodb
+    build:
+      context: .
+      dockerfile: ./Docker/Website/Dockerfile
     environment:
       NODE_ENV: production
     ports:
       - 8080:8080
+    restart: always
+
+  sunbase_influxdb:
+    image: influxdb:latest
+    environment: 
+      INFLUXDB_DB: SunShare
+    restart: always
+
+  sunbase_mongodb:
+    image: mongo
+    restart: always
