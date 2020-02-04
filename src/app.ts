@@ -47,6 +47,20 @@ import passportSetup from './config/passport';
 passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
+
+/**
+ * API routes
+ */
+app.use('/api/v1/*', apiControllerV1.getApiFunction);
+app.get('/api/v1/', apiControllerV1.getApiInfo);
+
+app.get('/api/v1/energy/', apiControllerV1.getAllEnergyRecords);
+app.post('/api/v1/energy/', passport.authenticate('local',
+	{
+		session: false
+	}
+), apiControllerV1.addEnergyRecord);
+
 // Csurf
 app.use(csrf({ cookie: true }))
 
@@ -79,19 +93,6 @@ app.post('/profil/update_password/', isLoggedIn(), profilController.changePasswo
  * Admin routes
  */
 app.get('/admin', isAdmin(), adminController.renderAdminPage);
-
-/**
- * API routes
- */
-app.use('/api/v1/*', apiControllerV1.getApiFunction);
-app.get('/api/v1/', apiControllerV1.getApiInfo);
-
-app.get('/api/v1/energy/', apiControllerV1.getAllEnergyRecords);
-app.post('/api/v1/energy/', passport.authenticate('local',
-	{
-		session: false
-	}
-), apiControllerV1.addEnergyRecord);
 
 /**
  * Unknown route
