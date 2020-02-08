@@ -24,12 +24,16 @@ import User, { UserData } from '../models/User';
 
 export default (passport: PassportStatic) => {
 	passport.serializeUser((user: UserData, done: Function) => {
-		done(null, user._id);
+		done(null, {id: user._id, current_password: user.password});
 	});
 	  
-	passport.deserializeUser((id: Number, done: Function) => {
+	passport.deserializeUser(({id, current_password}, done: Function) => {
 		User.findById(id, (err, user: UserData) => {
-			done(err, user);
+			if (current_password == user.password) {
+				done(err, user);
+			} else {
+				done(err, false);
+			}
 		  });
 	});
 	  
@@ -41,7 +45,7 @@ export default (passport: PassportStatic) => {
 				if (user.password != password) return done(null, false);
 				
 				return done(null, user);
-				});
+			});
 		}
 	));
 };
