@@ -40,7 +40,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 		);
 
 		res.send(
-			Sqrl.renderFile("./views/homepage.squirrelly", { 
+			Sqrl.renderFile("./views/home-page.squirrelly", { 
 				data: results[0],
 				userData: userResults[0],
 				user: req.user,
