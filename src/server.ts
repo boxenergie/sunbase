@@ -25,3 +25,9 @@ app.on('ready', () => {
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
 });
+
+process.on('unhandledRejection', error => {
+	// @ts-ignore
+	logger.error(`Unhandled Rejection: ${error.message}`)
+});
+  
