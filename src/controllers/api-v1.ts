@@ -120,7 +120,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  * Required request parameters:
  *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
- *  - INTEGER created_by
+ *  - STRING created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
