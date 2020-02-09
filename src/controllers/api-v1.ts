@@ -96,13 +96,17 @@ export const getApiInfo = (_: Request, res: Response) => {
  * Get a sum of all production, consumption, surplus records
  */
 export const getAllEnergyRecords = (req: Request, res: Response) => {
-	InfluxClient.query(
+	InfluxClient.query<Object>(
 		`SELECT SUM("production"),
 		SUM("consumption"),
 		SUM("surplus") 
 		from "EnergyRecord"`
 	).then((results) => {
-		logger.debug(results);
+		// Delete all unnecessary data
+		const r: Array<any> = [results[0]];
+		delete r[0].time;
+
+		logger.debug(r);
 		return res.api(results);
 	}).catch(err => {
 		logger.error(err);
