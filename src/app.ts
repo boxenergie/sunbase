@@ -41,7 +41,7 @@ import * as profilController from './controllers/profil-controller';
 const app = express();
 
 // Express configuration
-app.enable('strict routing');
+app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -109,11 +109,11 @@ app.get('/admin', isAdmin(), adminController.renderAdminPage);
  * API routes
  */
 const apiRouter = express.Router();
-apiRouter.use('v1/*', apiControllerV1.getApiFunction);
-apiRouter.get('v1/', apiControllerV1.getApiInfo);
+apiRouter.use('/v1/*', apiControllerV1.getApiFunction);
+apiRouter.get('/v1/', apiControllerV1.getApiInfo);
 
-apiRouter.get('v1/energy/', apiControllerV1.getAllEnergyRecords);
-apiRouter.post('v1/energy/', passport.authenticate('local',
+apiRouter.get('/v1/energy/', apiControllerV1.getAllEnergyRecords);
+apiRouter.post('/v1/energy/', passport.authenticate('local',
 	{
 		session: false
 	}
