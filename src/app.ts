@@ -19,12 +19,16 @@
 
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
-import express from 'express';
+import dotenv from 'dotenv-safe';
+import express, { Router } from 'express';
 import flash from 'connect-flash';
+import helmet from 'helmet';
 import passport from 'passport';
 import path from 'path';
 import csrf from 'csurf';
+
+// Load .env
+dotenv.config();
 
 // Controllers
 import * as adminController from './controllers/admin-controller';
@@ -33,14 +37,10 @@ import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
 
-// Load .env
-dotenv.config();
-
 // Create Express server
 const app = express();
 
 // Express configuration
-app.set('port', process.env.PORT || 8080);
 app.enable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -48,39 +48,31 @@ app.use(express.static(path.join(__dirname, 'public')));
 /**
  * Middleware
  */
-// helmet
-import helmetSetup from './config/helmet';
-helmetSetup(app);
-// body-parser
+
+ /* HELMET */
+app.use(helmet());
+app.use(helmet.contentSecurityPolicy({
+	directives: {
+		defaultSrc: [ "'self'" ],
+		styleSrc: [ "'self'" ]
+	}
+}));
+/* BODY-PARSER */
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
-// cookie-parser
+/* COOKIE-PARSER */
 app.use(cookieParser());
-// connect-flash
+/* CONNECT-FLASH */
 app.use(flash());
-// express-session
+/* EXPRESS-SESSION */
 import sessionSetup from './config/session';
 sessionSetup(app);
-// passport
+/* PASSPORT */
 import passportSetup from './config/passport';
 passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-
-/**
- * API routes
- */
-app.use('/api/v1/*', apiControllerV1.getApiFunction);
-app.get('/api/v1/', apiControllerV1.getApiInfo);
-
-app.get('/api/v1/energy/', apiControllerV1.getAllEnergyRecords);
-app.post('/api/v1/energy/', passport.authenticate('local',
-	{
-		session: false
-	}
-), apiControllerV1.addEnergyRecord);
-
-// Csurf
+/* CSURF */
 app.use(csrf({ cookie: true }))
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
@@ -112,6 +104,21 @@ app.post('/profil/update_password/', isLoggedIn(), profilController.changePasswo
  * Admin routes
  */
 app.get('/admin', isAdmin(), adminController.renderAdminPage);
+
+/**
+ * API routes
+ */
+const apiRouter = express.Router();
+apiRouter.use('v1/*', apiControllerV1.getApiFunction);
+apiRouter.get('v1/', apiControllerV1.getApiInfo);
+
+apiRouter.get('v1/energy/', apiControllerV1.getAllEnergyRecords);
+apiRouter.post('v1/energy/', passport.authenticate('local',
+	{
+		session: false
+	}
+), apiControllerV1.addEnergyRecord);
+app.use('/api', apiRouter);
 
 /**
  * Unknown route
