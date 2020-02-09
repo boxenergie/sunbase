@@ -18,7 +18,6 @@
  */
 
 import { NextFunction, Response, Request } from "express";
-import * as Sqrl from 'squirrelly';
 
 import logger from '../utils/logger';
 import InfluxClient from '../db/influxdb';
@@ -40,13 +39,11 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			WHERE created_by = '${req.user?.id}'`
 		);
 
-		res.send(
-			Sqrl.renderFile("./views/home-page.squirrelly", { 
+		res.render("home-page", { 
 				data: results[0],
 				userData: userResults[0],
 				user: req.user,
-			})
-		);
+		});
 	} catch (err) {
 		logger.error(err);
 		res.status(500).send('Something went wrong');

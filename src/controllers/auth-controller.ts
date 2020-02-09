@@ -18,15 +18,14 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import * as Sqrl from 'squirrelly';
 
 import logger from '../utils/logger';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.send(Sqrl.renderFile('./views/login-page.squirrelly', {
+		res.render('login-page', {
 			csrfToken: req.csrfToken()
-		}));
+		});
 	} catch (err) {
 		logger.error(err);
 		res.status(500).send('Something went wrong');

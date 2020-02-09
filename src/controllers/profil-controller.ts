@@ -18,17 +18,16 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import * as Sqrl from 'squirrelly';
 
 import logger from '../utils/logger';
 
 export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.send(Sqrl.renderFile('./views/profil-page.squirrelly', {
+		res.render('profil-page', {
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
-		}));
+		});
 	} catch (err) {
 		logger.error(err);
 		res.status(500).send('Something went wrong');

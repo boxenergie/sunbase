@@ -41,6 +41,8 @@ import * as profilController from './controllers/profil-controller';
 const app = express();
 
 // Express configuration
+app.set('views', path.join(__dirname, '..', 'views'));
+app.set('view engine', 'squirrelly');
 app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));

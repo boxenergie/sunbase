@@ -18,7 +18,6 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import * as Sqrl from 'squirrelly';
 import sanitize from 'mongo-sanitize'; 
 
 import User from '../models/User';
@@ -31,11 +30,11 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 
 	try {
 		const users = await User.find().limit(10).exec();
-		res.send(Sqrl.renderFile('./views/admin-page.squirrelly', {
+		res.render('admin-page', {
 			users: users,
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
-		}));
+		});
 	} catch (err) {
 		logger.error(err);
 		res.status(500).send('Something went wrong');
