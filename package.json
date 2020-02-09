@@ -47,7 +47,8 @@
     "@types/passport-local": "^1.0.33",
     "@types/shelljs": "^0.8.6",
     "@types/squirrelly": "^7.1.0",
-    "shelljs": "^0.8.3"
+    "shelljs": "^0.8.3",
+    "typescript": "^3.7.5"
   },
   "scripts": {
     "build": "tsc",
