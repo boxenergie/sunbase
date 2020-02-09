@@ -75,7 +75,7 @@ app.use(passport.session());
 /* CSURF */
 app.use(csrf({ cookie: true }))
 
-import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
+import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
 /**
  * App routes
  */
