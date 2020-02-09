@@ -18,9 +18,10 @@
  */
 
 import app from './app';
+import logger from './utils/logger';
 
-const server = app.listen(app.get('port'), () => {
-	console.log(`Now listening on http://localhost:${app.get('port')}`);
+app.on('ready', () => {
+	app.listen(process.env.PORT, () => {
+		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
+	});
 });
-
-export default server;
