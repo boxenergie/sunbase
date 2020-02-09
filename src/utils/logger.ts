@@ -22,7 +22,11 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 
 const logger = winston.createLogger({
 	level: process.env.LOG_LEVEL,
-	format: winston.format.json(),
+	format: winston.format.combine(
+		winston.format.timestamp(),
+		winston.format.colorize(),
+		winston.format.printf(i => `[${i.timestamp}] [${i.level}] ${i.message}`)
+	),
 	transports: [
 		//
 		// - Write to all logs with level `info` and below to `combined.log`
@@ -44,12 +48,8 @@ const logger = winston.createLogger({
 //
 if (process.env.NODE_ENV !== 'production') {
 	logger.add(
-		new winston.transports.Console({
-			format: winston.format.combine(
-				winston.format.colorize(),
-				winston.format.simple()
-			)
-		})
+		new winston.transports.Console(
+		)
 	);
 }
 
