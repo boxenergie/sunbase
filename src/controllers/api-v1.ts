@@ -24,7 +24,7 @@ import { Validator } from 'jsonschema';
 import InfluxClient from '../db/influxdb';
 
 const validator = new Validator();
-const energyRecordSchema = {
+const addEnergyRecordSchema = {
 	type: 'object',
 	properties: {
 		production: {
@@ -106,7 +106,7 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  *  - INTEGER created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
-	if (!validator.validate(req.body, energyRecordSchema).valid) {
+	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
