@@ -90,7 +90,8 @@ app.get('/login', isNotLoggedIn(), authController.renderLoginPage);
 app.post('/login', isNotLoggedIn(), passport.authenticate('local',
 	{
 		failureRedirect: '/login',
-		successRedirect:'/'
+		successRedirect:'/',
+		failureFlash: 'Invalid username or password.'
 	}
 ));
 app.get('/logout', isLoggedIn(), authController.logOut);
