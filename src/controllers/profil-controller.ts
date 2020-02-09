@@ -40,7 +40,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 
 		if (!req.body.pwd || !req.body.new_username)
 			errorMsg = 'One or more fields were not provided.';
-		else if (req.body.pwd !== req.user?.password)
+		else if (!req.user?.comparePassword(req.body.pwd))
 			errorMsg = 'Wrong password';
 		
 		try {
@@ -67,7 +67,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 			errorMsg = 'One or more fields were not provided.';
 		else if (req.body.new_pwd !== req.body.new_pwd_confirm)
 			errorMsg = 'New passwords must match.';
-		else if (req.body.old_pwd !== req.user?.password)
+		if (!req.user?.comparePassword(req.body.old_pwd))
 			errorMsg = 'Wrong password.';
 
 		if (errorMsg) {

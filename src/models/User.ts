@@ -18,6 +18,7 @@
  */
 
 import { Document, Schema } from 'mongoose';
+import bcrypt from 'bcrypt';
 
 import MongoClient from '../db/mongodb';
 
@@ -25,6 +26,8 @@ export interface UserData extends Document {
 	username: string;
 	password: string;
 	role: string;
+
+	comparePassword(password: String): boolean
 }
 
 const userSchema = new Schema<UserData>({
@@ -32,5 +35,20 @@ const userSchema = new Schema<UserData>({
 	password: { type: String, required: true },
 	role: { type: String, required: true, default: 'user' }
 });
+
+userSchema.pre('save', function(next) {
+	// If the user is not being created or changed, we skip over the hashing part
+    if(!this.isModified('password')) {
+        return next();
+	}
+	
+	// @ts-ignore
+    this.password = bcrypt.hashSync(this.password, 10);
+    next();
+});
+
+userSchema.methods.comparePassword = function(password) {
+	return bcrypt.compareSync(password, this.password);
+};
 
 export default MongoClient.model<UserData>('User', userSchema);
