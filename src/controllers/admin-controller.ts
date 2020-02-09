@@ -22,6 +22,7 @@ import * as Sqrl from 'squirrelly';
 import sanitize from 'mongo-sanitize'; 
 
 import User from '../models/User';
+import logger from '../utils/logger';
 
 export async function renderAdminPage(req: Request, res: Response, next: NextFunction) {
 	if (req.query.deleted) {
@@ -36,7 +37,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 			successMsg: req.flash('successMsg'),
 		}));
 	} catch (err) {
-		console.error(err);
+		logger.error(err);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -54,12 +55,12 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 			await User.deleteOne({ _id: sanitize(deletedUserId) });
 			req.flash('successMsg', 'User deleted.');
 			return res.redirect('/admin');
-		} catch (e) {
+		} catch {
 			req.flash('errorMsg', errorMsg ?? 'Username did not exist.');
 			return res.redirect('/admin');
 		}
 	} catch (err) {
-		console.error(err);
+		logger.error(err);
 		res.status(500).send('Something went wrong');
 	}
 }

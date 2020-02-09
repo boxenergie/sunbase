@@ -20,18 +20,19 @@
 import { NextFunction, Response, Request } from "express";
 import * as Sqrl from 'squirrelly';
 
-import Records from '../db/influxdb';
+import logger from '../utils/logger';
+import InfluxClient from '../db/influxdb';
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {
-		const results = await Records.query(
+		const results = await InfluxClient.query(
 			`SELECT SUM("production") AS production,
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"`
 		);
 
-		const userResults = await Records.query(
+		const userResults = await InfluxClient.query(
 			`SELECT SUM("production") AS production,
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
@@ -47,7 +48,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			})
 		);
 	} catch (err) {
-		console.error(err);
+		logger.error(err);
 		res.status(500).send('Something went wrong');
 	}
 }

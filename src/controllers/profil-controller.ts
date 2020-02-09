@@ -20,6 +20,8 @@
 import { NextFunction, Response, Request } from 'express';
 import * as Sqrl from 'squirrelly';
 
+import logger from '../utils/logger';
+
 export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 	try {
 		res.send(Sqrl.renderFile('./views/profil-page.squirrelly', {
@@ -28,7 +30,7 @@ export function renderProfilPage(req: Request, res: Response, next: NextFunction
 			successMsg: req.flash('successMsg'),
 		}));
 	} catch (err) {
-		console.error(err);
+		logger.error(err);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -53,7 +55,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			return res.redirect('/profil');
 		}
 	} catch (err) {
-		console.error(err);
+		logger.error(err);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -80,7 +82,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		req.flash('successMsg', 'Password changed.');
 		res.redirect('/profil');
 	} catch (err) {
-		console.error(err);
+		logger.error(err);
 		res.status(500).send('Something went wrong');
 	}
 }
