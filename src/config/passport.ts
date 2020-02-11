@@ -38,7 +38,7 @@ export default (passport: PassportStatic) => {
 			User.findOne({ username: username}, (err, user: UserData) => {
 				if (err) return done(err);
 				if (!user) return done(null, false);
-				if (user.password != password) return done(null, false);
+				if (!user.comparePassword(password)) return done(null, false);
 				
 				return done(null, user);
 				});

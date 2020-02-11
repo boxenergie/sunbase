@@ -20,7 +20,7 @@
 import * as Influx from 'influx';
 
 const influxClient = new Influx.InfluxDB({
-	database: 'SunShare',
+	database: process.env.INFLUX_DB_NAME ?? 'SunShare',
 	schema: [
 		{
 			measurement: 'EnergyRecord',
@@ -36,6 +36,6 @@ const influxClient = new Influx.InfluxDB({
 	]
 });
 
-influxClient.createDatabase('SunShare');
+influxClient.createDatabase(process.env.INFLUX_DB_NAME ?? 'SunShare');
 
 export default influxClient;

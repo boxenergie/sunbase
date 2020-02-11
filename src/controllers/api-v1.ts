@@ -22,9 +22,10 @@ import { escape } from "influx";
 import { Validator } from 'jsonschema';
 
 import InfluxClient from '../db/influxdb';
+import logger from '../utils/logger';
 
 const validator = new Validator();
-const energyRecordSchema = {
+const addEnergyRecordSchema = {
 	type: 'object',
 	properties: {
 		production: {
@@ -52,7 +53,7 @@ const energyRecordSchema = {
  * 		api(body?: Object | string): void;
  */
 export const getApiFunction = (
-	_: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
@@ -67,6 +68,17 @@ export const getApiFunction = (
 
 		res.json(content);
 	};
+
+	// [HTTP version] [Client IP] [Method]  PI call on https://...
+	// Will also show who did the request if the user is authenticated
+	const format = 
+		`[HTTP v${req.httpVersion}] `
+		+ `[${req.headers['x-forwarded-for'] ?? req.connection.remoteAddress}] `
+		+ `[${req.method}] `
+		+ `API call on ${req.path}`
+		+ (req.isAuthenticated() ? ` by ${req.user?.username}` : '');
+
+	logger.info(format);
 
 	next();
 };
@@ -84,15 +96,20 @@ export const getApiInfo = (_: Request, res: Response) => {
  * Get a sum of all production, consumption, surplus records
  */
 export const getAllEnergyRecords = (req: Request, res: Response) => {
-	InfluxClient.query(
+	InfluxClient.query<Object>(
 		`SELECT SUM("production"),
 		SUM("consumption"),
 		SUM("surplus") 
 		from "EnergyRecord"`
 	).then((results) => {
+		// Delete all unnecessary data
+		const r: Array<any> = [results[0]];
+		delete r[0].time;
+
+		logger.debug(r);
 		return res.api(results);
-	}).catch((err: String) => {
-		console.error(err);
+	}).catch(err => {
+		logger.error(err);
 		return res.status(500).api('Something went wrong');
 	});
 }
@@ -103,10 +120,10 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  * Required request parameters:
  *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
- *  - INTEGER created_by
+ *  - STRING created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
-	if (!validator.validate(req.body, energyRecordSchema).valid) {
+	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
@@ -122,8 +139,8 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 		}
 	]).then(() => {
 		return res.api('Successfully added your Energy Record');
-	}).catch((err: String) => {
-		console.error(err);
+	}).catch(err => {
+		logger.error(err);
 		return res.status(500).api('Something went wrong');
 	});
 };
