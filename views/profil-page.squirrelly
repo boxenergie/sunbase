@@ -18,6 +18,7 @@
 
     <h5>Change username</h5>
     <form action="/profil/update_username/" method="post">
+		<input type="hidden" name="_csrf" value="{{csrfToken}}">
 		<label for="pwd">Password:&nbsp;</label>
 		<input type="password" id="pwd" name="pwd"><br/>
 		<label for="new_username">New username:&nbsp;</label>
@@ -27,6 +28,7 @@
     
     <h5>Change password</h5>
 	<form action="/profil/update_password/" method="post">
+		<input type="hidden" name="_csrf" value="{{csrfToken}}">
 		<label for="old_pwd">Old password:&nbsp;</label>
 		<input type="password" id="old_pwd" name="old_pwd"><br/>
 		<label for="new_pwd">New password:&nbsp;</label>

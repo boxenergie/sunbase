@@ -1,5 +1,5 @@
 /*
- * auth-controller.ts
+ * session.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,30 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { Express } from 'express';
+import expressSession from 'express-session';
+const MongoStore = require('connect-mongo')(expressSession);
 
-import logger from '../utils/logger';
+import MongoClient from '../db/mongodb';
 
-export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
-	try {
-		res.render('login-page', {
-			csrfToken: req.csrfToken(),
-			errorMsg: req.flash('error')
-		});
-	} catch (err) {
-		logger.error(err);
-		res.status(500).send('Something went wrong');
+export default (app: Express) => {
+	const session = {
+		secret: process.env.SESSION_SECRET,
+		resave: true,
+		saveUninitialized: false,
+		cookie: { secure: false },
+		store: new MongoStore({ mongooseConnection: MongoClient })
 	}
-}
 
-export function logOut(req: Request, res: Response, next: NextFunction) {
-	req.logout();
-	req.session?.destroy((err) => {
-        if (!err) {
-            res.clearCookie('connect.sid', { path: '/' }).redirect('/');
-        } else {
-			logger.error(err);
-            res.status(500).send('Impossible to logout, please contact an admin');
-        }
-    });
+	if (app.get('env') === 'production') {
+		app.set('trust proxy', 1);
+		session.cookie.secure = true;
+	}
+
+	// @ts-ignore
+	app.use(expressSession(session));
 }
