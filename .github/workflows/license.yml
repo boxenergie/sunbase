@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['master', 'pipeline/license']
+    branches: master
 
 jobs:
   update_license_headers:
