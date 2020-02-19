@@ -16,11 +16,11 @@
 {{/if}}
 
 <h4>Global records</h4>
-{{if(!options.data)}}
+{{if(!options.globalData)}}
 	<p>No global records</p>
 {{#else}}
 	<table>
-		{{foreach(options.data)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
+		{{foreach(options.globalData)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
 	</table>
 {{/if}}
 
