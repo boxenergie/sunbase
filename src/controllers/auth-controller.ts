@@ -28,7 +28,7 @@ export function renderLoginPage(req: Request, res: Response, next: NextFunction)
 			errorMsg: req.flash('error')
 		});
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -39,7 +39,7 @@ export function logOut(req: Request, res: Response, next: NextFunction) {
         if (!err) {
             res.clearCookie('connect.sid', { path: '/' }).redirect('/');
         } else {
-			logger.error(err);
+			logger.error(err.message);
             res.status(500).send('Impossible to logout, please contact an admin');
         }
     });

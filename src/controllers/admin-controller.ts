@@ -36,7 +36,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 			successMsg: req.flash('successMsg'),
 		});
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -59,7 +59,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 			return res.redirect('/admin');
 		}
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
