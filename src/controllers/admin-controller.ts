@@ -54,7 +54,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 			await User.deleteOne({ _id: sanitize(deletedUserId) });
 			req.flash('successMsg', 'User deleted.');
 			return res.redirect('/admin');
-		} catch {
+		} catch (err) {
 			req.flash('errorMsg', errorMsg ?? 'Username did not exist.');
 			return res.redirect('/admin');
 		}
