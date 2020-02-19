@@ -72,7 +72,7 @@ npm install -g pm2
 pm2 startup
 
 # Start the server in production
-pm2 start npm -- run prod --watch --name <name>
+pm2 start npm --name <name> -- run prod
 
 # Stop the server
 pm2 stop <nme>
