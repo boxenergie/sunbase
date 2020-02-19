@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo $@
-
 old_ifs=$IFS
 
 # You can modify the following variables
