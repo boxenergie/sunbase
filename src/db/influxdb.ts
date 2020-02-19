@@ -32,6 +32,24 @@ const influxClient = new Influx.InfluxDB({
 			tags: [
 				'created_by'
 			]
+		},
+		{
+			measurement: 'WindRecord',
+			fields: {
+				
+			},
+			tags: [
+				'created_by'
+			]
+		},
+		{
+			measurement: 'SolarRecord',
+			fields: {
+
+			},
+			tags: [
+				'created_by'
+			]
 		}
 	]
 });
