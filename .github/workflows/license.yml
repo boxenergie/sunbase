@@ -19,5 +19,5 @@ jobs:
         git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
         git pull github ${GITHUB_REF} --ff-only
         ${GITHUB_WORKSPACE}/scripts/licensify.sh
-        git commit -am "Update license headers" || echo "Nothing to do"
+        git commit -am "Update license headers" || echo "No license headers updated"
         git push github HEAD:${GITHUB_REF}
