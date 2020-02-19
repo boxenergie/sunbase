@@ -38,13 +38,13 @@ const userSchema = new Schema<UserData>({
 
 userSchema.pre('save', function(next) {
 	// If the user is not being created or changed, we skip over the hashing part
-    if(!this.isModified('password')) {
-        return next();
+	if(!this.isModified('password')) {
+		return next();
 	}
 	
 	// @ts-ignore
-    this.password = bcrypt.hashSync(this.password, 10);
-    next();
+	this.password = bcrypt.hashSync(this.password, 10);
+	next();
 });
 
 userSchema.methods.comparePassword = function(password) {
