@@ -96,7 +96,7 @@ if [[ $1 = '-v' ]]; then
 fi
 
 if (( $# == 0 )); then
-    goals=$(find $cwd/src -name \*.$ext -type f -print | xargs grep -L "Copyright (C)")
+    goals=$(find $cwd/../src -name \*.$ext -type f -print | xargs grep -L "Copyright (C)")
 else
     goals=$*
 fi
