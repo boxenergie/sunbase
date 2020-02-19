@@ -14,7 +14,7 @@ jobs:
     - name: Update license headers
       run: |
         git config --global user.name ${GITHUB_ACTOR}
-        git show --pretty=format:"%ae" $GITHUB_REF | xargs -0 git config --global user.email
+        git show --pretty=format:"%ae" $GITHUB_REF | xargs git config --global user.email
         git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
         git pull github ${GITHUB_REF} --ff-only
         ${GITHUB_WORKSPACE}/scripts/licensify.sh
