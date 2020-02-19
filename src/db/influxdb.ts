@@ -36,7 +36,10 @@ const influxClient = new Influx.InfluxDB({
 		{
 			measurement: 'WindRecord',
 			fields: {
-				
+				wind_speed: Influx.FieldType.FLOAT,
+				produced: Influx.FieldType.FLOAT,
+				rotor_speed: Influx.FieldType.FLOAT,
+				relative_orientation: Influx.FieldType.FLOAT
 			},
 			tags: [
 				'created_by'
