@@ -48,6 +48,27 @@ const addEnergyRecordSchema = {
 	}
 };
 
+const addWindRecordSchema = {
+	type: 'object',
+	properties: {
+		wind_speed: {
+			type: 'number',
+			minimum: 0
+		},
+		produced: {
+			type: 'number',
+			minimum: 0
+		},
+		rotor_speed: {
+			type: 'number',
+			minimum: 0
+		},
+		relative_orientation: {
+			type: 'number'
+		}
+	}
+}
+
 /**
  * Get middleware which adds one function to the Response object from Express:
  * 		api(body?: Object | string): void;
@@ -144,3 +165,5 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 		return res.status(500).api('Something went wrong');
 	});
 };
+
+// TODO addWindRecord and getAllEnergyRecords
