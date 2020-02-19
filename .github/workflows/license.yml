@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: ['master', 'pipeline/license']
+
+jobs:
+  update_license_headers:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Update license headers
+      run: |
+        git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+        git pull github ${GITHUB_REF} --ff-only
+        ${GITHUB_WORKSPACE}/scripts/licensify.sh
+        git commit -am "Update license headers"
+        git push github HEAD:${GITHUB_REF}
