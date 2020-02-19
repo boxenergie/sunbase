@@ -90,13 +90,15 @@ __Example :__
 GET /api/v1/energy/
 
 {
-  "0": {
-    "sum_production": 8,
-    "sum_consumption": 11,
-    "sum_surplus": -3
-  },
   "version": 1,
-  "timestamp": "2020-02-19T09:26:04.676Z"
+  "timestamp": "2020-02-19T14:10:53.346Z",
+  "rows": [
+    {
+      "sum_production": 11,
+      "sum_consumption": 14,
+      "sum_surplus": -3
+    }
+  ]
 }
 ```
 
