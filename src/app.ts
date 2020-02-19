@@ -74,46 +74,50 @@ import passportSetup from './config/passport';
 passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-/* CSURF */
-app.use(csrf({ cookie: true }))
+
+/**
+ * Router
+ */
+const appRouter = express.Router();
+const apiRouter = express.Router();
+
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
 /**
  * App routes
  */
-app.get('/', homeController.renderHomePage);
+appRouter.get('/', homeController.renderHomePage);
 
 /**
  * Auth routes
  */
-app.get('/login', isNotLoggedIn(), authController.renderLoginPage);
-app.post('/login', isNotLoggedIn(), passport.authenticate('local',
+appRouter.get('/login', isNotLoggedIn(), authController.renderLoginPage);
+appRouter.post('/login', isNotLoggedIn(), passport.authenticate('local',
 	{
 		failureRedirect: '/login',
 		successRedirect:'/',
 		failureFlash: 'Invalid username or password.'
 	}
 ));
-app.get('/logout', isLoggedIn(), authController.logOut);
+appRouter.get('/logout', isLoggedIn(), authController.logOut);
 
 /**
  * Profil routes
  */
-app.get('/profil', isLoggedIn(), profilController.renderProfilPage);
-app.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
-app.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
+appRouter.get('/profil', isLoggedIn(), profilController.renderProfilPage);
+appRouter.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
+appRouter.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
 
 /**
  * Admin routes
  */
-app.get('/admin', isAdmin(), adminController.renderAdminPage);
+appRouter.get('/admin', isAdmin(), adminController.renderAdminPage);
 
 /**
  * API routes
  */
-const apiRouter = express.Router();
-apiRouter.use('/v1/*', apiControllerV1.getApiFunction);
-apiRouter.get('/v1/', apiControllerV1.getApiInfo);
+apiRouter.use('/v1', apiControllerV1.getApiFunction);
+apiRouter.get('/v1', apiControllerV1.getApiInfo);
 
 apiRouter.get('/v1/energy/', apiControllerV1.getAllEnergyRecords);
 apiRouter.post('/v1/energy/', passport.authenticate('local',
@@ -121,13 +125,15 @@ apiRouter.post('/v1/energy/', passport.authenticate('local',
 		session: false
 	}
 ), apiControllerV1.addEnergyRecord);
-app.use('/api', apiRouter);
 
 /**
  * Unknown route
  */
-app.use((_, res) => {
+appRouter.use((_, res) => {
 	res.sendStatus(404);
 });
+
+app.use('/api', apiRouter);
+app.use('/', csrf({ cookie: true }), appRouter);
 
 export default app;
