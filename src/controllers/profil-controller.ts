@@ -54,7 +54,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			return res.redirect('/profil');
 		}
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -81,7 +81,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		req.flash('successMsg', 'Password changed.');
 		res.redirect('/profil');
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }

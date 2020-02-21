@@ -1,5 +1,5 @@
 /*
- * log4js.ts
+ * logger.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -20,12 +20,13 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
+const logFormat = winston.format.printf(i => `[${i.timestamp}] [${i.level}] ${i.message}`);
+
 const logger = winston.createLogger({
 	level: process.env.LOG_LEVEL,
 	format: winston.format.combine(
 		winston.format.timestamp(),
-		winston.format.colorize(),
-		winston.format.printf(i => `[${i.timestamp}] [${i.level}] ${i.message}`)
+		logFormat
 	),
 	transports: [
 		//
@@ -48,8 +49,14 @@ const logger = winston.createLogger({
 //
 if (process.env.NODE_ENV !== 'production') {
 	logger.add(
-		new winston.transports.Console(
-		)
+		new winston.transports.Console({
+			format: winston.format.combine(
+				winston.format.colorize({
+					level:true,
+				}),
+				logFormat
+			),
+		})
 	);
 }
 

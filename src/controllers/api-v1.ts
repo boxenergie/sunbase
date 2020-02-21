@@ -118,17 +118,16 @@ export const getApiInfo = (_: Request, res: Response) => {
  */
 export const getAllEnergyRecords = (req: Request, res: Response) => {
 	InfluxClient.query<Object>(
-		`SELECT SUM("production"),
-		SUM("consumption"),
-		SUM("surplus") 
-		from "EnergyRecord"`
+		`SELECT SUM("production") as "sum_production",
+		SUM("consumption") as "sum_consumption",
+		SUM("surplus") as "sum_surplus" 
+		FROM "EnergyRecord"`
 	).then((results) => {
 		// Delete all unnecessary data
 		const r: Array<any> = [results[0]];
 		delete r[0].time;
 
-		logger.debug(r);
-		return res.api(results);
+		return res.api(r);
 	}).catch(err => {
 		logger.error(err);
 		return res.status(500).api('Something went wrong');
