@@ -48,6 +48,27 @@ const addEnergyRecordSchema = {
 	}
 };
 
+const addWindRecordSchema = {
+	type: 'object',
+	properties: {
+		wind_speed: {
+			type: 'number',
+			minimum: 0
+		},
+		production: {
+			type: 'number',
+			minimum: 0
+		},
+		rotor_speed: {
+			type: 'number',
+			minimum: 0
+		},
+		relative_orientation: {
+			type: 'number'
+		}
+	}
+}
+
 /**
  * Get middleware which adds one function to the Response object from Express:
  * 		api(body?: Object | string): void;
@@ -138,6 +159,65 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 		}
 	]).then(() => {
 		return res.api('Successfully added your Energy Record');
+	}).catch(err => {
+		logger.error(err);
+		return res.status(500).api('Something went wrong');
+	});
+};
+
+/**
+ * GET /api/v1/wind/
+ * Get a mean of all wind records
+ */
+export const getAllWindRecords = (req: Request, res: Response) => {
+	InfluxClient.query<Object>(
+		`SELECT 
+		MEAN("wind_speed"),
+		MEAN("production"),
+		MEAN("rotor_speed"),
+		MEAN("relative_orientation") 
+		from "WindRecord"`
+	).then((results) => {
+		// Delete all unnecessary data
+		const r: Array<any> = [results[0]];
+		delete r[0].time;
+
+		logger.debug(r);
+		return res.api(results);
+	}).catch(err => {
+		logger.error(err);
+		return res.status(500).api('Something went wrong');
+	});
+}
+
+/**
+ * POST /api/v1/wind/
+ * Add a Wind Record to the database
+ * Required request parameters:
+ *  - FLOAT wind_speed >= 0
+ *  - FLOAT production >= 0
+ *  - FLOAT rotor_speed >= 0
+ *  - FLOAT relative_orientation
+ *  - STRING created_by
+ */
+export const addWindRecord = (req: Request, res: Response) => {
+	if (!validator.validate(req.body, addWindRecordSchema).valid) {
+		return res.status(400).api('Missing one or more required fields or wrong type');
+	}
+	
+	InfluxClient.writePoints([
+		{
+			measurement: 'WindRecord',
+			fields: {
+				wind_speed: req.body.wind_speed,
+				production: req.body.production,
+				rotor_speed: req.body.rotor_speed,
+				relative_orientation: req.body.relative_orientation
+		  	},
+			  tags: { created_by: escape.tag(req.body.created_by) },
+		}
+	]).then(() => {
+		return res.api('Successfully added your Wind Record');
 	}).catch(err => {
 		logger.error(err);
 		return res.status(500).api('Something went wrong');

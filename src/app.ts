@@ -125,6 +125,13 @@ apiRouter.post('/v1/energy/', passport.authenticate('local',
 		session: false
 	}
 ), apiControllerV1.addEnergyRecord);
+apiRouter.get('/v1/wind/', apiControllerV1.getAllWindRecords);
+apiRouter.post('/v1/wind/', passport.authenticate('local',
+	{
+		session: false
+	}
+), apiControllerV1.addWindRecord);
+app.use('/api', apiRouter);
 
 /**
  * Unknown route
