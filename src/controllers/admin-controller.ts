@@ -29,7 +29,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 	}
 
 	try {
-		const users = await User.find().limit(10).exec();
+		const users = await User.find({_id: {$ne: req.user!.id}}).limit(10).exec();
 		res.render('admin-page', {
 			users: users,
 			errorMsg: req.flash('errorMsg'),
@@ -45,12 +45,14 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 	try {
 		let errorMsg = null;
 		const deletedUserId = req.query.deleted;
-
-		if (!deletedUserId) {
-			errorMsg = 'One or more fields were not provided.';
-		}        
+		
+		if (deletedUserId === req.user!.id){
+			errorMsg = 'You cannot delete yourself';
+		}      
 
 		try {
+			if (errorMsg) throw errorMsg;
+			
 			await User.deleteOne({ _id: sanitize(deletedUserId) });
 			req.flash('successMsg', 'User deleted.');
 			return res.redirect('/admin');
