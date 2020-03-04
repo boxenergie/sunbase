@@ -64,6 +64,12 @@ const addWindRecordSchema = {
 		},
 		relative_orientation: {
 			type: 'number'
+		},
+		username: {
+			type: 'string'
+		},
+		password: {
+			type: 'string'
 		}
 	}
 }
@@ -207,7 +213,7 @@ export const addWindRecord = (req: Request, res: Response) => {
 				rotor_speed: req.body.rotor_speed,
 				relative_orientation: req.body.relative_orientation
 		  	},
-			  tags: { created_by: req.body.created_by },
+			tags: { created_by: req.body.created_by },
 		}
 	]).then(() => {
 		logger.debug('Successfully added Wind Record: ' +
