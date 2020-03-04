@@ -22,6 +22,7 @@ import { Document, Schema } from 'mongoose';
 import { Model } from 'models';
 
 import MongoClient from '../db/mongodb';
+import Session from '../models/Session';
 
 export interface UserDocument extends Model.User, Document {
 	/**
@@ -30,6 +31,11 @@ export interface UserDocument extends Model.User, Document {
 	 * @param password being the non-hashed password.
 	 */
 	comparePassword(password: string): boolean;
+
+    /**
+     * Disconnect the user from all the devices.
+     */
+    disconnectFromAllDevices(): void;
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -38,8 +44,12 @@ const userSchema = new Schema<UserDocument>({
 	role: { type: String, required: true, default: 'user' }
 });
 
-userSchema.methods.comparePassword = function(password: string) {
+userSchema.methods.comparePassword = function(password) {
 	return bcrypt.compareSync(password, this.password);
+}
+
+userSchema.methods.disconnectFromAllDevices = async function() {
+    await Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } });
 }
 
 userSchema.pre('save', function(next) {
