@@ -17,11 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Response, Request, NextFunction } from "express";
-import { escape } from "influx";
+import { Response, Request, NextFunction } from 'express';
 import { Validator } from 'jsonschema';
 
-import InfluxClient from '../db/influxdb';
+import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
 
 const validator = new Validator();
@@ -90,13 +89,13 @@ export const getApiFunction = (
 		res.json(content);
 	};
 
-	// [HTTP version] [Client IP] [Method]  PI call on https://...
+	// [HTTP version] [Client IP] [Method] API call on https://...
 	// Will also show who did the request if the user is authenticated
 	const format = 
 		`[HTTP v${req.httpVersion}] `
 		+ `[${req.headers['x-forwarded-for'] ?? req.connection.remoteAddress}] `
 		+ `[${req.method}] `
-		+ `API call on ${req.path}`
+		+ `API call on ${req.originalUrl}`
 		+ (req.isAuthenticated() ? ` by ${req.user?.username}` : '');
 
 	logger.info(format);
@@ -117,19 +116,15 @@ export const getApiInfo = (_: Request, res: Response) => {
  * Get a sum of all production, consumption, surplus records
  */
 export const getAllEnergyRecords = (req: Request, res: Response) => {
-	InfluxClient.query<Object>(
-		`SELECT SUM("production") as "sum_production",
-		SUM("consumption") as "sum_consumption",
-		SUM("surplus") as "sum_surplus" 
-		FROM "EnergyRecord"`
+	InfluxHelper.query(
+		`SELECT SUM("production") AS "sum_production",
+		SUM("consumption") AS "sum_consumption",
+		SUM("surplus") AS "sum_surplus" 
+		FROM "EnergyRecord"`, { deleteTimestamp:true }
 	).then((results) => {
-		// Delete all unnecessary data
-		const r: Array<any> = [results[0]];
-		delete r[0].time;
-
-		return res.api(r);
+		return res.api(results);
 	}).catch(err => {
-		logger.error(err);
+		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	});
 }
@@ -147,20 +142,24 @@ export const addEnergyRecord = (req: Request, res: Response) => {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	InfluxClient.writePoints([
+	InfluxHelper.insert('EnergyRecord', [
 		{
-			measurement: 'EnergyRecord',
 			fields: {
 				production: req.body.production,
 				consumption: req.body.consumption,
 				surplus: (req.body.production - req.body.consumption)
 		  	},
-			  tags: { created_by: escape.tag(req.body.created_by) },
+			tags: { created_by: req.body.created_by },
 		}
 	]).then(() => {
+		logger.debug('Successfully added Energy Record: ' +
+			`${req.body.production} | ${req.body.consumption} ` +
+			`by ${req.body.created_by}`
+		);
+
 		return res.api('Successfully added your Energy Record');
 	}).catch(err => {
-		logger.error(err);
+		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	});
 };

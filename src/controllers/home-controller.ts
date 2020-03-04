@@ -19,33 +19,33 @@
 
 import { NextFunction, Response, Request } from "express";
 
+import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
-import InfluxClient from '../db/influxdb';
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {
-		const results = await InfluxClient.query(
+		const globalResults = await InfluxHelper.query(
 			`SELECT SUM("production") AS production,
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"`
-		);
+		, { deleteTimestamp: true });
 
-		const userResults = await InfluxClient.query(
+		const userResults = await InfluxHelper.query(
 			`SELECT SUM("production") AS production,
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"
 			WHERE created_by = '${req.user?.id}'`
-		);
+		, { deleteTimestamp: true });
 
 		res.render("home-page", { 
-				data: results[0],
-				userData: userResults[0],
-				user: req.user,
+			globalData: globalResults.rows[0],
+			userData: userResults.rows[0],
+			user: req.user,
 		});
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
