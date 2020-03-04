@@ -47,7 +47,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 		const deletedUserId = req.query.deleted;
 		
 		if (deletedUserId === req.user!.id){
-			errorMsg = 'You cannot delete yourself';
+			errorMsg = 'You cannot delete yourself.';
 		}      
 
 		try {
