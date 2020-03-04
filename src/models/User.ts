@@ -17,24 +17,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Document, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { Document, Schema } from 'mongoose';
+import { Model } from 'models';
 
 import MongoClient from '../db/mongodb';
 
-export interface UserData extends Document {
-	username: string;
-	password: string;
-	role: string;
-
-	comparePassword(password: String): boolean
+export interface UserDocument extends Model.User, Document {
+	/**
+	 * Compare a non-hashed password to the current hashed
+	 * password of the user.
+	 * @param password being the non-hashed password.
+	 */
+	comparePassword(password: string): boolean;
 }
 
-const userSchema = new Schema<UserData>({
+const userSchema = new Schema<UserDocument>({
 	username: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
 	role: { type: String, required: true, default: 'user' }
 });
+
+userSchema.methods.comparePassword = function(password: string) {
+	return bcrypt.compareSync(password, this.password);
+}
 
 userSchema.pre('save', function(next) {
 	// If the user is not being created or changed, we skip over the hashing part
@@ -47,8 +53,4 @@ userSchema.pre('save', function(next) {
 	next();
 });
 
-userSchema.methods.comparePassword = function(password) {
-	return bcrypt.compareSync(password, this.password);
-};
-
-export default MongoClient.model<UserData>('User', userSchema);
+export default MongoClient.model<UserDocument>('User', userSchema);

@@ -1,5 +1,5 @@
 /*
- * api.d.ts
+ * models.d.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,14 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserDocument } from '../models/User';
-
-declare global {
-	namespace Express {
-		interface Response {
-			api(body?: Object | string): void;
-		}
-
-		interface User extends UserDocument {}
+export namespace Model {
+	interface User {
+		username: string;
+		password: string;
+		role: string;
 	}
 }

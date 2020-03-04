@@ -30,6 +30,9 @@ import csrf from 'csurf';
 // Load .env
 dotenv.config();
 
+// Load MongoDB
+import './db/mongodb';
+
 // Controllers
 import * as adminController from './controllers/admin-controller';
 import * as apiControllerV1 from './controllers/api-v1';
