@@ -17,14 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Response, Request, NextFunction } from "express";
-import { escape } from "influx";
+import { Response, Request, NextFunction } from 'express';
 import { Validator } from 'jsonschema';
 
-import InfluxClient from '../db/influxdb';
+import * as InfluxHelper from '../utils/InfluxHelper';
+import logger from '../utils/logger';
 
 const validator = new Validator();
-const energyRecordSchema = {
+const addEnergyRecordSchema = {
 	type: 'object',
 	properties: {
 		production: {
@@ -47,12 +47,39 @@ const energyRecordSchema = {
 	}
 };
 
+const addWindRecordSchema = {
+	type: 'object',
+	properties: {
+		wind_speed: {
+			type: 'number',
+			minimum: 0
+		},
+		production: {
+			type: 'number',
+			minimum: 0
+		},
+		rotor_speed: {
+			type: 'number',
+			minimum: 0
+		},
+		relative_orientation: {
+			type: 'number'
+		},
+		username: {
+			type: 'string'
+		},
+		password: {
+			type: 'string'
+		}
+	}
+}
+
 /**
  * Get middleware which adds one function to the Response object from Express:
  * 		api(body?: Object | string): void;
  */
 export const getApiFunction = (
-	_: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
@@ -67,6 +94,17 @@ export const getApiFunction = (
 
 		res.json(content);
 	};
+
+	// [HTTP version] [Client IP] [Method] API call on https://...
+	// Will also show who did the request if the user is authenticated
+	const format = 
+		`[HTTP v${req.httpVersion}] `
+		+ `[${req.headers['x-forwarded-for'] ?? req.connection.remoteAddress}] `
+		+ `[${req.method}] `
+		+ `API call on ${req.originalUrl}`
+		+ (req.isAuthenticated() ? ` by ${req.user?.username}` : '');
+
+	logger.info(format);
 
 	next();
 };
@@ -84,15 +122,15 @@ export const getApiInfo = (_: Request, res: Response) => {
  * Get a sum of all production, consumption, surplus records
  */
 export const getAllEnergyRecords = (req: Request, res: Response) => {
-	InfluxClient.query(
-		`SELECT SUM("production"),
-		SUM("consumption"),
-		SUM("surplus") 
-		from "EnergyRecord"`
+	InfluxHelper.query(
+		`SELECT SUM("production") AS "sum_production",
+		SUM("consumption") AS "sum_consumption",
+		SUM("surplus") AS "sum_surplus" 
+		FROM "EnergyRecord"`, { deleteTimestamp:true }
 	).then((results) => {
 		return res.api(results);
-	}).catch((err: String) => {
-		console.error(err);
+	}).catch(err => {
+		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	});
 }
@@ -103,27 +141,90 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  * Required request parameters:
  *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
- *  - INTEGER created_by
+ *  - STRING created_by
  */
 export const addEnergyRecord = (req: Request, res: Response) => {
-	if (!validator.validate(req.body, energyRecordSchema).valid) {
+	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	InfluxClient.writePoints([
+	InfluxHelper.insert('EnergyRecord', [
 		{
-			measurement: 'EnergyRecord',
 			fields: {
 				production: req.body.production,
 				consumption: req.body.consumption,
 				surplus: (req.body.production - req.body.consumption)
 		  	},
-			  tags: { created_by: escape.tag(req.body.created_by) },
+			tags: { created_by: req.body.created_by },
 		}
 	]).then(() => {
+		logger.debug('Successfully added Energy Record: ' +
+			`${req.body.production} | ${req.body.consumption} ` +
+			`by ${req.body.created_by}`
+		);
+
 		return res.api('Successfully added your Energy Record');
-	}).catch((err: String) => {
-		console.error(err);
+	}).catch(err => {
+		logger.error(err.message);
+		return res.status(500).api('Something went wrong');
+	});
+};
+
+/**
+ * GET /api/v1/wind/
+ * Get a mean of all wind records
+ */
+export const getAllWindRecords = (req: Request, res: Response) => {
+	InfluxHelper.query(
+		`SELECT 
+		MEAN("wind_speed"),
+		MEAN("production"),
+		MEAN("rotor_speed"),
+		MEAN("relative_orientation") 
+		FROM "WindRecord"`,  { deleteTimestamp:true }
+	).then((results) => {
+		return res.api(results);
+	}).catch(err => {
+		logger.error(err.message);
+		return res.status(500).api('Something went wrong');
+	});
+}
+
+/**
+ * POST /api/v1/wind/
+ * Add a Wind Record to the database
+ * Required request parameters:
+ *  - FLOAT wind_speed >= 0
+ *  - FLOAT production >= 0
+ *  - FLOAT rotor_speed >= 0
+ *  - FLOAT relative_orientation
+ *  - STRING created_by
+ */
+export const addWindRecord = (req: Request, res: Response) => {
+	if (!validator.validate(req.body, addWindRecordSchema).valid) {
+		return res.status(400).api('Missing one or more required fields or wrong type');
+	}
+	
+	InfluxHelper.insert('WindRecord', [
+		{
+			fields: {
+				wind_speed: req.body.wind_speed,
+				production: req.body.production,
+				rotor_speed: req.body.rotor_speed,
+				relative_orientation: req.body.relative_orientation
+		  	},
+			tags: { created_by: req.body.created_by },
+		}
+	]).then(() => {
+		logger.debug('Successfully added Wind Record: ' +
+			`${req.body.wind_speed} | ${req.body.production} | ` +
+			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
+			`by ${req.body.created_by}`
+		);
+
+		return res.api('Successfully added your Wind Record');
+	}).catch(err => {
+		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	});
 };

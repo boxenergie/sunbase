@@ -18,36 +18,34 @@
  */
 
 import { NextFunction, Response, Request } from "express";
-import * as Sqrl from 'squirrelly';
 
-import Records from '../db/influxdb';
+import * as InfluxHelper from '../utils/InfluxHelper';
+import logger from '../utils/logger';
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {
-		const results = await Records.query(
+		const globalResults = await InfluxHelper.query(
 			`SELECT SUM("production") AS production,
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"`
-		);
+		, { deleteTimestamp: true });
 
-		const userResults = await Records.query(
+		const userResults = await InfluxHelper.query(
 			`SELECT SUM("production") AS production,
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"
 			WHERE created_by = '${req.user?.id}'`
-		);
+		, { deleteTimestamp: true });
 
-		res.send(
-			Sqrl.renderFile("./views/homepage.squirrelly", { 
-				data: results[0],
-				userData: userResults[0],
-				user: req.user,
-			})
-		);
+		res.render("home-page", { 
+			globalData: globalResults.rows[0],
+			userData: userResults.rows[0],
+			user: req.user,
+		});
 	} catch (err) {
-		console.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }

@@ -19,12 +19,19 @@
 
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
-import express from 'express';
+import dotenv from 'dotenv-safe';
+import express, { Router } from 'express';
 import flash from 'connect-flash';
+import helmet from 'helmet';
 import passport from 'passport';
 import path from 'path';
 import csrf from 'csurf';
+
+// Load .env
+dotenv.config();
+
+// Load MongoDB
+import './db/mongodb';
 
 // Controllers
 import * as adminController from './controllers/admin-controller';
@@ -33,91 +40,110 @@ import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
 
-// Load .env
-dotenv.config();
-
 // Create Express server
 const app = express();
 
 // Express configuration
-app.set('port', process.env.PORT || 8080);
-app.enable('strict routing');
+app.set('views', path.join(__dirname, '..', 'views'));
+app.set('view engine', 'squirrelly');
+app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 /**
  * Middleware
  */
-// helmet
-import helmetSetup from './config/helmet';
-helmetSetup(app);
-// body-parser
+
+ /* HELMET */
+app.use(helmet());
+app.use(helmet.contentSecurityPolicy({
+	directives: {
+		defaultSrc: [ "'self'" ],
+		styleSrc: [ "'self'" ]
+	}
+}));
+/* BODY-PARSER */
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
-// cookie-parser
+/* COOKIE-PARSER */
 app.use(cookieParser());
-// connect-flash
+/* CONNECT-FLASH */
 app.use(flash());
-// express-session
+/* EXPRESS-SESSION */
 import sessionSetup from './config/session';
 sessionSetup(app);
-// passport
+/* PASSPORT */
 import passportSetup from './config/passport';
 passportSetup(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
 /**
- * API routes
+ * Router
  */
-app.use('/api/v1/*', apiControllerV1.getApiFunction);
-app.get('/api/v1/', apiControllerV1.getApiInfo);
+const appRouter = express.Router();
+const apiRouter = express.Router();
 
-app.get('/api/v1/energy/', apiControllerV1.getAllEnergyRecords);
-app.post('/api/v1/energy/', passport.authenticate('local',
-	{
-		session: false
-	}
-), apiControllerV1.addEnergyRecord);
 
-// Csurf
-app.use(csrf({ cookie: true }))
-
-import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/auth';
+import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
 /**
  * App routes
  */
-app.get('/', homeController.renderHomePage);
+appRouter.get('/', homeController.renderHomePage);
 
 /**
  * Auth routes
  */
-app.get('/login', isNotLoggedIn(), authController.renderLoginPage);
-app.post('/login', isNotLoggedIn(), passport.authenticate('local',
+appRouter.get('/login', isNotLoggedIn(), authController.renderLoginPage);
+appRouter.post('/login', isNotLoggedIn(), passport.authenticate('local',
 	{
 		failureRedirect: '/login',
-		successRedirect:'/'
+		successRedirect:'/',
+		failureFlash: 'Invalid username or password.'
 	}
 ));
-app.get('/logout', isLoggedIn(), authController.logOut);
+appRouter.get('/logout', isLoggedIn(), authController.logOut);
 
 /**
  * Profil routes
  */
-app.get('/profil', isLoggedIn(), profilController.renderProfilPage);
-app.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
-app.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
+appRouter.get('/profil', isLoggedIn(), profilController.renderProfilPage);
+appRouter.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
+appRouter.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
 
 /**
  * Admin routes
  */
-app.get('/admin', isAdmin(), adminController.renderAdminPage);
+appRouter.get('/admin', isAdmin(), adminController.renderAdminPage);
+
+/**
+ * API routes
+ */
+apiRouter.use('/v1', apiControllerV1.getApiFunction);
+apiRouter.get('/v1', apiControllerV1.getApiInfo);
+
+apiRouter.get('/v1/energy/', apiControllerV1.getAllEnergyRecords);
+apiRouter.post('/v1/energy/', passport.authenticate('local',
+	{
+		session: false
+	}
+), apiControllerV1.addEnergyRecord);
+apiRouter.get('/v1/wind/', apiControllerV1.getAllWindRecords);
+apiRouter.post('/v1/wind/', passport.authenticate('local',
+	{
+		session: false
+	}
+), apiControllerV1.addWindRecord);
+app.use('/api', apiRouter);
 
 /**
  * Unknown route
  */
-app.use((_, res) => {
+appRouter.use((_, res) => {
 	res.sendStatus(404);
 });
+
+app.use('/api', apiRouter);
+app.use('/', csrf({ cookie: true }), appRouter);
 
 export default app;
