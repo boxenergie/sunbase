@@ -58,12 +58,14 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 	try {
 		let errorMsg = null;
 		const deletedUserId = req.query.deleted;
-
-		if (!deletedUserId) {
-			errorMsg = 'One or more fields were not provided.';
-		}        
+		
+		if (deletedUserId === req.user!.id){
+			errorMsg = 'You cannot delete yourself.';
+		}      
 
 		try {
+			if (errorMsg) throw errorMsg;
+			
 			await User.deleteOne({ _id: sanitize(deletedUserId) });
 			req.flash('successMsg', 'User deleted.');
 			return res.redirect('/admin');
