@@ -169,22 +169,17 @@ export const addEnergyRecord = (req: Request, res: Response) => {
  * Get a mean of all wind records
  */
 export const getAllWindRecords = (req: Request, res: Response) => {
-	InfluxClient.query<Object>(
+	InfluxHelper.query(
 		`SELECT 
 		MEAN("wind_speed"),
 		MEAN("production"),
 		MEAN("rotor_speed"),
 		MEAN("relative_orientation") 
-		from "WindRecord"`
+		FROM "WindRecord"`,  { deleteTimestamp:true }
 	).then((results) => {
-		// Delete all unnecessary data
-		const r: Array<any> = [results[0]];
-		delete r[0].time;
-
-		logger.debug(r);
 		return res.api(results);
 	}).catch(err => {
-		logger.error(err);
+		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	});
 }
@@ -204,21 +199,26 @@ export const addWindRecord = (req: Request, res: Response) => {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	InfluxClient.writePoints([
+	InfluxHelper.insert('WindRecord', [
 		{
-			measurement: 'WindRecord',
 			fields: {
 				wind_speed: req.body.wind_speed,
 				production: req.body.production,
 				rotor_speed: req.body.rotor_speed,
 				relative_orientation: req.body.relative_orientation
 		  	},
-			  tags: { created_by: escape.tag(req.body.created_by) },
+			  tags: { created_by: req.body.created_by },
 		}
 	]).then(() => {
+		logger.debug('Successfully added Wind Record: ' +
+			`${req.body.wind_speed} | ${req.body.production} | ` +
+			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
+			`by ${req.body.created_by}`
+		);
+
 		return res.api('Successfully added your Wind Record');
 	}).catch(err => {
-		logger.error(err);
+		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	});
 };
