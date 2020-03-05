@@ -28,10 +28,23 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 		return deleteUser(req, res, next);
 	}
 
+	const elementPerPage: number = Number(req.query.displayLimit) ?? 10;
+	let page: number = Number(req.query.page) ?? 1;
+
+	// Count number of users
+	const count = await User.countDocuments({});
+	
+	// If there are less users (excluding current user) than the limit, force page to 1
+	if ((count - 1) < elementPerPage)
+		page = 1;
+
 	try {
-		const users = await User.find().limit(10).exec();
+		const users = await User.find({ _id: { $ne: req.user!._id } })
+			.skip((page - 1) * elementPerPage)
+			.limit(elementPerPage);
 		res.render('admin-page', {
 			users: users,
+			nPages: Math.ceil(count / elementPerPage),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
 		});
@@ -45,12 +58,14 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 	try {
 		let errorMsg = null;
 		const deletedUserId = req.query.deleted;
-
-		if (!deletedUserId) {
-			errorMsg = 'One or more fields were not provided.';
-		}        
+		
+		if (deletedUserId === req.user!.id){
+			errorMsg = 'You cannot delete yourself.';
+		}      
 
 		try {
+			if (errorMsg) throw errorMsg;
+			
 			await User.deleteOne({ _id: sanitize(deletedUserId) });
 			req.flash('successMsg', 'User deleted.');
 			return res.redirect('/admin');
