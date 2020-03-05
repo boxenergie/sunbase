@@ -37,7 +37,7 @@
 		<input type="password" name="new_pwd_confirm" id="new_pwd_confirm">
 		<input type="submit" value="submit">
 	</form>
-	
+
 	<h5>Permissions</h5>
 	<form action="/profil/request_permissions/" method="POST">
 		<input type="hidden" name="_csrf" value="{{csrfToken}}">
@@ -47,7 +47,7 @@
 				{{foreach(options.permissions.granted)}}
 				<b>{{@key}}</b>: {{each(@this)}}{{@this}}{{/each}}
 				{{/foreach}}
-			</div>			
+			</div>
 			<!--
 			<fieldset>
 				<legend>Request a permission grant: </legend>
@@ -70,8 +70,8 @@
 			<ul>
 				{{foreach(options.permissions.granting) granting}}
 					<li>
-						<b>{{@key}}</b>: 
-						{{each(@this)}} {{@this}} 
+						<b>{{@key}}</b>:
+						{{each(@this)}} {{@this}}
 							<a href="?rm-user={{@granting:key}}&rm-perm={{@this}}"><button>Revoke</button></a>
 						{{/each}}
 					</li>

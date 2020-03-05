@@ -106,18 +106,41 @@ userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) 
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 };
 
-userSchema.pre('save', function (next) {
-	// If the user is not being created or changed, we skip over the hashing part
-	let self = this as UserDocument;
-	if (!self.isModified('password')) {
-		return next();
-	}
+userSchema.methods.grantPermissionTo = function(user, permissionType) {
+	if (isPermissionType(permissionType)) {
+		const granting = new Set(this.permissions.granting.get(user.id));
+		granting.add(permissionType);
+		this.permissions.granting.set(user.id, [...granting]);
 
-	self.password = bcrypt.hashSync(self.password, 10);
-	next();
+		const granted = new Set(user.permissions.granted.get(this.id));
+		granted.add(permissionType);
+		user.permissions.granted.set(this.id, [...granting]);
+		return Promise.all([this.save(), user.save()]);
+	}
+	return Promise.resolve();
+}
+
+userSchema.methods.revokePermissionFrom = function(user, permissionType) {
+	if (isPermissionType(permissionType)) {
+		removePermRef(this.permissions.granting, user.id, permissionType);
+		removePermRef(user.permissions.granted, this.id, permissionType);
+		return Promise.all([this.save(), user.save()]);
+	}
+	return Promise.resolve();
+}
+
+userSchema.pre('save', function(next) {
+	const self = this as UserDocument;
+
+	// If the user is being created or changed, we hash the password
+    if(self.isModified('password')) {
+		self.password = bcrypt.hashSync(self.password, 10);
+	}
+	
+    next();
 });
 
-userSchema.pre('remove', async function (next) {
+userSchema.pre('remove', async function(next) {
 	const self = this as UserDocument;
 	try {
 		await removeAllPermRefs(self, p => p.granted, p => p.granting);
