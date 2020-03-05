@@ -32,10 +32,10 @@ export interface UserDocument extends Model.User, Document {
 	 */
 	comparePassword(password: string): boolean;
 
-    /**
-     * Disconnect the user from all the devices.
-     */
-    disconnectFromAllDevices(cb: (err: any) => void): void;
+	/**
+	 * Disconnect the user from all the devices.
+	 */
+	disconnectFromAllDevices(cb: (err: any) => void): void;
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -44,22 +44,22 @@ const userSchema = new Schema<UserDocument>({
 	role: { type: String, required: true, default: 'user' }
 });
 
-userSchema.methods.comparePassword = function(password) {
+userSchema.methods.comparePassword = function (password) {
 	return bcrypt.compareSync(password, this.password);
-}
+};
 
-userSchema.methods.disconnectFromAllDevices = function(cb: (err: any) => void) {
+userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) {
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
-}
+};
 
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function (next) {
 	// If the user is not being created or changed, we skip over the hashing part
-	if(!this.isModified('password')) {
+	let self = this as UserDocument;
+	if (!self.isModified('password')) {
 		return next();
 	}
-	
-	// @ts-ignore
-	this.password = bcrypt.hashSync(this.password, 10);
+
+	self.password = bcrypt.hashSync(self.password, 10);
 	next();
 });
 

@@ -3,7 +3,7 @@ import InfluxClient from '../db/influxdb';
 
 export interface InfluxHelperOptions {
 	// Delete the timestamp field on all results
-	deleteTimestamp ?: boolean
+	deleteTimestamp?: boolean
 }
 
 export interface InfluxQueryResponse {
@@ -14,21 +14,22 @@ export interface InfluxQueryResponse {
 }
 
 export interface InfluxRows {
-	time ?: string,
+	time?: string,
+
 	[key: string]: any
 }
 
 export async function query<T>(query: string, options: InfluxHelperOptions = {}): Promise<InfluxRows> {
 	return InfluxClient.query<T>(query)
 		.then((res: any) => res.groupRows[0])
-		.then((res : InfluxQueryResponse) => {
+		.then((res: InfluxQueryResponse) => {
 			if (options.deleteTimestamp && res) {
 				for (const r of res.rows) delete r.time;
 			}
 
 			return res
-				? { rows : res.rows }
-				: { rows : [] };
+				? { rows: res.rows }
+				: { rows: [] };
 		});
 }
 
@@ -39,7 +40,7 @@ export interface InfluxPoint {
 
 export async function insert(tableName: string, data: InfluxPoint[]) {
 	const points: IPoint[] = [];
-	
+
 	for (const point of data) {
 		for (let key in point.tags) {
 			point.tags[key] = escape.tag(point.tags[key]);
@@ -54,5 +55,5 @@ export async function insert(tableName: string, data: InfluxPoint[]) {
 		);
 	}
 
-	InfluxClient.writePoints(points);
+	return InfluxClient.writePoints(points);
 }

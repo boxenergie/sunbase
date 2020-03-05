@@ -72,7 +72,7 @@ const addWindRecordSchema = {
 			type: 'string'
 		}
 	}
-}
+};
 
 /**
  * Get middleware which adds one function to the Response object from Express:
@@ -97,7 +97,7 @@ export const getApiFunction = (
 
 	// [HTTP version] [Client IP] [Method] API call on https://...
 	// Will also show who did the request if the user is authenticated
-	const format = 
+	const format =
 		`[HTTP v${req.httpVersion}] `
 		+ `[${req.headers['x-forwarded-for'] ?? req.connection.remoteAddress}] `
 		+ `[${req.method}] `
@@ -127,16 +127,15 @@ export const getAllEnergyRecords = async (req: Request, res: Response) => {
 			`SELECT SUM("production") AS "sum_production",
 			SUM("consumption") AS "sum_consumption",
 			SUM("surplus") AS "sum_surplus" 
-			FROM "EnergyRecord"`, { deleteTimestamp:true }
+			FROM "EnergyRecord"`, { deleteTimestamp: true }
 		);
 
 		res.api(results);
-	}
-	catch (err) {
+	} catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	}
-}
+};
 
 /**
  * POST /api/v1/energy/
@@ -150,7 +149,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
-	
+
 	try {
 		await InfluxHelper.insert('EnergyRecord', [
 			{
@@ -158,7 +157,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 					production: req.body.production,
 					consumption: req.body.consumption,
 					surplus: (req.body.production - req.body.consumption)
-				  },
+				},
 				tags: { created_by: req.body.created_by },
 			}
 		]);
@@ -169,8 +168,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 		);
 
 		return res.api('Successfully added your Energy Record');
-	}
-	catch (err) {
+	} catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	}
@@ -188,16 +186,15 @@ export const getAllWindRecords = async (req: Request, res: Response) => {
 			MEAN("production"),
 			MEAN("rotor_speed"),
 			MEAN("relative_orientation") 
-			FROM "WindRecord"`,  { deleteTimestamp:true }
+			FROM "WindRecord"`, { deleteTimestamp: true }
 		);
 
 		res.api(results);
-	}
-	catch (err) {
+	} catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	}
-}
+};
 
 /**
  * POST /api/v1/wind/
@@ -213,7 +210,7 @@ export const addWindRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addWindRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
-	
+
 	try {
 		await InfluxHelper.insert('WindRecord', [
 			{
@@ -222,7 +219,7 @@ export const addWindRecord = async (req: Request, res: Response) => {
 					production: req.body.production,
 					rotor_speed: req.body.rotor_speed,
 					relative_orientation: req.body.relative_orientation
-				  },
+				},
 				tags: { created_by: req.body.created_by },
 			}
 		]);
@@ -234,8 +231,7 @@ export const addWindRecord = async (req: Request, res: Response) => {
 		);
 
 		return res.api('Successfully added your Wind Record');
-	}
-	catch (err) {
+	} catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
 	}

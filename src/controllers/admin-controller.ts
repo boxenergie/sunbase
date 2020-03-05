@@ -18,7 +18,7 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import sanitize from 'mongo-sanitize'; 
+import sanitize from 'mongo-sanitize';
 
 import User from '../models/User';
 import logger from '../utils/logger';
@@ -60,11 +60,11 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		if (deletedUserId === req.user!.id){
+		if (deletedUserId === req.user!.id) {
 			error('You cannot delete yourself.');
 		} else {
 			try {
-				await User.deleteOne({_id: sanitize(deletedUserId)});
+				await User.deleteOne({ _id: sanitize(deletedUserId) });
 				succeed('User deleted.');
 			} catch (err) {
 				error('Username did not exist');

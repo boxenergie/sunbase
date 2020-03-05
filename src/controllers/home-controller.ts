@@ -29,7 +29,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			SUM("consumption") AS consumption,
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"`
-		, { deleteTimestamp: true });
+			, { deleteTimestamp: true });
 
 		const userResults = await InfluxHelper.query(
 			`SELECT SUM("production") AS production,
@@ -37,9 +37,9 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			SUM("surplus") AS surplus
 			FROM "EnergyRecord"
 			WHERE created_by = '${req.user?.id}'`
-		, { deleteTimestamp: true });
+			, { deleteTimestamp: true });
 
-		res.render("home-page", { 
+		res.render("home-page", {
 			globalData: globalResults.rows[0],
 			userData: userResults.rows[0],
 			user: req.user,

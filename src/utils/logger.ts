@@ -33,8 +33,8 @@ const logger = winston.createLogger({
 		// - Write to all logs with level `info` and below to `combined.log`
 		// - Write all logs error (and below) to `error.log`.
 		//
-		new DailyRotateFile({ 
-			filename: './logs/%DATE%-combined.log' 
+		new DailyRotateFile({
+			filename: './logs/%DATE%-combined.log'
 		}),
 		new DailyRotateFile({
 			filename: './logs/%DATE%-error.log',
@@ -52,7 +52,7 @@ if (process.env.NODE_ENV !== 'production') {
 		new winston.transports.Console({
 			format: winston.format.combine(
 				winston.format.colorize({
-					level:true,
+					level: true,
 				}),
 				logFormat
 			),
