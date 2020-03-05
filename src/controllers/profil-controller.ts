@@ -44,6 +44,9 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			errorMsg = 'Wrong password';
 		
 		try {
+			if (errorMsg){
+				throw errorMsg;
+			}
 			req.user!.username = req.body.new_username;
 			await req.user!.save();
 
