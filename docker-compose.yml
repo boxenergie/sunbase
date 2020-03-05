@@ -2,12 +2,15 @@ version: '2.1'
 
 services:
   sunbase:
+    links: 
+      - sunbase_influxdb
+      - sunbase_mongodb
     depends_on: 
       - sunbase_influxdb
       - sunbase_mongodb
     build:
       context: .
-      dockerfile: ./Docker/Website/Dockerfile
+      dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
     ports:
