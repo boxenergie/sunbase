@@ -18,10 +18,12 @@
  */
 
 import bcrypt from 'bcrypt';
-import { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
 import { Model } from 'models';
 
+import { permissionSchema, isPermissionType } from './Permission';
 import MongoClient from '../db/mongodb';
+import logger from '../utils/logger';
 
 export interface UserDocument extends Model.User, Document {
 	/**
@@ -30,27 +32,122 @@ export interface UserDocument extends Model.User, Document {
 	 * @param password being the non-hashed password.
 	 */
 	comparePassword(password: string): boolean;
+
+	/**
+	 * Grants a permission to a user
+	 * @param user the user to grant the permission to
+	 * @param type the type of permission to grant
+	 */
+	grantPermissionTo(user: UserDocument, type: Model.Permission.Type): Promise<unknown>;
+
+	/**
+	 * Revokes a permission from a user
+	 * @param user the user to revoke the permission from
+	 * @param type the type of permission to revoke
+	 */
+	revokePermissionFrom(user: UserDocument, type: Model.Permission.Type): Promise<unknown>;
 }
 
 const userSchema = new Schema<UserDocument>({
 	username: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
-	role: { type: String, required: true, default: 'user' }
+	role: { type: String, required: true, default: 'user' },
+	permissions: permissionSchema
 });
 
 userSchema.methods.comparePassword = function(password: string) {
 	return bcrypt.compareSync(password, this.password);
 }
 
+userSchema.methods.grantPermissionTo = function(user, permissionType) {
+	if (isPermissionType(permissionType)) {
+		const granting = new Set(this.permissions.granting.get(user.id));
+		granting.add(permissionType);
+		this.permissions.granting.set(user.id, [...granting]);
+	
+		const granted = new Set(user.permissions.granted.get(this.id));
+		granted.add(permissionType);
+		user.permissions.granted.set(this.id, [...granting]);
+		return Promise.all([this.save(), user.save()]);
+	}
+	return Promise.resolve();
+}
+
+userSchema.methods.revokePermissionFrom = function(user, permissionType) {
+	if (isPermissionType(permissionType)) {
+		removePermRef(this.permissions.granting, user.id, permissionType);
+		removePermRef(user.permissions.granted, this.id, permissionType);
+		return Promise.all([this.save(), user.save()]);
+	}
+	return Promise.resolve();
+}
+
 userSchema.pre('save', function(next) {
-	// If the user is not being created or changed, we skip over the hashing part
-	if(!this.isModified('password')) {
-		return next();
+	const self = this as UserDocument;
+
+	// If the user is being created or changed, we hash the password
+    if(self.isModified('password')) {
+		self.password = bcrypt.hashSync(self.password, 10);
 	}
 	
-	// @ts-ignore
-	this.password = bcrypt.hashSync(this.password, 10);
+    next();
+});
+
+userSchema.pre('remove', async function(next) {
+	const self = this as UserDocument;
+	try {
+		await removeAllPermRefs(self, p => p.granted, p => p.granting);
+		await removeAllPermRefs(self, p => p.granting, p => p.granted);
+	} catch (err) {
+		logger.error(`Failed to remove references to a deleted user: ${err.message}`);
+	}
+
 	next();
 });
 
-export default MongoClient.model<UserDocument>('User', userSchema);
+/**
+ * Removes references to a user in a permission row
+ * @param permRow the permission row being updated
+ * @param referencedId a user ID to remove from the permission data
+ * @param permissionType the permission type to remove
+ */
+function removePermRef(
+	permRow: Model.Permission.Row,
+	referencedId: string, 
+	permissionType: Model.Permission.Type,
+) {
+	const permTypes = permRow.get(referencedId);
+	if (permTypes) {
+		let i = permTypes.indexOf(permissionType);
+		// In case of multiple elements in the array (bug or manual edit), remove all
+		while (i >= 0) {
+			permTypes.splice(i, 1);
+			i = permTypes.indexOf(permissionType);
+		}
+		if (permTypes.length > 0) {
+			permRow.set(referencedId, permTypes);
+		} else {
+			permRow.delete(referencedId);
+		}
+	}
+}
+
+function removeAllPermRefs(
+	self: UserDocument, 
+	selfRowGetter: (data: Model.Permission.Data) => Model.Permission.Row, 
+	otherRowGetter: (data: Model.Permission.Data) => Model.Permission.Row
+): Promise<void> {
+	// promise waiting for the iteration to end
+	return new Promise((resolve, reject) => {
+		// Iterate over all referenced users
+		const cursor = User.find({ _id: { $in: [...selfRowGetter(self.permissions).keys()].map(Types.ObjectId) } }).cursor();
+		cursor.on('data', function (user: UserDocument) {
+			otherRowGetter(user.permissions).delete(self.id);
+		});
+		cursor.on('close', resolve);
+		cursor.on('error', reject);
+	});
+}
+
+const User = MongoClient.model<UserDocument>('User', userSchema);
+export default User;

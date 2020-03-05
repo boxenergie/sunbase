@@ -36,7 +36,60 @@
 		<label for="new_pwd_confirm">Confirm new password:&nbsp;</label>
 		<input type="password" name="new_pwd_confirm" id="new_pwd_confirm">
 		<input type="submit" value="submit">
-    </form>
+	</form>
+	
+	<h5>Permissions</h5>
+	<form action="/profil/request_permissions/" method="POST">
+		<input type="hidden" name="_csrf" value="{{csrfToken}}">
+		<fieldset>
+			<legend>Permissions that were granted to you:</legend>
+			<div>
+				{{foreach(options.permissions.granted)}}
+				<b>{{@key}}</b>: {{each(@this)}}{{@this}}{{/each}}
+				{{/foreach}}
+			</div>			
+			<!--
+			<fieldset>
+				<legend>Request a permission grant: </legend>
+				<label for="requested-permission">Request the permission to:</label>
+				<select name="permission" id="requested-permission">
+					<option value="read">Read User Data</option>
+				</select>
+				<label for="grantor">from the user:</label>
+				<input type="text" name="grantor" id="grantor">
+				<br/>
+				<input type="submit" value="Submit">
+			</fieldset>
+			-->
+		</fieldset>
+	</form>
+	<form action="/profil/update_permissions/" method="POST">
+		<input type="hidden" name="_csrf" value="{{csrfToken}}">
+		<fieldset>
+			<legend>Permissions that you grant to other people:</legend>
+			<ul>
+				{{foreach(options.permissions.granting)}}
+					<li>
+						<b>{{@key}}</b>: 
+						{{each(@this)}} {{@this}} 
+							<a href="?rm-perm={{@this.id}}"><button>Revoke</button></a>
+						{{/each}}
+					</li>
+				{{/foreach}}
+			</ul>
+			<fieldset>
+				<legend>Grant a permission to someone:</legend>
+				<label for="granted-permission">Grant the permission to:</label>
+				<select name="permission" id="granted-permission">
+					<option value="read">Read My Data</option>
+				</select>
+				<label for="grantee">to the user:</label>
+				<input type="text" name="grantee" id="grantee">
+				<br/>
+				<input type="submit" value="Submit">
+			</fieldset>
+		</fieldset>
+	</form>
     
     <a href="/"><button>Home</button></a>
 </body>

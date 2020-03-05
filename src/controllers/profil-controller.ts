@@ -18,18 +18,23 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
+import { Types } from 'mongoose';
 
 import logger from '../utils/logger';
+import User, { UserDocument } from '../models/User';
 
-export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
+export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 	try {
+		const permissions = await req.user!.permissions.resolveForDisplay();
+
 		res.render('profil-page', {
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
+			permissions,
 		});
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
