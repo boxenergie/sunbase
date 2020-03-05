@@ -35,7 +35,7 @@ export function renderLoginPage(req: Request, res: Response, next: NextFunction)
 
 export function logOut(req: Request, res: Response, next: NextFunction) {
 	req.logout();
-	req.session?.destroy((err) => {
+	req.session?.destroy(err => {
         if (!err) {
             res.clearCookie('connect.sid', { path: '/' }).redirect('/');
         } else {

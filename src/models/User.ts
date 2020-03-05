@@ -24,6 +24,7 @@ import { Model } from 'models';
 import { permissionSchema, isPermissionType } from './Permission';
 import MongoClient from '../db/mongodb';
 import logger from '../utils/logger';
+import Session from '../models/Session';
 
 export interface UserDocument extends Model.User, Document {
 	/**
@@ -46,6 +47,10 @@ export interface UserDocument extends Model.User, Document {
 	 * @param type the type of permission to revoke
 	 */
 	revokePermissionFrom(user: UserDocument, type: Model.Permission.Type): Promise<unknown>;
+    /**
+     * Disconnect the user from all the devices.
+     */
+    disconnectFromAllDevices(cb: (err: any) => void): void;
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -55,7 +60,7 @@ const userSchema = new Schema<UserDocument>({
 	permissions: permissionSchema
 });
 
-userSchema.methods.comparePassword = function(password: string) {
+userSchema.methods.comparePassword = function(password) {
 	return bcrypt.compareSync(password, this.password);
 }
 
@@ -80,6 +85,10 @@ userSchema.methods.revokePermissionFrom = function(user, permissionType) {
 		return Promise.all([this.save(), user.save()]);
 	}
 	return Promise.resolve();
+}
+
+userSchema.methods.disconnectFromAllDevices = function(cb: (err: any) => void) {
+	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 }
 
 userSchema.pre('save', function(next) {

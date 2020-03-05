@@ -49,12 +49,15 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			errorMsg = 'Wrong password';
 		
 		try {
+			if (errorMsg){
+				throw errorMsg;
+			}
 			req.user!.username = req.body.new_username;
 			await req.user!.save();
 
 			req.flash('successMsg', 'Username changed.');
 			return res.redirect('/profil');
-		} catch (e) {
+		} catch {
 			req.flash('errorMsg', errorMsg ?? 'Username already exists.');
 			return res.redirect('/profil');
 		}
@@ -80,11 +83,17 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 			return res.redirect('/profil');
 		}
 
+		// Save password
 		req.user!.password = req.body.new_pwd;
 		await req.user!.save();
 
-		req.flash('successMsg', 'Password changed.');
-		res.redirect('/profil');
+		// Disconnect the user from all devices...
+		req.user!.disconnectFromAllDevices(err => {
+			// ...but not the one used to change the password
+			// ...this is handled automatically by express-session
+			req.flash('successMsg', 'Password changed.');
+			res.redirect('/profil');
+		});
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');
