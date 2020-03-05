@@ -23,7 +23,6 @@ import User from './models/User';
 
 app.on('ready', () => {
 	app.listen(process.env.PORT, async () => {
-		await User.create({username: 'admin', password: 'admin', role: 'admin'})
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
 });
