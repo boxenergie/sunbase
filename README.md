@@ -10,6 +10,8 @@ npm install -g typescript
 
 Then proceed to [install InfluxDB](#influxdb) and [install MongoDB](#mongodb).
 
+After this, *copy* and *rename* `.env.example` to `.env` and change the value as needed.
+
 Finally, use one of the [script](#scripts) below to start the server. Additionally, you can use [PM2](#pm2) to keep the server alive and restart it if a crash happens.
 
 ## Scripts
