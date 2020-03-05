@@ -121,18 +121,21 @@ export const getApiInfo = (_: Request, res: Response) => {
  * GET /api/v1/energy/
  * Get a sum of all production, consumption, surplus records
  */
-export const getAllEnergyRecords = (req: Request, res: Response) => {
-	InfluxHelper.query(
-		`SELECT SUM("production") AS "sum_production",
-		SUM("consumption") AS "sum_consumption",
-		SUM("surplus") AS "sum_surplus" 
-		FROM "EnergyRecord"`, { deleteTimestamp:true }
-	).then((results) => {
-		return res.api(results);
-	}).catch(err => {
+export const getAllEnergyRecords = async (req: Request, res: Response) => {
+	try {
+		const results = await InfluxHelper.query(
+			`SELECT SUM("production") AS "sum_production",
+			SUM("consumption") AS "sum_consumption",
+			SUM("surplus") AS "sum_surplus" 
+			FROM "EnergyRecord"`, { deleteTimestamp:true }
+		);
+
+		res.api(results);
+	}
+	catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
-	});
+	}
 }
 
 /**
@@ -143,51 +146,57 @@ export const getAllEnergyRecords = (req: Request, res: Response) => {
  *  - INTEGER consumption >= 0
  *  - STRING created_by
  */
-export const addEnergyRecord = (req: Request, res: Response) => {
+export const addEnergyRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	InfluxHelper.insert('EnergyRecord', [
-		{
-			fields: {
-				production: req.body.production,
-				consumption: req.body.consumption,
-				surplus: (req.body.production - req.body.consumption)
-		  	},
-			tags: { created_by: req.body.created_by },
-		}
-	]).then(() => {
+	try {
+		await InfluxHelper.insert('EnergyRecord', [
+			{
+				fields: {
+					production: req.body.production,
+					consumption: req.body.consumption,
+					surplus: (req.body.production - req.body.consumption)
+				  },
+				tags: { created_by: req.body.created_by },
+			}
+		]);
+
 		logger.debug('Successfully added Energy Record: ' +
 			`${req.body.production} | ${req.body.consumption} ` +
 			`by ${req.body.created_by}`
 		);
 
 		return res.api('Successfully added your Energy Record');
-	}).catch(err => {
+	}
+	catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
-	});
+	}
 };
 
 /**
  * GET /api/v1/wind/
  * Get a mean of all wind records
  */
-export const getAllWindRecords = (req: Request, res: Response) => {
-	InfluxHelper.query(
-		`SELECT 
-		MEAN("wind_speed"),
-		MEAN("production"),
-		MEAN("rotor_speed"),
-		MEAN("relative_orientation") 
-		FROM "WindRecord"`,  { deleteTimestamp:true }
-	).then((results) => {
-		return res.api(results);
-	}).catch(err => {
+export const getAllWindRecords = async (req: Request, res: Response) => {
+	try {
+		const results = await InfluxHelper.query(
+			`SELECT 
+			MEAN("wind_speed"),
+			MEAN("production"),
+			MEAN("rotor_speed"),
+			MEAN("relative_orientation") 
+			FROM "WindRecord"`,  { deleteTimestamp:true }
+		);
+
+		res.api(results);
+	}
+	catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
-	});
+	}
 }
 
 /**
@@ -200,22 +209,24 @@ export const getAllWindRecords = (req: Request, res: Response) => {
  *  - FLOAT relative_orientation
  *  - STRING created_by
  */
-export const addWindRecord = (req: Request, res: Response) => {
+export const addWindRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addWindRecordSchema).valid) {
 		return res.status(400).api('Missing one or more required fields or wrong type');
 	}
 	
-	InfluxHelper.insert('WindRecord', [
-		{
-			fields: {
-				wind_speed: req.body.wind_speed,
-				production: req.body.production,
-				rotor_speed: req.body.rotor_speed,
-				relative_orientation: req.body.relative_orientation
-		  	},
-			tags: { created_by: req.body.created_by },
-		}
-	]).then(() => {
+	try {
+		await InfluxHelper.insert('WindRecord', [
+			{
+				fields: {
+					wind_speed: req.body.wind_speed,
+					production: req.body.production,
+					rotor_speed: req.body.rotor_speed,
+					relative_orientation: req.body.relative_orientation
+				  },
+				tags: { created_by: req.body.created_by },
+			}
+		]);
+
 		logger.debug('Successfully added Wind Record: ' +
 			`${req.body.wind_speed} | ${req.body.production} | ` +
 			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
@@ -223,8 +234,9 @@ export const addWindRecord = (req: Request, res: Response) => {
 		);
 
 		return res.api('Successfully added your Wind Record');
-	}).catch(err => {
+	}
+	catch (err) {
 		logger.error(err.message);
 		return res.status(500).api('Something went wrong');
-	});
+	}
 };

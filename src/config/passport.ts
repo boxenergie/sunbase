@@ -28,9 +28,7 @@ export default (passport: PassportStatic) => {
 	});
 	  
 	passport.deserializeUser((id: number, done: Function) => {
-		User.findById(id, (err, user: UserDocument) => {
-			done(err, user);
-		});
+		User.findById(id, done);
 	});
 	  
 	passport.use(new LocalStrategy(
