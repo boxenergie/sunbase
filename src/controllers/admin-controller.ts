@@ -33,7 +33,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 
 	// Count number of users
 	const count = await User.countDocuments({});
-	
+
 	// If there are less users (excluding current user) than the limit, force page to 1
 	if ((count - 1) < elementPerPage)
 		page = 1;
@@ -56,23 +56,22 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
 	try {
-		let errorMsg = null;
 		const deletedUserId = req.query.deleted;
-		
-		if (deletedUserId === req.user!.id){
-			errorMsg = 'You cannot delete yourself.';
-		}      
+		const error = (msg: string) => req.flash('errorMsg', msg);
+		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		try {
-			if (errorMsg) throw errorMsg;
-			
-			await User.deleteOne({ _id: sanitize(deletedUserId) });
-			req.flash('successMsg', 'User deleted.');
-			return res.redirect('/admin');
-		} catch (err) {
-			req.flash('errorMsg', errorMsg ?? 'Username did not exist.');
-			return res.redirect('/admin');
+		if (deletedUserId === req.user!.id){
+			error('You cannot delete yourself.');
+		} else {
+			try {
+				await User.deleteOne({_id: sanitize(deletedUserId)});
+				succeed('User deleted.');
+			} catch (err) {
+				error('Username did not exist');
+			}
 		}
+
+		return res.redirect('/admin');
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');
