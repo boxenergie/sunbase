@@ -35,7 +35,7 @@ export interface UserDocument extends Model.User, Document {
     /**
      * Disconnect the user from all the devices.
      */
-    disconnectFromAllDevices(): void;
+    disconnectFromAllDevices(cb: (err: any) => void): void;
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -48,8 +48,8 @@ userSchema.methods.comparePassword = function(password) {
 	return bcrypt.compareSync(password, this.password);
 }
 
-userSchema.methods.disconnectFromAllDevices = async function() {
-    await Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } });
+userSchema.methods.disconnectFromAllDevices = function(cb: (err: any) => void) {
+	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 }
 
 userSchema.pre('save', function(next) {

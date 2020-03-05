@@ -80,13 +80,11 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		await req.user!.save();
 
 		// Disconnect the user from all devices...
-		req.user!.disconnectFromAllDevices();
-		// ...but not the one used to change the password
-		req.session!.reload(err => {
-			req.session!.save(err => {
-				req.flash('successMsg', 'Password changed.');
-				res.redirect('/profil');
-			})
+		req.user!.disconnectFromAllDevices(err => {
+			// ...but not the one used to change the password
+			// ...this is handled automatically by express-session
+			req.flash('successMsg', 'Password changed.');
+			res.redirect('/profil');
 		});
 	} catch (err) {
 		logger.error(err.message);
