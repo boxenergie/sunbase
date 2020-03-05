@@ -1,5 +1,5 @@
 /*
- * api.d.ts
+ * session.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,14 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserDocument } from '../models/User';
+import { Express } from 'express';
+import expressSession from 'express-session';
+const MongoStore = require('connect-mongo')(expressSession);
 
-declare global {
-	namespace Express {
-		interface Response {
-			api(body?: Object | string): void;
-		}
+import MongoClient from '../db/mongodb';
 
-		interface User extends UserDocument {}
+export default (app: Express) => {
+	const session = {
+		secret: process.env.SESSION_SECRET,
+		resave: true,
+		saveUninitialized: false,
+		cookie: { secure: false },
+		store: new MongoStore({ mongooseConnection: MongoClient })
 	}
+
+	if (app.get('env') === 'production') {
+		app.set('trust proxy', 1);
+		session.cookie.secure = true;
+	}
+
+	// @ts-ignore
+	app.use(expressSession(session));
 }

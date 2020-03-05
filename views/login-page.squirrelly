@@ -9,7 +9,11 @@
 	<script src='main.js'></script>
 </head>
 <body>
+	{{if(options.errorMsg != '')}}
+		<p class='errorMsg'>{{errorMsg}}</p>
+	{{/if}}
 	<form action="/login" method="post">
+		<input type="hidden" name="_csrf" value="{{csrfToken}}">
 		<label for="username">Username:&nbsp;</label>
 		<input type="text" id="username" name="username"><br/>
 		<label for="password">Password:&nbsp;</label>
