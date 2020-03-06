@@ -29,7 +29,7 @@ type OptionalRedirect = {
  * How to use :
  *  - app.get('/', isLoggedIn(), ...);
  *  - app.get('/', isLoggedIn({ failureRedirect: '/' }), ...);
- * @param failureRedirect Where to redirect the user if he isn't logged in, default is '/login'
+ * @param opt Where to redirect the user if he isn't logged in, default is '/login'
  */
 export function isLoggedIn(opt: OptionalRedirect = {}): RequestHandler {
 	return (req: Request, res: Response, next: NextFunction) => {
@@ -45,7 +45,7 @@ export function isLoggedIn(opt: OptionalRedirect = {}): RequestHandler {
  * How to use :
  *  - app.get('/', isNotLoggedIn(), ...);
  *  - app.get('/', isNotLoggedIn({ failureRedirect: '/' }), ...);
- * @param failureRedirect Where to redirect the user if he is logged in, default is '/'
+ * @param opt Where to redirect the user if he is logged in, default is '/'
  */
 export function isNotLoggedIn(opt: OptionalRedirect = {}): RequestHandler {
 	return (req: Request, res: Response, next: NextFunction) => {
@@ -61,7 +61,7 @@ export function isNotLoggedIn(opt: OptionalRedirect = {}): RequestHandler {
  * How to use :
  *  - app.get('/', isAdmin(), ...);
  *  - app.get('/', isAdmin({ failureRedirect: '/' }), ...);
- * @param failureRedirect Where to redirect the user if he isn't admin, default is '/login'
+ * @param opt Where to redirect the user if he isn't admin, default is '/login'
  */
 export function isAdmin(opt: OptionalRedirect = {}): RequestHandler {
 	return (req: Request, res: Response, next: NextFunction) => {

@@ -41,26 +41,25 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 
 export async function changeUsername(req: Request, res: Response, next: NextFunction) {
 	try {
-		let errorMsg = null;
+		const error = (msg: string) => req.flash('errorMsg', msg);
+		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		if (!req.body.pwd || !req.body.new_username)
-			errorMsg = 'One or more fields were not provided.';
-		else if (!req.user?.comparePassword(req.body.pwd))
-			errorMsg = 'Wrong password';
-		
-		try {
-			if (errorMsg){
-				throw errorMsg;
+		if (!req.body.pwd || !req.body.new_username) {
+			error('One or more fields were not provided.');
+		} else if (!req.user?.comparePassword(req.body.pwd)) {
+			error('Wrong password');
+		} else {
+			try {
+				req.user!.username = req.body.new_username;
+				await req.user!.save();
+
+				succeed('Username changed.');
+			} catch {
+				error('Username already exists.');
 			}
-			req.user!.username = req.body.new_username;
-			await req.user!.save();
-
-			req.flash('successMsg', 'Username changed.');
-			return res.redirect('/profil');
-		} catch(err) {
-			req.flash('errorMsg', errorMsg ?? 'Username already exists.');
-			return res.redirect('/profil');
 		}
+		return res.redirect('/profil');
+
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');

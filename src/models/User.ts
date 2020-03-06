@@ -60,16 +60,16 @@ const userSchema = new Schema<UserDocument>({
 	permissions: permissionSchema
 });
 
-userSchema.methods.comparePassword = function(password) {
+userSchema.methods.comparePassword = function (password) {
 	return bcrypt.compareSync(password, this.password);
-}
+};
 
 userSchema.methods.grantPermissionTo = function(user, permissionType) {
 	if (isPermissionType(permissionType)) {
 		const granting = new Set(this.permissions.granting.get(user.id));
 		granting.add(permissionType);
 		this.permissions.granting.set(user.id, [...granting]);
-	
+
 		const granted = new Set(user.permissions.granted.get(this.id));
 		granted.add(permissionType);
 		user.permissions.granted.set(this.id, [...granting]);
@@ -89,17 +89,17 @@ userSchema.methods.revokePermissionFrom = function(user, permissionType) {
 
 userSchema.methods.disconnectFromAllDevices = function(cb: (err: any) => void) {
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
-}
+};
 
-userSchema.pre('save', function(next) {
-	const self = this as UserDocument;
-
-	// If the user is being created or changed, we hash the password
-    if(self.isModified('password')) {
-		self.password = bcrypt.hashSync(self.password, 10);
+userSchema.pre('save', function (next) {
+	// If the user is not being created or changed, we skip over the hashing part
+	let self = this as UserDocument;
+	if (!self.isModified('password')) {
+		return next();
 	}
-	
-    next();
+
+	self.password = bcrypt.hashSync(self.password, 10);
+	next();
 });
 
 userSchema.pre('remove', async function(next) {
@@ -122,7 +122,7 @@ userSchema.pre('remove', async function(next) {
  */
 function removePermRef(
 	permRow: Model.Permission.Row,
-	referencedId: string, 
+	referencedId: string,
 	permissionType: Model.Permission.Type,
 ) {
 	const permTypes = permRow.get(referencedId);
@@ -142,8 +142,8 @@ function removePermRef(
 }
 
 function removeAllPermRefs(
-	self: UserDocument, 
-	selfRowGetter: (data: Model.Permission.Data) => Model.Permission.Row, 
+	self: UserDocument,
+	selfRowGetter: (data: Model.Permission.Data) => Model.Permission.Row,
 	otherRowGetter: (data: Model.Permission.Data) => Model.Permission.Row
 ): Promise<void> {
 	// promise waiting for the iteration to end
