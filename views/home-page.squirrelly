@@ -38,10 +38,10 @@
 	{{if(!options.userData)}}
 		<p>No personal records</p>
 	{{#else}}
-		<canvas id="personnalChart" width="800" height="400"></canvas>
+		<canvas id="personalChart" width="800" height="400"></canvas>
 
 		<script>
-			const ctx = document.getElementById('personnalChart').getContext('2d');
+			const ctx = document.getElementById('personalChart').getContext('2d');
 			const labels = [{{foreach(options.userData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
 			const production = [{{userData.production}}];
 			const consumption = [{{userData.consumption}}];
