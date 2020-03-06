@@ -173,7 +173,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 
 		logger.debug('Successfully added Energy Record: ' +
 			`${req.body.production} | ${req.body.consumption} ` +
-			`by '${user?.username}' (${req.body.created_by})`
+			`by '${req.user?.username}' (${req.body.created_by})`
 		);
 
 		return res.api('Successfully added your Energy Record');
@@ -239,7 +239,7 @@ export const addWindRecord = async (req: Request, res: Response) => {
 		logger.debug('Successfully added Wind Record: ' +
 			`${req.body.wind_speed} | ${req.body.production} | ` +
 			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
-			`by '${user?.username}' (${req.body.created_by})`
+			`by '${req.user?.username}' (${req.body.created_by})`
 		);
 
 		return res.api('Successfully added your Wind Record');
