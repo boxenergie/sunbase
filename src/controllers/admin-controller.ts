@@ -28,7 +28,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 		return deleteUser(req, res, next);
 	}
 
-	const elementPerPage: number = Number(req.query.displayLimit) ?? 10;
+	const elementPerPage: number = Number(req.query.displayLimit) || 10;
 	let page: number = Number(req.query.page) ?? 1;
 
 	// Count number of users
