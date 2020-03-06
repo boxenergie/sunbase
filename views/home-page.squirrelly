@@ -17,7 +17,7 @@
 {{/if}}
 
 <h4>Global records</h4>
-{{if(!options.globalData)}}
+{{if(!options.globalData.production.length > 0)}}
 	<p>No global records</p>
 {{#else}}
 	<canvas id="globalChart" width="800" height="400"></canvas>
@@ -35,7 +35,7 @@
 
 {{if(options.user)}}
 	<h4>Personal records</h4>
-	{{if(!options.userData)}}
+	{{if(!options.userData.production.length > 0)}}
 		<p>No personal records</p>
 	{{#else}}
 		<canvas id="personalChart" width="800" height="400"></canvas>
