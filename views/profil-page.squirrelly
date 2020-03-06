@@ -68,11 +68,11 @@
 		<fieldset>
 			<legend>Permissions that you grant to other people:</legend>
 			<ul>
-				{{foreach(options.permissions.granting)}}
+				{{foreach(options.permissions.granting) granting}}
 					<li>
 						<b>{{@key}}</b>: 
 						{{each(@this)}} {{@this}} 
-							<a href="?rm-perm={{@this.id}}"><button>Revoke</button></a>
+							<a href="?rm-user={{@granting:key}}&rm-perm={{@this}}"><button>Revoke</button></a>
 						{{/each}}
 					</li>
 				{{/foreach}}
