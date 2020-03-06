@@ -35,6 +35,13 @@ export interface UserDocument extends Model.User, Document {
 	comparePassword(password: string): boolean;
 
 	/**
+	 * Returns true if this user was granted a permission of the given type by another user
+	 * @param grantedId the id of a user that may have granted a permission to this user
+	 * @param type the type of permission to check
+	 */
+	hasPermissionFrom(grantedId: string, type: Model.Permission.Type): boolean;
+
+	/**
 	 * Grants a permission to a user
 	 * @param user the user to grant the permission to
 	 * @param type the type of permission to grant
@@ -47,10 +54,11 @@ export interface UserDocument extends Model.User, Document {
 	 * @param type the type of permission to revoke
 	 */
 	revokePermissionFrom(user: UserDocument, type: Model.Permission.Type): Promise<unknown>;
-    /**
-     * Disconnect the user from all the devices.
-     */
-    disconnectFromAllDevices(cb: (err: any) => void): void;
+
+	/**
+	 * Disconnect the user from all the devices.
+	 */
+	disconnectFromAllDevices(cb: (err: any) => void): void;
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -64,7 +72,14 @@ userSchema.methods.comparePassword = function (password) {
 	return bcrypt.compareSync(password, this.password);
 };
 
-userSchema.methods.grantPermissionTo = function(user, permissionType) {
+userSchema.methods.hasPermissionFrom = function (granter: string, permissionType) {
+	if (isPermissionType(permissionType)) {
+		return (this.permissions.granted.get(granter)?.indexOf(permissionType) ?? -1) >= 0;
+	}
+	return false;
+};
+
+userSchema.methods.grantPermissionTo = function (user, permissionType) {
 	if (isPermissionType(permissionType)) {
 		const granting = new Set(this.permissions.granting.get(user.id));
 		granting.add(permissionType);
@@ -76,18 +91,18 @@ userSchema.methods.grantPermissionTo = function(user, permissionType) {
 		return Promise.all([this.save(), user.save()]);
 	}
 	return Promise.resolve();
-}
+};
 
-userSchema.methods.revokePermissionFrom = function(user, permissionType) {
+userSchema.methods.revokePermissionFrom = function (user, permissionType) {
 	if (isPermissionType(permissionType)) {
 		removePermRef(this.permissions.granting, user.id, permissionType);
 		removePermRef(user.permissions.granted, this.id, permissionType);
 		return Promise.all([this.save(), user.save()]);
 	}
 	return Promise.resolve();
-}
+};
 
-userSchema.methods.disconnectFromAllDevices = function(cb: (err: any) => void) {
+userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) {
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 };
 
@@ -102,7 +117,7 @@ userSchema.pre('save', function (next) {
 	next();
 });
 
-userSchema.pre('remove', async function(next) {
+userSchema.pre('remove', async function (next) {
 	const self = this as UserDocument;
 	try {
 		await removeAllPermRefs(self, p => p.granted, p => p.granting);
