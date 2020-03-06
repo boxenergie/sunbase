@@ -22,8 +22,14 @@ import {models, Types} from 'mongoose';
 
 import logger from '../utils/logger';
 import User, { UserDocument } from '../models/User';
+import sanitize from "@types/mongo-sanitize";
 
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
+
+	if (req.query.rmUser) {
+		logger.debug('remove perm');
+		return removePermission(req, res, next);
+	}
 	try {
 		const permissions = await req.user!.permissions.resolveForDisplay();
 
@@ -125,15 +131,40 @@ async function grantPermission(req: Request, res: Response, next: NextFunction) 
 	}
 }
 
-async function removePermission(req: Request, res: Response, next: NextFunction) {
+export async function removePermission(req: Request, res: Response, next: NextFunction) {
+	let errorMsg = null;
+	const deletedPermissionId = req.query.rmPerm;
+	logger.info(req.user!.permissions.granting);
+	logger.info(req.query.rmPerm);
+	logger.info(req.query.rmUser);
+	//const granteePermission = await req.user!.permissions
+/*
+	try {
+		if (errorMsg) {
+			req.flash('errorMsg', errorMsg);
+			return res.redirect('/profil');
+		} else {
 
+		}
+
+		await User.deleteOne({ _id: sanitize(deletedUserId) });
+		req.flash('successMsg', 'User deleted.');
+		return res.redirect('/admin');
+	} catch (err) {
+		req.flash('errorMsg', errorMsg ?? 'Username did not exist.');
+		return res.redirect('/admin');
+	}*/
 }
 
 export async function updatePermission(req: Request, res: Response, next: NextFunction) {
 	try {
-		if (req.query.rmPerm){
+		logger.debug(req.query.rmUser);
+		logger.debug(req.query.rmPerm);
+		if (req.query.rmUser){
+			logger.debug('remove perm');
 			return removePermission(req, res, next);
 		} else {
+			logger.debug('add perm');
 			return grantPermission(req, res, next);
 		}
 	} catch (err) {
