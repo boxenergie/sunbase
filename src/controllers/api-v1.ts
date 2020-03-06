@@ -67,6 +67,10 @@ const addWindRecordSchema = {
 		relative_orientation: {
 			type: 'number'
 		},
+		created_by: {
+			type: 'string',
+			pattern: /^[0-9a-fA-F]{24}$/,
+		},
 		username: {
 			type: 'string'
 		},
