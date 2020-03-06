@@ -18,18 +18,28 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
+import {models, Types} from 'mongoose';
 
 import logger from '../utils/logger';
+import User, { UserDocument } from '../models/User';
+import sanitize from "mongo-sanitize";
 
-export function renderProfilPage(req: Request, res: Response, next: NextFunction) {
+export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
+
+	if (req.query.rmUser) {
+		return removePermission(req, res, next);
+	}
 	try {
+		const permissions = await req.user!.permissions.resolveForDisplay();
+
 		res.render('profil-page', {
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
+			permissions,
 		});
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
@@ -49,7 +59,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 				await req.user!.save();
 
 				succeed('Username changed.');
-			} catch {
+			} catch (err) {
 				error('Username already exists.');
 			}
 		}
@@ -93,3 +103,56 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		res.status(500).send('Something went wrong');
 	}
 }
+
+export async function grantPermission(req: Request, res: Response, next: NextFunction) {
+	try{
+		let  errorMsg = null;
+
+		if (!req.body.grantee)
+			errorMsg = 'Please enter a username';
+		let grantee = await User.findOne({ username: req.body.grantee });
+		if (!grantee)
+			errorMsg = 'Unknown user';
+		else if(grantee.id === req.user!.id)
+			errorMsg = 'You cannot grant a permission to yourself.';
+		if (errorMsg) {
+			req.flash('errorMsg', errorMsg);
+		} else {
+			req.user!.grantPermissionTo(grantee!, req.body.permission);
+			req.flash('successMsg', 'Permission granted.');
+		}
+		return res.redirect('/profil');
+
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Someting went wrong');
+	}
+}
+
+export async function removePermission(req: Request, res: Response, next: NextFunction) {
+	try {
+		let errorMsg = null;
+		const deletedPermissionType = req.query.rmPerm;
+		const deletedPermissionGrantee = req.query.rmUser;
+		const deletedPermissionUser = await User.findOne({username: deletedPermissionGrantee});
+
+		if (!deletedPermissionType || !deletedPermissionGrantee) {
+			errorMsg = 'Error while deleting permission:' + deletedPermissionType + ' to:' + deletedPermissionGrantee;
+		}
+		if (!deletedPermissionUser)
+			errorMsg = 'Unknow user: ' + deletedPermissionGrantee;
+
+		if (errorMsg) {
+			req.flash('errorMsg', errorMsg);
+		} else {
+			req.user!.revokePermissionFrom(deletedPermissionUser!, deletedPermissionType);
+			req.flash('successMsg', 'Remove permission ' + deletedPermissionType + ' to ' + deletedPermissionGrantee);
+		}
+		return res.redirect('/profil');
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Someting went wrong');
+	}
+}
+
+

@@ -22,5 +22,27 @@ export namespace Model {
 		username: string;
 		password: string;
 		role: string;
+		permissions: Permission.Data;
+	}
+
+	namespace Permission {
+		enum Type {
+			// Must add to Permission$isPermissionType too
+			READ = "read"
+		}
+	
+		type Row = Map<string, Type[]>;
+		type ResolvedRow = { [k: string]: string[] };
+		type ResolvedPermissionData = {
+			granted: ResolvedRow;
+			granting: ResolvedRow;
+		};
+		
+		interface Data {
+			granting: Row;
+			granted: Row;
+	
+			resolveForDisplay(): Promise<ResolvedPermissionData>;
+		}
 	}
 }
