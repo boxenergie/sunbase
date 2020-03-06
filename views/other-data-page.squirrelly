@@ -22,7 +22,11 @@
 
 		<script>
 			const personalCtx = document.getElementById('personalChart').getContext('2d');
-			const personalLabels = [{{foreach(options.userData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
+			const personalLabels = [
+				{{foreach(options.userData.time)}}
+					new Date('{{@this}}').toLocaleTimeString("fr-FR").slice(0, 5), 
+				{{/foreach}}
+			];
 			const personalProduction = [{{userData.production}}];
 			const personalConsumption = [{{userData.consumption}}];
 			const personalSurplus = [{{userData.surplus}}];
