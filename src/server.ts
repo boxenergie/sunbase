@@ -19,9 +19,12 @@
 
 import app from './app';
 import logger from './utils/logger';
+import User from "./models/User";
 
 app.on('ready', () => {
-	app.listen(process.env.PORT, () => {
+	app.listen(process.env.PORT, async () => {
+		//await User.deleteMany({});
+		//await User.create({username: 'user', password: 'user', role: 'admin' , permissions: {granting: new Map(), granted: new Map()}});
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
 });

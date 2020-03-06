@@ -117,6 +117,7 @@ userSchema.methods.grantPermissionTo = function(user, permissionType) {
 		user.permissions.granted.set(this.id, [...granting]);
 		return Promise.all([this.save(), user.save()]);
 	}
+	logger.info('Pas une perm');
 	return Promise.resolve();
 }
 

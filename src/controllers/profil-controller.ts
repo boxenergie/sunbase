@@ -18,7 +18,7 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import { Types } from 'mongoose';
+import {models, Types} from 'mongoose';
 
 import logger from '../utils/logger';
 import User, { UserDocument } from '../models/User';
@@ -96,5 +96,48 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');
+	}
+}
+
+async function grantPermission(req: Request, res: Response, next: NextFunction) {
+	try{
+		let  errorMsg = null;
+
+		if (!req.body.grantee)
+			errorMsg = 'Please enter a username';
+		let grantee = await User.findOne({ username: req.body.grantee });
+		if (!grantee)
+			errorMsg = 'Unknown user';
+		else if(grantee.id === req.user!.id)
+			errorMsg = 'You cannot grant a permission to yourself.';
+		if (errorMsg) {
+			req.flash('errorMsg', errorMsg);
+			return res.redirect('/profil');
+		} else {
+			req.user!.grantPermissionTo(grantee!, req.body.permission);
+			req.flash('successMsg', 'Permission granted.');
+			return res.redirect('/profil');
+
+		}
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Someting went wrong');
+	}
+}
+
+async function removePermission(req: Request, res: Response, next: NextFunction) {
+
+}
+
+export async function updatePermission(req: Request, res: Response, next: NextFunction) {
+	try {
+		if (req.query.rmPerm){
+			return removePermission(req, res, next);
+		} else {
+			return grantPermission(req, res, next);
+		}
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Someting went wrong');
 	}
 }

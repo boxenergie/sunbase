@@ -110,6 +110,7 @@ appRouter.get('/logout', isLoggedIn(), authController.logOut);
 appRouter.get('/profil', isLoggedIn(), profilController.renderProfilPage);
 appRouter.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
 appRouter.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
+appRouter.post('/profil/update_permissions/', isLoggedIn(), profilController.updatePermission);
 
 /**
  * Admin routes

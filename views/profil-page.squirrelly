@@ -79,8 +79,8 @@
 			</ul>
 			<fieldset>
 				<legend>Grant a permission to someone:</legend>
-				<label for="granted-permission">Grant the permission to:</label>
-				<select name="permission" id="granted-permission">
+				<label for="grantedPermission">Grant the permission to:</label>
+				<select name="permission" id="grantedPermission">
 					<option value="read">Read My Data</option>
 				</select>
 				<label for="grantee">to the user:</label>

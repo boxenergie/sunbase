@@ -1,6 +1,7 @@
 import { Schema, Types } from 'mongoose';
 import User, { UserDocument } from '../models/User';
 import { Model } from 'models';
+import logger from "../utils/logger";
 
 
 export interface PermissionDocument extends Model.Permission.Data, Document { }
