@@ -22,7 +22,7 @@ import {models, Types} from 'mongoose';
 
 import logger from '../utils/logger';
 import User, { UserDocument } from '../models/User';
-import sanitize from "@types/mongo-sanitize";
+import sanitize from "mongo-sanitize";
 
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 
