@@ -54,7 +54,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 				await req.user!.save();
 
 				succeed('Username changed.');
-			} catch {
+			} catch (err) {
 				error('Username already exists.');
 			}
 		}
