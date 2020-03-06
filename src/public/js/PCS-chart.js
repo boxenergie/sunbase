@@ -22,23 +22,25 @@ function createChart(ctx, labels, production, consumption, surplus) {
 		data: {
 			labels: labels,
 			datasets: [{
+				fill: false,
 				label: label.production,
 				data: production,
 				backgroundColor: backgroundColor.production,
-				borderColor: borderColor.borderColor,
-				borderWidth: 1,
+				borderColor: borderColor.production,
+				borderWidth: 3,
 			}, {
+				fill: false,
 				label: label.consumption,
 				data: consumption,
 				backgroundColor: backgroundColor.consumption,
 				borderColor: borderColor.consumption,
-				borderWidth: 1,
+				borderWidth: 3,
 			}, {
 				label: label.surplus,
 				data: surplus,
 				backgroundColor: backgroundColor.surplus,
 				borderColor: borderColor.surplus,
-				borderWidth: 1,
+				borderWidth: 3,
 			}],
 		},
 		options: {
