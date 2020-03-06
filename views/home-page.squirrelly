@@ -6,7 +6,8 @@
 	<title>SunShare</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
-	<script src='main.js'></script>
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js'></script>
+	<script src='/js/PCS-chart.js'></script>
 </head>
 <body>
 <h1>SunShare Board</h1>
@@ -19,9 +20,17 @@
 {{if(!options.globalData)}}
 	<p>No global records</p>
 {{#else}}
-	<table>
-		{{foreach(options.globalData)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
-	</table>
+	<canvas id="globalChart" width="800" height="400"></canvas>
+
+	<script>
+		const ctx = document.getElementById('globalChart').getContext('2d');
+		const labels = [{{foreach(options.globalData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
+		const production = [{{globalData.production}}];
+		const consumption = [{{globalData.consumption}}];
+		const surplus = [{{globalData.surplus}}];
+		
+		createChart(ctx, labels, production, consumption, surplus);
+	</script>
 {{/if}}
 
 {{if(options.user)}}
@@ -29,9 +38,17 @@
 	{{if(!options.userData)}}
 		<p>No personal records</p>
 	{{#else}}
-		<table>
-			{{foreach(options.userData)}}<tr><td>{{@key}}</td><td>{{@this}}</td></tr>{{/foreach}}
-		</table>
+		<canvas id="personnalChart" width="800" height="400"></canvas>
+
+		<script>
+			const ctx = document.getElementById('personnalChart').getContext('2d');
+			const labels = [{{foreach(options.userData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
+			const production = [{{userData.production}}];
+			const consumption = [{{userData.consumption}}];
+			const surplus = [{{userData.surplus}}];
+			
+			createChart(ctx, labels, production, consumption, surplus);
+		</script>
 	{{/if}}
 {{/if}}
 

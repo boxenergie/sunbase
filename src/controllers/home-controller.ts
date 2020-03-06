@@ -25,23 +25,36 @@ import logger from '../utils/logger';
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {
 		const globalResults = await InfluxHelper.query(
-			`SELECT SUM("production") AS production,
-			SUM("consumption") AS consumption,
-			SUM("surplus") AS surplus
-			FROM "EnergyRecord"`
-			, { deleteTimestamp: true });
+			`SELECT SUM(production) AS production,
+			SUM(consumption) AS consumption,
+			SUM(surplus) AS surplus
+			FROM "EnergyRecord"
+			WHERE time >= now() - 30d AND time <= now()
+			GROUP BY time(15m) fill(none)`
+		);
 
 		const userResults = await InfluxHelper.query(
-			`SELECT SUM("production") AS production,
-			SUM("consumption") AS consumption,
-			SUM("surplus") AS surplus
+			`SELECT SUM(production) AS production,
+			SUM(consumption) AS consumption,
+			SUM(surplus) AS surplus
 			FROM "EnergyRecord"
-			WHERE created_by = '${req.user?.id}'`
-			, { deleteTimestamp: true });
+			WHERE created_by = '${req.user?.id}' AND time >= now() - 30d AND time <= now()
+			GROUP BY time(15m) fill(none)`
+		);
 
 		res.render("home-page", {
-			globalData: globalResults.rows[0],
-			userData: userResults.rows[0],
+			globalData: {
+				time: globalResults.rows.map((r: any) => r.time.toNanoISOString()),
+				production: globalResults.rows.map((r: any) => r.production),
+				consumption: globalResults.rows.map((r: any) => r.consumption),
+				surplus: globalResults.rows.map((r: any) => r.surplus),
+			},
+			userData: {
+				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
+				production: userResults.rows.map((r: any) => r.production),
+				consumption: userResults.rows.map((r: any) => r.consumption),
+				surplus: userResults.rows.map((r: any) => r.surplus),
+			},
 			user: req.user,
 		});
 	} catch (err) {
