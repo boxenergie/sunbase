@@ -27,7 +27,6 @@ import sanitize from "@types/mongo-sanitize";
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 
 	if (req.query.rmUser) {
-		logger.debug('remove perm');
 		return removePermission(req, res, next);
 	}
 	try {
@@ -105,7 +104,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 	}
 }
 
-async function grantPermission(req: Request, res: Response, next: NextFunction) {
+export async function grantPermission(req: Request, res: Response, next: NextFunction) {
 	try{
 		let  errorMsg = null;
 
@@ -118,13 +117,12 @@ async function grantPermission(req: Request, res: Response, next: NextFunction) 
 			errorMsg = 'You cannot grant a permission to yourself.';
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);
-			return res.redirect('/profil');
 		} else {
 			req.user!.grantPermissionTo(grantee!, req.body.permission);
 			req.flash('successMsg', 'Permission granted.');
-			return res.redirect('/profil');
-
 		}
+		return res.redirect('/profil');
+
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Someting went wrong');
@@ -132,43 +130,29 @@ async function grantPermission(req: Request, res: Response, next: NextFunction) 
 }
 
 export async function removePermission(req: Request, res: Response, next: NextFunction) {
-	let errorMsg = null;
-	const deletedPermissionId = req.query.rmPerm;
-	logger.info(req.user!.permissions.granting);
-	logger.info(req.query.rmPerm);
-	logger.info(req.query.rmUser);
-	//const granteePermission = await req.user!.permissions
-/*
 	try {
+		let errorMsg = null;
+		const deletedPermissionType = req.query.rmPerm;
+		const deletedPermissionGrantee = req.query.rmUser;
+		const deletedPermissionUser = await User.findOne({username: deletedPermissionGrantee});
+
+		if (!deletedPermissionType || !deletedPermissionGrantee) {
+			errorMsg = 'Error while deleting permission:' + deletedPermissionType + ' to:' + deletedPermissionGrantee;
+		}
+		if (!deletedPermissionUser)
+			errorMsg = 'Unknow user: ' + deletedPermissionGrantee;
+
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);
-			return res.redirect('/profil');
 		} else {
-
+			req.user!.revokePermissionFrom(deletedPermissionUser!, deletedPermissionType);
+			req.flash('successMsg', 'Remove permission ' + deletedPermissionType + ' to ' + deletedPermissionGrantee);
 		}
-
-		await User.deleteOne({ _id: sanitize(deletedUserId) });
-		req.flash('successMsg', 'User deleted.');
-		return res.redirect('/admin');
-	} catch (err) {
-		req.flash('errorMsg', errorMsg ?? 'Username did not exist.');
-		return res.redirect('/admin');
-	}*/
-}
-
-export async function updatePermission(req: Request, res: Response, next: NextFunction) {
-	try {
-		logger.debug(req.query.rmUser);
-		logger.debug(req.query.rmPerm);
-		if (req.query.rmUser){
-			logger.debug('remove perm');
-			return removePermission(req, res, next);
-		} else {
-			logger.debug('add perm');
-			return grantPermission(req, res, next);
-		}
+		return res.redirect('/profil');
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Someting went wrong');
 	}
 }
+
+
