@@ -44,8 +44,10 @@
 		<fieldset>
 			<legend>Permissions that were granted to you:</legend>
 			<div>
-				{{foreach(options.permissions.granted)}}
-				<b>{{@key}}</b>: {{each(@this)}}{{@this}}{{/each}}
+				{{foreach(options.permissions.granted) granted}}
+				<b>{{@key}}</b>: {{each(@this)}}{{@this}}
+					<a href="/display-user?showUser={{@granted:key}}"><button type="button">Watch</button></a>
+				{{/each}}
 				{{/foreach}}
 			</div>
 			<!--

@@ -39,6 +39,7 @@ import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
+import * as otherDataController from './controllers/other-data-controller';
 
 // Create Express server
 const app = express();
@@ -91,6 +92,7 @@ import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
  * App routes
  */
 appRouter.get('/', homeController.renderHomePage);
+appRouter.get('/display-user', isLoggedIn(), otherDataController.renderOtherDataPage);
 
 /**
  * Auth routes
