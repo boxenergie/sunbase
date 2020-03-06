@@ -133,6 +133,9 @@ userSchema.methods.revokePermissionFrom = function(user, permissionType) {
 userSchema.pre('save', function(next) {
 	const self = this as UserDocument;
 
+	if (!self.permissions) {
+		self.permissions = {granted: new Map(), granting: new Map(), resolveForDisplay: permissionSchema.methods.resolveForDisplay};
+	}
 	// If the user is being created or changed, we hash the password
     if(self.isModified('password')) {
 		self.password = bcrypt.hashSync(self.password, 10);
