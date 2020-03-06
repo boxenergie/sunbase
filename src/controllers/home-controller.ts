@@ -29,7 +29,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
 			FROM "EnergyRecord"
-			WHERE time >= now() - 30d AND time <= now()
+			WHERE time >= now() - 1d AND time <= now()
 			GROUP BY time(15m) fill(none)`
 		);
 
@@ -38,7 +38,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
 			FROM "EnergyRecord"
-			WHERE created_by = '${req.user?.id}' AND time >= now() - 30d AND time <= now()
+			WHERE created_by = '${req.user?.id}' AND time >= now() - 1d AND time <= now()
 			GROUP BY time(15m) fill(none)`
 		);
 
