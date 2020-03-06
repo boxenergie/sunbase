@@ -23,13 +23,19 @@
 	<canvas id="globalChart" width="800" height="400"></canvas>
 
 	<script>
-		const ctx = document.getElementById('globalChart').getContext('2d');
-		const labels = [{{foreach(options.globalData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
-		const production = [{{globalData.production}}];
-		const consumption = [{{globalData.consumption}}];
-		const surplus = [{{globalData.surplus}}];
+		const globalCtx = document.getElementById('globalChart').getContext('2d');
+		const globalLabels = [{{foreach(options.globalData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
+		const globalProduction = [{{globalData.production}}];
+		const globalConsumption = [{{globalData.consumption}}];
+		const globalSurplus = [{{globalData.surplus}}];
 		
-		createChart(ctx, labels, production, consumption, surplus);
+		createChart(
+			globalCtx,
+			globalLabels,
+			globalProduction,
+			globalConsumption,
+			globalSurplus
+		);
 	</script>
 {{/if}}
 
@@ -41,13 +47,19 @@
 		<canvas id="personalChart" width="800" height="400"></canvas>
 
 		<script>
-			const ctx = document.getElementById('personalChart').getContext('2d');
-			const labels = [{{foreach(options.userData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
-			const production = [{{userData.production}}];
-			const consumption = [{{userData.consumption}}];
-			const surplus = [{{userData.surplus}}];
-			
-			createChart(ctx, labels, production, consumption, surplus);
+			const personalCtx = document.getElementById('personalChart').getContext('2d');
+			const personalLabels = [{{foreach(options.userData.time)}} '{{@this}}'.slice(11, 16), {{/foreach}}];
+			const personalProduction = [{{userData.production}}];
+			const personalConsumption = [{{userData.consumption}}];
+			const personalSurplus = [{{userData.surplus}}];
+
+			createChart(
+				personalCtx,
+				personalLabels,
+				personalProduction,
+				personalConsumption,
+				personalSurplus
+			);
 		</script>
 	{{/if}}
 {{/if}}
