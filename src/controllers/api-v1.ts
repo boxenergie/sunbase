@@ -22,6 +22,7 @@ import { Validator } from 'jsonschema';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
+import User from '../models/User';
 
 const validator = new Validator();
 const addEnergyRecordSchema = {
@@ -36,7 +37,8 @@ const addEnergyRecordSchema = {
 			minimum: 0
 		},
 		created_by: {
-			type: 'string'
+			type: 'string',
+			pattern: /^[0-9a-fA-F]{24}$/,
 		},
 		username: {
 			type: 'string'
@@ -151,6 +153,9 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 	}
 
 	try {
+		// Check if specified user exists
+		const user = await User.findById(req.body.created_by).orFail();
+
 		await InfluxHelper.insert('EnergyRecord', [
 			{
 				fields: {
@@ -164,7 +169,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 
 		logger.debug('Successfully added Energy Record: ' +
 			`${req.body.production} | ${req.body.consumption} ` +
-			`by ${req.body.created_by}`
+			`by '${user?.username}' (${req.body.created_by})`
 		);
 
 		return res.api('Successfully added your Energy Record');
@@ -212,6 +217,9 @@ export const addWindRecord = async (req: Request, res: Response) => {
 	}
 
 	try {
+		// Check if specified user exists
+		const user = await User.findOne({ _id: req.body.created_by }).orFail();
+
 		await InfluxHelper.insert('WindRecord', [
 			{
 				fields: {
@@ -227,7 +235,7 @@ export const addWindRecord = async (req: Request, res: Response) => {
 		logger.debug('Successfully added Wind Record: ' +
 			`${req.body.wind_speed} | ${req.body.production} | ` +
 			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
-			`by ${req.body.created_by}`
+			`by '${user?.username}' (${req.body.created_by})`
 		);
 
 		return res.api('Successfully added your Wind Record');
