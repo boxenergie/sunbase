@@ -72,7 +72,7 @@
 					<li>
 						<b>{{@key}}</b>:
 						{{each(@this)}} {{@this}}
-							<a href="?rmUser={{@granting:key}}&rmPerm={{@this}}"><button>Revoke</button></a>
+							<a href="?rmUser={{@granting:key}}&rmPerm={{@this}}"><button type="button">Revoke</button></a>
 						{{/each}}
 					</li>
 				{{/foreach}}

@@ -141,7 +141,7 @@ userSchema.pre('save', function(next) {
     next();
 });
 
-userSchema.pre('remove', async function(next) {
+userSchema.pre('deleteOne', async function(next) {
 	const self = this as UserDocument;
 	try {
 		await removeAllPermRefs(self, p => p.granted, p => p.granting);
