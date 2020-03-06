@@ -42,9 +42,9 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			errorMsg = 'One or more fields were not provided.';
 		else if (!req.user?.comparePassword(req.body.pwd))
 			errorMsg = 'Wrong password';
-		
+
 		try {
-			if (errorMsg){
+			if (errorMsg) {
 				throw errorMsg;
 			}
 			req.user!.username = req.body.new_username;

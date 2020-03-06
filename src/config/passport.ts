@@ -26,18 +26,18 @@ export default (passport: PassportStatic) => {
 	passport.serializeUser((user: UserDocument, done: Function) => {
 		done(null, user._id);
 	});
-	  
+
 	passport.deserializeUser((id: number, done: Function) => {
 		User.findById(id, done);
 	});
-	  
+
 	passport.use(new LocalStrategy(
 		(username: string, password: string, done: Function) => {
-			User.findOne({ username: username}, (err, user: UserDocument) => {
+			User.findOne({ username: username }, (err, user: UserDocument) => {
 				if (err) return done(err);
 				if (!user) return done(null, false);
 				if (!user.comparePassword(password)) return done(null, false);
-				
+
 				return done(null, user);
 			});
 		}
