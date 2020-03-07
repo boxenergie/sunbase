@@ -46,7 +46,10 @@ const app = express();
 
 // Express configuration
 app.set('views', path.join(__dirname, '..', 'views'));
-app.set('view engine', 'squirrelly');
+app.set('view engine', 'jsx');
+app.engine('jsx', require('express-react-views').createEngine({
+	beautify: process.env.NODE_ENV !== 'production'
+}));
 app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -61,7 +64,7 @@ app.use(helmet.contentSecurityPolicy({
 	directives: {
 		defaultSrc: [ "'self'" ],
 		styleSrc: [ "'self'", "'unsafe-inline'" ],	
-		scriptSrc: [ "'self'	", 'https://cdnjs.cloudflare.com', "'unsafe-inline'	" ],
+		scriptSrc: [ "'self'", 'https://cdnjs.cloudflare.com', "'unsafe-inline'" ],
 	}
 }));
 /* BODY-PARSER */
