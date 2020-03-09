@@ -20,10 +20,10 @@ function OtherDataPage(props) {
 
 				{userExists && 
 					<div>
-						<h4>{user.username}'s records</h4>
+						<h4><i>{user.username}</i>'s records</h4>
 
 						{hasUserData && <PCSChart id='personalChart' data={userData} />}
-						{!hasUserData && <p>No record for ${user.username}</p>}
+						{!hasUserData && <p>No records for {user.username}</p>}
 					</div>
 				}
 

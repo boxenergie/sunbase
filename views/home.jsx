@@ -31,6 +31,7 @@ function HomePage(props) {
 				{!hasUserData && <p>No personal records</p>}
 
 				{!isConnected && <a href="/login"><button>Login</button></a>}
+				{!isConnected && <a href="/register"><button>Register</button></a>}
 				{isConnected && <a href="/profil"><button>Profil</button></a>}
 				{isConnected && <a href="/logout"><button>Logout</button></a>}
 				{isAdmin && <a href="/admin"><button>Admin Dashboard</button></a>}
