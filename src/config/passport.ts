@@ -17,29 +17,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { PassportStatic } from 'passport';
+import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 
-import User, { UserDocument } from '../models/User';
+import User from '../models/User';
 
-export default (passport: PassportStatic) => {
-	passport.serializeUser((user: UserDocument, done: Function) => {
-		done(null, user._id);
-	});
+passport.serializeUser((user: User.Document, done: Function) => {
+	done(null, user._id);
+});
 
-	passport.deserializeUser((id: number, done: Function) => {
-		User.findById(id, done);
-	});
+passport.deserializeUser((id: number, done: Function) => {
+	User.Model.findById(id, done);
+});
 
-	passport.use(new LocalStrategy(
-		(username: string, password: string, done: Function) => {
-			User.findOne({ username: username }, (err, user: UserDocument) => {
-				if (err) return done(err);
-				if (!user) return done(null, false);
-				if (!user.comparePassword(password)) return done(null, false);
+passport.use(new LocalStrategy(
+	(username: string, password: string, done: Function) => {
+		User.Model.findOne({ username: username }, async (err, user: User.Document) => {
+			if (err) return done(err);
+			if (!user) return done(null, false);
+			if (!await user.comparePassword(password)) return done(null, false);
 
-				return done(null, user);
-			});
-		}
-	));
-};
+			return done(null, user);
+		});
+	}
+));
+
+export default passport;

@@ -29,15 +29,15 @@ Mongoose.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/
 		useCreateIndex: true, // Make Mongoose's default index build use createIndex() instead of ensureIndex()
 		connectTimeoutMS: 5000
 	}
-).catch((error: Mongoose.Error) => {
-	logger.error(`Could NOT connect to MongoDB: ${error.message}`);
+).catch((err: Mongoose.Error) => {
+	logger.error(`Could NOT connect to MongoDB: ${err.message}`);
 	process.exit(); // As MongoDB is mandotory for the server to work, exit the app if it doesn't work
 });
 
 const MongoClient = Mongoose.connection;
 MongoClient.on('error', logger.error.bind(logger));
 MongoClient.once('open', () => {
-	logger.info("Succesfully connected to MongoDB");
+	logger.info('Succesfully connected to MongoDB');
 	app.emit('ready'); // Tell the server to start
 });
 

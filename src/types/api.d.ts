@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserDocument } from '../models/User';
+import User from '../models/User';
 
 declare global {
 	namespace Express {
@@ -25,6 +25,6 @@ declare global {
 			api(body?: Object | string): void;
 		}
 
-		interface User extends UserDocument {}
+		interface User extends User.Document {}
 	}
 }

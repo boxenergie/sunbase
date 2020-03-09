@@ -1,5 +1,5 @@
 /*
- * models.d.ts
+ * index.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,32 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export namespace Model {
-	interface User {
-		username: string;
-		password: string;
-		role: string;
-		permissions: Permission.Data;
-	}
+import { Router } from 'express'
 
-	namespace Permission {
-		enum Type {
-			// Must add to Permission$isPermissionType too
-			READ = "read"
-		}
-	
-		type Row = Map<string, Type[]>;
-		type ResolvedRow = { [k: string]: string[] };
-		type ResolvedPermissionData = {
-			granted: ResolvedRow;
-			granting: ResolvedRow;
-		};
-		
-		interface Data {
-			granting: Row;
-			granted: Row;
-	
-			resolveForDisplay(): Promise<ResolvedPermissionData>;
-		}
-	}
-}
+import * as apiControllerV1 from './api-v1';
+import $ from '../../utils/error-handler';
+import { localAuth } from '../../utils/route-auth';
+
+// Default path: '/api'
+const R = Router();
+const R_V1 = Router().all('/v1', $(apiControllerV1.getApiFunction));
+
+R_V1.get('/v1',  $(apiControllerV1.getApiInfo));
+
+R_V1.route('/v1/energy')
+	.get( $(apiControllerV1.getAllEnergyRecords))
+	.post(localAuth({ session: false }),  $(apiControllerV1.addEnergyRecord));
+
+R_V1.route('/v1/wind')
+	.get( $(apiControllerV1.getAllWindRecords))
+	.post(localAuth({ session: false }),  $(apiControllerV1.addWindRecord));
+
+R.use(R_V1);
+export default R;

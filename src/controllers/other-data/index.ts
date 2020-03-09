@@ -1,5 +1,5 @@
 /*
- * app.ts
+ * index.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,36 +17,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import dotenv from 'dotenv-safe';
-import express from 'express';
-import path from 'path';
+import { Router } from 'express'
 
-// Load .env
-dotenv.config();
+import * as otherDataController from './other-data-controller';
+import $ from '../../utils/error-handler';
+import { isLoggedIn } from '../../utils/route-auth';
 
-// Load DBs
-import './db/mongodb';
-import './db/influxdb';
+// Default path: '/display-user'
+const R = Router();
 
-// Create Express server
-const app = express();
+R.get('/', isLoggedIn(), $(otherDataController.renderOtherDataPage));
 
-// Express configuration
-app.set('views', path.join(__dirname, '..', 'views'));
-app.set('view engine', 'jsx');
-app.engine('jsx', require('express-react-views').createEngine({
-	beautify: process.env.NODE_ENV !== 'production'
-}));
-
-app.disable('strict routing');
-
-if (app.get('env') === 'production') {
-	app.set('trust proxy', 1);
-}
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-import R from './controllers';
-app.use(R);
-
-export default app;
+export default R;

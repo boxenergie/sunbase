@@ -1,5 +1,5 @@
 /*
- * app.ts
+ * rate-limiter.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -16,37 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import rateLimit from 'express-rate-limit';
 
-import dotenv from 'dotenv-safe';
-import express from 'express';
-import path from 'path';
-
-// Load .env
-dotenv.config();
-
-// Load DBs
-import './db/mongodb';
-import './db/influxdb';
-
-// Create Express server
-const app = express();
-
-// Express configuration
-app.set('views', path.join(__dirname, '..', 'views'));
-app.set('view engine', 'jsx');
-app.engine('jsx', require('express-react-views').createEngine({
-	beautify: process.env.NODE_ENV !== 'production'
-}));
-
-app.disable('strict routing');
-
-if (app.get('env') === 'production') {
-	app.set('trust proxy', 1);
+export const defaultOptions = {
+	windowMs: 15 * 60 * 1000, // 15 mn
+	max: 250, // Limit each IP to 250 requests per windowMs 
+	message: 'Too many requests, please try again later.',
 }
 
-app.use(express.static(path.join(__dirname, 'public')));
-
-import R from './controllers';
-app.use(R);
-
-export default app;
+export default (opt: rateLimit.Options = {}) => rateLimit(Object.assign(opt, defaultOptions));

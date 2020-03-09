@@ -19,6 +19,8 @@
 
 import { NextFunction, Response, Request, RequestHandler } from 'express';
 
+import passport from '../config/passport';
+
 type OptionalRedirect = {
     failureRedirect?: string;
 }
@@ -69,4 +71,15 @@ export function isAdmin(opt: OptionalRedirect = {}): RequestHandler {
 
 		res.redirect(opt.failureRedirect ?? '/login');
 	};
+}
+
+/**
+ * This is a short-hand to authenticate a user using the Local Strategy from Passport.
+ * How to use :
+ * 	- app.get('/', localAuth(), ...);
+ * 	- app.get('/', localAuth{ session: false }, ...); 
+ * @param opt The options passed to passport.authenticate
+ */
+export function localAuth(opt: passport.AuthenticateOptions = {}): RequestHandler {
+	return passport.authenticate('local', opt);
 }

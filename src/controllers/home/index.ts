@@ -1,5 +1,5 @@
 /*
- * auth-controller.ts
+ * index.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,30 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { Router } from 'express'
 
-import logger from '../utils/logger';
+import * as homeController from './home-controller';
+import $ from '../../utils/error-handler';
 
-export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
-	try {
-		res.render('login-page', {
-			csrfToken: req.csrfToken(),
-			errorMsg: req.flash('error')
-		});
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
-	}
-}
+// Default path: '/'
+const R = Router();
 
-export function logOut(req: Request, res: Response, next: NextFunction) {
-	req.logout();
-	req.session?.destroy(err => {
-		if (!err) {
-			res.clearCookie('connect.sid', { path: '/' }).redirect('/');
-		} else {
-			logger.error(err.message);
-			res.status(500).send('Impossible to logout, please contact an admin');
-		}
-	});
-}
+R.get('/', $(homeController.renderHomePage));
+
+export default R

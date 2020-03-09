@@ -17,27 +17,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Express } from 'express';
-import expressSession from 'express-session';
-
+import { Router } from 'express';
+import expressSession, { SessionOptions } from 'express-session';
 const MongoStore = require('connect-mongo')(expressSession);
 
 import MongoClient from '../db/mongodb';
 
-export default (app: Express) => {
-	const session = {
-		secret: process.env.SESSION_SECRET,
-		resave: true,
-		saveUninitialized: false,
-		cookie: { secure: false },
-		store: new MongoStore({ mongooseConnection: MongoClient })
-	};
+const R = Router();
 
-	if (app.get('env') === 'production') {
-		app.set('trust proxy', 1);
-		session.cookie.secure = true;
-	}
+const session: SessionOptions = {
+	// @ts-ignore -- We know SESSION_SECRET is not undefined thanks to dotenv-safe
+	secret: process.env.SESSION_SECRET,
+	name: 'session.token',
+	store: new MongoStore({ mongooseConnection: MongoClient }),
+	cookie: {
+		maxAge: 3600 * 24 /* * day */ * 1000 /* 1 day */,
+		httpOnly: true,
+		path: '/',
+		secure: 'auto',
+		sameSite: true,
+	},
+	resave: true,
+	saveUninitialized: false,
+};
 
-	// @ts-ignore
-	app.use(expressSession(session));
-}
+R.use(expressSession(session));
+
+export default R;

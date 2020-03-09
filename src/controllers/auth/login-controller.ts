@@ -1,5 +1,5 @@
 /*
- * app.ts
+ * login-controller.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,36 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import dotenv from 'dotenv-safe';
-import express from 'express';
-import path from 'path';
+import { Request, Response, NextFunction } from 'express';
+import Q from 'q';
 
-// Load .env
-dotenv.config();
-
-// Load DBs
-import './db/mongodb';
-import './db/influxdb';
-
-// Create Express server
-const app = express();
-
-// Express configuration
-app.set('views', path.join(__dirname, '..', 'views'));
-app.set('view engine', 'jsx');
-app.engine('jsx', require('express-react-views').createEngine({
-	beautify: process.env.NODE_ENV !== 'production'
-}));
-
-app.disable('strict routing');
-
-if (app.get('env') === 'production') {
-	app.set('trust proxy', 1);
+export async function renderLoginPage(req: Request, res: Response, _: NextFunction) {
+	res.render('login', {
+		csrfToken	: req.csrfToken(),
+		errorMsg	: req.flash('error')
+	});
 }
 
-app.use(express.static(path.join(__dirname, 'public')));
+export async function logOut(req: Request, res: Response, _: NextFunction) {
+	req.logout();
 
-import R from './controllers';
-app.use(R);
+	// Transform callback to promise: faster & easier to read
+	const P = Q.defer();
+	req.session?.destroy(err => {
+		if (!err) P.resolve();
+		else P.reject(err);
+	});
 
-export default app;
+	await P.promise;
+	res.clearCookie('session.token').redirect('/');
+}
