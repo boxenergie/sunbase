@@ -18,7 +18,7 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import sanitize from 'mongo-sanitize'; 
+import sanitize from 'mongo-sanitize';
 
 import User from '../models/User';
 import logger from '../utils/logger';
@@ -28,38 +28,52 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 		return deleteUser(req, res, next);
 	}
 
+	const elementPerPage: number = Number(req.query.displayLimit) || 10;
+	let page: number = Number(req.query.page) ?? 1;
+
+	// Count number of users
+	const count = await User.countDocuments({});
+
+	// If there are less users (excluding current user) than the limit, force page to 1
+	if ((count - 1) < elementPerPage)
+		page = 1;
+
 	try {
-		const users = await User.find().limit(10).exec();
+		const users = await User.find({ _id: { $ne: req.user!._id } })
+			.skip((page - 1) * elementPerPage)
+			.limit(elementPerPage);
 		res.render('admin-page', {
 			users: users,
+			nPages: Math.ceil(count / elementPerPage),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
 		});
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }
 
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
 	try {
-		let errorMsg = null;
 		const deletedUserId = req.query.deleted;
+		const error = (msg: string) => req.flash('errorMsg', msg);
+		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		if (!deletedUserId) {
-			errorMsg = 'One or more fields were not provided.';
-		}        
-
-		try {
-			await User.deleteOne({ _id: sanitize(deletedUserId) });
-			req.flash('successMsg', 'User deleted.');
-			return res.redirect('/admin');
-		} catch {
-			req.flash('errorMsg', errorMsg ?? 'Username did not exist.');
-			return res.redirect('/admin');
+		if (deletedUserId === req.user!.id) {
+			error('You cannot delete yourself.');
+		} else {
+			try {
+				await User.deleteOne({ _id: sanitize(deletedUserId) });
+				succeed('User deleted.');
+			} catch (err) {
+				error('Username did not exist');
+			}
 		}
+
+		return res.redirect('/admin');
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		res.status(500).send('Something went wrong');
 	}
 }

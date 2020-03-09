@@ -1,6 +1,7 @@
 data
 package-lock.json
 .vscode/**
+.idea
 
 # Created by https://www.gitignore.io/api/node,intellij,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=node,intellij,visualstudiocode

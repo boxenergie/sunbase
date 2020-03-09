@@ -10,6 +10,8 @@ npm install -g typescript
 
 Then proceed to [install InfluxDB](#influxdb) and [install MongoDB](#mongodb).
 
+After this, *copy* and *rename* `.env.example` to `.env` and change the value as needed.
+
 Finally, use one of the [script](#scripts) below to start the server. Additionally, you can use [PM2](#pm2) to keep the server alive and restart it if a crash happens.
 
 ## Scripts
@@ -26,7 +28,7 @@ Finally, use one of the [script](#scripts) below to start the server. Additional
 
 ## InfluxDB
 
-[InfluxDB](https://www.influxdata.com/) is an open-source time series database (TSDB) developed by InfluxData. It is optimized for fast, high-availability storage and retrieval of time series data in fields such as operations monitoring, application metrics, Internet of Things sensor data, and real-time analytics.
+[InfluxDB](https://www.influxdata.com) is an open-source time series database (TSDB) developed by InfluxData. It is optimized for fast, high-availability storage and retrieval of time series data in fields such as operations monitoring, application metrics, Internet of Things sensor data, and real-time analytics.
 
 ```
 # Install InfluxDB
@@ -44,7 +46,7 @@ sudo service influxdb stop
 
 ## MongoDB
 
-[MongoDB] is a general purpose, document-based, distributed database built for modern application developers and for the cloud era. No database makes you more productive.
+[MongoDB](https://www.mongodb.com) is a general purpose, document-based, distributed database built for modern application developers and for the cloud era. No database makes you more productive.
 
 ```
 # Install MongoDB
@@ -72,8 +74,41 @@ npm install -g pm2
 pm2 startup
 
 # Start the server in production
-pm2 start npm -- run prod --watch --name <name>
+pm2 start npm --name <name> -- run prod
 
 # Stop the server
 pm2 stop <nme>
 ```
+
+## API
+
+Once the server is started, you can make requests on the API :
+
+`GET /api/v1/energy/` will gives you energy records.
+
+__Example :__
+
+```
+GET /api/v1/energy/
+
+{
+  "version": 1,
+  "timestamp": "2020-02-19T14:10:53.346Z",
+  "rows": [
+    {
+      "sum_production": 11,
+      "sum_consumption": 14,
+      "sum_surplus": -3
+    }
+  ]
+}
+```
+
+`POST /api/v1/energy/` will let you add your own energy record.
+
+__Required parameters :__
+- `production` : Number >= 0
+- `consumption` : Number >= 0
+- `created_by` : String | ID of the user who created this energy record.
+- `username` : String | Your username.
+- `password` : String | Your password.

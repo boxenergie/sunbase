@@ -20,6 +20,12 @@
 	{{each(options.users)}}
 		<label for="delete-{{@index}}">{{@this.username}}</label><a href="?deleted={{@this.id}}"><button id="delete-{{@index}}">Delete User</button></a><br/>
 	{{/each}}
+	{{js(options.nPages = [...Array(options.nPages).keys()].map(i => i + 1))/}}
+	<div>
+		{{each(options.nPages)}}
+			<a href="?page={{@this}}&displayLimit=10"><button>{{@this}}</button></a> 
+		{{/each}}
+	</div>
     <a href="/"><button>Home</button></a>
 </body>
 </html>

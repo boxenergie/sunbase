@@ -10,41 +10,11 @@
 	<script src='/js/PCS-chart.js'></script>
 </head>
 <body>
+<!-- TODO embed this page in home-controller ?-->
 <h1>SunShare Board</h1>
 
-{{if(options.user)}}	
-	<h3>Hello <i>{{user.username}}</i> !</h3>
-{{/if}}
-
-<h4>Global records</h4>
-{{if(!options.globalData.production.length > 0)}}
-	<p>No global records</p>
-{{#else}}
-	<canvas id="globalChart" width="800" height="400"></canvas>
-
-	<script>
-		const globalCtx = document.getElementById('globalChart').getContext('2d');
-		const globalLabels = [
-			{{foreach(options.globalData.time)}}
-				new Date('{{@this}}').toLocaleTimeString("fr-FR").slice(0, 5), 
-			{{/foreach}}
-		];
-		const globalProduction = [{{globalData.production}}];
-		const globalConsumption = [{{globalData.consumption}}];
-		const globalSurplus = [{{globalData.surplus}}];
-		
-		createChart(
-			globalCtx,
-			globalLabels,
-			globalProduction,
-			globalConsumption,
-			globalSurplus
-		);
-	</script>
-{{/if}}
-
 {{if(options.user)}}
-	<h4>Personal records</h4>
+	<h4>Records of {{user.username}}</h4>
 	{{if(!options.userData.production.length > 0)}}
 		<p>No personal records</p>
 	{{#else}}
@@ -72,16 +42,6 @@
 	{{/if}}
 {{/if}}
 
-{{if(!options.user)}}
-	<a href="/login"><button>Login</button></a>
-{{#else}}
-	<a href="/profil"><button>Profil</button></a>
-	<a href="/logout"><button>Logout</button></a>
-	{{if(options.user.role == 'admin')}}
-		<a href="/admin"><button>Admin Dashboard</button></a>
-	{{/if}}
-{{/if}}
-
-<a class="bottom-link" href="https://github.com/boxenergie/sunbase">Voir le code source</a>
+<a href="/"><button>Home</button></a>
 </body>
 </html>
