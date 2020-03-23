@@ -86,7 +86,8 @@ R.use('/',  csrf({ cookie: true }), App);
 
 // API routes
 const API = Router();
-apiRouter.use((err: any, req: Request, res: Response, next: NextFunction) => {
+API.use(apiRouter);
+API.use((err: any, req: Request, res: Response, next: NextFunction) => {
 	logger.error(err.message);
 	logger.error(err.stack);
 

@@ -24,9 +24,9 @@ import $ from '../../utils/error-handler';
 import { localAuth } from '../../utils/route-auth';
 
 // Default path: '/api'
-const R = Router();
-const R_V1 = Router().all('/v1', $(apiControllerV1.getApiFunction));
+const R = Router().use('/v1', $(apiControllerV1.getApiFunction));
 
+const R_V1 = Router();
 R_V1.get('/v1',  $(apiControllerV1.getApiInfo));
 
 R_V1.route('/v1/energy')
@@ -36,6 +36,6 @@ R_V1.route('/v1/energy')
 R_V1.route('/v1/wind')
 	.get( $(apiControllerV1.getAllWindRecords))
 	.post(localAuth({ session: false }),  $(apiControllerV1.addWindRecord));
-
 R.use(R_V1);
+
 export default R;
