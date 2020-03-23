@@ -27,12 +27,12 @@ import flash from 'connect-flash';
 import logger from '../utils/logger';
 
 // Routers
-import adminRouter from './admin/index';
-import apiRouter from './api/index';
-import authRouter from './auth/index';
-import homeRouter from './home/index';
-import profilRouter from './profil/index';
-import otherDataRouter from './other-data/index';
+import adminRouter from './admin';
+import apiRouter from './api';
+import authRouter from './auth';
+import homeRouter from './home';
+import profilRouter from './profil';
+import otherDataRouter from './other-data';
 
 // Config helpers
 import helmet from '../config/helmet';
