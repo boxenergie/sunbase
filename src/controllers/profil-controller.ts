@@ -32,7 +32,7 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 	try {
 		const permissions = await req.user!.permissions.resolveForDisplay();
 
-		res.render('profil-page', {
+		res.render('profil', {
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),

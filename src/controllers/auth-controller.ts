@@ -23,7 +23,7 @@ import logger from '../utils/logger';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.render('login-page', {
+		res.render('login', {
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('error')
 		});
