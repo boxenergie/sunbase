@@ -1,7 +1,7 @@
 import React from 'react';
 
 function PCSChart(props) {
-	const { data, id, width = 800, height = 400 } = props;
+	const { data, id, title = "", width = 800, height = 400 } = props;
 
 	let labels = data.time;
 	const production = data.production;
@@ -14,6 +14,8 @@ function PCSChart(props) {
 
 	return (
 		<div>
+			{title && <h5><i>{title}</i></h5>}
+
 			<canvas id={id} width={width} height={height}></canvas>
 
 			<script dangerouslySetInnerHTML={{__html: `
