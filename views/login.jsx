@@ -23,6 +23,8 @@ function LoginPage(props) {
 					<input type="password" name="password" id="password" />
 					<input type="submit" value="submit" />
 				</form>
+
+    			<a href="/register"><button>Or Register</button></a>
 				<Footer />
 			</body>
 		</html>
