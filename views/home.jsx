@@ -9,7 +9,13 @@ function HomePage(props) {
 	const isConnected 	= Boolean(user);
 	const isAdmin 		= Boolean(user && user.role === 'admin');
 	const hasGlobalData = Boolean(globalData.production.length > 0);
-	const hasUserData 	= Boolean(userData.production.length > 0);
+	const hasUserData 	= Boolean(userData.length > 0);
+
+	let personalRecords = "";
+	if (hasUserData)
+		personalRecords =
+			userData.map(r =>
+				<PCSChart key={r.name} id={`${r.name}-chart`} title={r.name} data={r.values} />);
 
 	return (
 		<html>
@@ -27,8 +33,8 @@ function HomePage(props) {
 				{!hasGlobalData && <p>No global records</p>}
 
 				{isConnected && <h4>Personal records</h4>}
-				{hasUserData && <PCSChart id='userChart' data={userData} />}
 				{!hasUserData && <p>No personal records</p>}
+				{hasUserData && <div>{personalRecords}</div>}
 
 				{!isConnected && <a href="/login"><button>Login</button></a>}
 				{!isConnected && <a href="/register"><button>Register</button></a>}

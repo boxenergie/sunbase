@@ -35,11 +35,13 @@ import './db/mongodb';
 
 // Controllers
 import * as adminController from './controllers/admin-controller';
+import * as addRaspberryController from './controllers/add-raspberry-controller';
 import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
 import * as otherDataController from './controllers/other-data-controller';
+import * as registerController from './controllers/register-controller';
 
 // Create Express server
 const app = express();
@@ -108,6 +110,8 @@ appRouter.post('/login', isNotLoggedIn(), passport.authenticate('local',
 		failureFlash: 'Invalid username or password.'
 	}
 ));
+appRouter.get('/register', isNotLoggedIn(), registerController.renderRegisterPage);
+appRouter.post('/register', isNotLoggedIn(), registerController.registerUser);
 appRouter.get('/logout', isLoggedIn(), authController.logOut);
 
 /**
@@ -118,6 +122,8 @@ appRouter.post('/profil/update_username/', isLoggedIn(), profilController.change
 appRouter.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
 appRouter.post('/profil/update_permissions/', isLoggedIn(), profilController.grantPermission);
 appRouter.get('/profil/update_permissions/', isLoggedIn(), profilController.removePermission);
+appRouter.get('/profil/add-raspberry', isLoggedIn(), addRaspberryController.renderAddRaspberryPage);
+appRouter.post('/profil/add-raspberry', isLoggedIn(), addRaspberryController.addRaspberry);
 
 /**
  * Admin routes
@@ -131,17 +137,9 @@ apiRouter.use('/v1', apiControllerV1.getApiFunction);
 apiRouter.get('/v1', apiControllerV1.getApiInfo);
 
 apiRouter.get('/v1/energy/', apiControllerV1.getAllEnergyRecords);
-apiRouter.post('/v1/energy/', passport.authenticate('local',
-	{
-		session: false
-	}
-), apiControllerV1.addEnergyRecord);
+apiRouter.post('/v1/energy/', apiControllerV1.addEnergyRecord);
 apiRouter.get('/v1/wind/', apiControllerV1.getAllWindRecords);
-apiRouter.post('/v1/wind/', passport.authenticate('local',
-	{
-		session: false
-	}
-), apiControllerV1.addWindRecord);
+apiRouter.post('/v1/wind/', apiControllerV1.addWindRecord);
 app.use('/api', apiRouter);
 
 /**

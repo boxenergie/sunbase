@@ -109,6 +109,4 @@ GET /api/v1/energy/
 __Required parameters :__
 - `production` : Number >= 0
 - `consumption` : Number >= 0
-- `created_by` : String | ID of the user who created this energy record.
-- `username` : String | Your username.
-- `password` : String | Your password.
+- `raspberry_uuid` : Unique ID of the Raspberry.

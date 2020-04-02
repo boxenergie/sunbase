@@ -23,6 +23,7 @@ export namespace Model {
 		password: string;
 		role: string;
 		permissions: Permission.Data;
+		raspberries: string[];
 	}
 
 	namespace Permission {

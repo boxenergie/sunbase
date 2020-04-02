@@ -27,10 +27,10 @@ const influxClient = new Influx.InfluxDB({
 			fields: {
 				production: Influx.FieldType.INTEGER,
 				consumption: Influx.FieldType.INTEGER,
-				surplus: Influx.FieldType.INTEGER
+				surplus: Influx.FieldType.INTEGER,
 			},
 			tags: [
-				'created_by'
+				'raspberry_uuid'
 			]
 		},
 		{
@@ -39,10 +39,10 @@ const influxClient = new Influx.InfluxDB({
 				wind_speed: Influx.FieldType.FLOAT,
 				production: Influx.FieldType.FLOAT,
 				rotor_speed: Influx.FieldType.FLOAT,
-				relative_orientation: Influx.FieldType.FLOAT
+				relative_orientation: Influx.FieldType.FLOAT,
 			},
 			tags: [
-				'created_by'
+				'raspberry_uuid'
 			]
 		},
 		{

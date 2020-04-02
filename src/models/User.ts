@@ -65,7 +65,8 @@ const userSchema = new Schema<UserDocument>({
 	username: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
 	role: { type: String, required: true, default: 'user' },
-	permissions: permissionSchema
+	permissions: permissionSchema,
+	raspberries: [{ type: String }],
 });
 
 userSchema.methods.comparePassword = function (password) {
