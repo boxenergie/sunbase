@@ -31,22 +31,31 @@ export async function renderOtherDataPage(req: Request, res: Response, next: Nex
 			req.flash('errorMsg', 'No read access');
 			return res.redirect('/');
 		}
-		const userResults = await InfluxHelper.query(
-			`SELECT SUM(production) AS production,
-			SUM(consumption) AS consumption,
-			SUM(surplus) AS surplus
-			FROM "EnergyRecord"
-			WHERE created_by = '${granter.id}' AND time >= now() - 1d AND time <= now()
-			GROUP BY time(15m) fill(none)`
-		);
+
+		const userResults = [];
+		for (const raspberry of granter!.raspberries) {
+			const query = await InfluxHelper.query(
+				`SELECT SUM(production) AS production,
+				SUM(consumption) AS consumption,
+				SUM(surplus) AS surplus
+				FROM "EnergyRecord"
+				WHERE raspberry_uuid = '${raspberry}' AND time >= now() - 1d AND time <= now()
+				GROUP BY time(15m) fill(none)`
+			);
+
+			userResults.push({
+				name: raspberry,
+				values: {
+					time: query.rows.map((r: any) => r.time.toNanoISOString()),
+					production: query.rows.map((r: any) => r.production),
+					consumption: query.rows.map((r: any) => r.consumption),
+					surplus: query.rows.map((r: any) => r.surplus),
+				},
+			});
+		}
 
 		res.render("other-data", {
-			userData: {
-				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
-				production: userResults.rows.map((r: any) => r.production),
-				consumption: userResults.rows.map((r: any) => r.consumption),
-				surplus: userResults.rows.map((r: any) => r.surplus),
-			},
+			userData: userResults,
 			user: granter,
 		});
 	} catch (err) {

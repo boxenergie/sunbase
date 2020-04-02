@@ -14,8 +14,17 @@ function HomePage(props) {
 	let personalRecords = "";
 	if (hasUserData)
 		personalRecords =
-			userData.map(r =>
-				<PCSChart key={r.name} id={`${r.name}-chart`} title={r.name} data={r.values} />);
+			userData.map(r => {
+				if (r.values.production.length > 0)
+					return <PCSChart key={r.name} id={`${r.name}-chart`} title={r.name} data={r.values} />;
+				else
+					return (
+						<div key={r.name}>
+							<h5><i>{r.name}</i></h5>
+							<p>No records for the last 24h</p>
+						</div>
+					);
+				});
 
 	return (
 		<html>
@@ -33,8 +42,8 @@ function HomePage(props) {
 				{!hasGlobalData && <p>No global records</p>}
 
 				{isConnected && <h4>Personal records</h4>}
-				{!hasUserData && <p>No personal records</p>}
 				{hasUserData && <div>{personalRecords}</div>}
+				{isConnected && !hasUserData && <p>No personal records</p>}
 
 				{!isConnected && <a href="/login"><button>Login</button></a>}
 				{!isConnected && <a href="/register"><button>Register</button></a>}

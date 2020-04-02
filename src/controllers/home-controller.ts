@@ -53,7 +53,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 						consumption: query.rows.map((r: any) => r.consumption),
 						surplus: query.rows.map((r: any) => r.surplus),
 					},
-				})
+				});
 			}
 		}
 
