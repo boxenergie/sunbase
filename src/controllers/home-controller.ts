@@ -21,6 +21,7 @@ import { NextFunction, Response, Request } from "express";
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
+import User from "../models/User";
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -32,6 +33,39 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			WHERE time >= now() - 1d AND time <= now()
 			GROUP BY time(15m) fill(none)`
 		);
+
+		const communitiesData = [];
+		if (req.user) {
+			for (const [communityId, permissions] of req.user.permissions.granting.entries()) {
+				const AGGREGATE = 'aggregate' as any;
+				if (permissions.includes(AGGREGATE)) {
+					const community = await User.findById(communityId);
+					if (community) {
+						const members = [];
+						for (const [userId, perms] of community.permissions.granted) {
+							if (perms.includes(AGGREGATE)) {
+								members.push(userId);
+							}
+						}
+						const communityResult = await InfluxHelper.query(`SELECT SUM(production) AS production,
+									SUM(consumption) AS consumption,
+									SUM(surplus) AS surplus
+									FROM "EnergyRecord"
+									WHERE created_by ='${members.join("' OR created_by = '")}' AND time >= now() - 1d AND time <= now()
+									GROUP BY time(15m) fill(none)`);
+						communitiesData.push({
+							name: community.username,
+							data: {
+								time: communityResult.rows.map((r: any) => r.time.toNanoISOString()),
+								production: communityResult.rows.map((r: any) => r.production),
+								consumption: communityResult.rows.map((r: any) => r.consumption),
+								surplus: communityResult.rows.map((r: any) => r.surplus),
+							}
+						})
+					}
+				}
+			}
+		}
 
 		const userResults = await InfluxHelper.query(
 			`SELECT SUM(production) AS production,
@@ -55,6 +89,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 				consumption: userResults.rows.map((r: any) => r.consumption),
 				surplus: userResults.rows.map((r: any) => r.surplus),
 			},
+			communitiesData,
 			user: req.user,
 		});
 	} catch (err) {

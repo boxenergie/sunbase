@@ -4,12 +4,24 @@ import Footer from './layouts/footer';
 import PCSChart from './layouts/pcs-chart';
 
 function HomePage(props) {
-	const { user, globalData, userData } = props;
+	const { user, globalData, communitiesData, userData } = props;
 
 	const isConnected 	= Boolean(user);
+	const isInCommunities = Boolean(communitiesData.length > 0);
 	const isAdmin 		= Boolean(user && user.role === 'admin');
 	const hasGlobalData = Boolean(globalData.production.length > 0);
 	const hasUserData 	= Boolean(userData.production.length > 0);
+
+	const communitiesHTML = communitiesData.map((community) => {
+		const hasCommunityData = community.data.production.length > 0;
+		return (
+			<article key={community.name}>
+				<h5>{community.name}</h5>
+				{hasCommunityData && <PCSChart id={`${community.username}Chart`} data={community.data}/>}
+				{!hasCommunityData && <p>No community records</p>}
+			</article>
+		);
+	});
 
 	return (
 		<html>
@@ -26,9 +38,12 @@ function HomePage(props) {
 				{hasGlobalData && <PCSChart id='globalChart' data={globalData} />}
 				{!hasGlobalData && <p>No global records</p>}
 
+				{isInCommunities && <h4>Communities records</h4>}
+				{communitiesHTML}
+
 				{isConnected && <h4>Personal records</h4>}
-				{hasUserData && <PCSChart id='userChart' data={userData} />}
-				{!hasUserData && <p>No personal records</p>}
+				{isConnected && hasUserData && <PCSChart id='userChart' data={userData} />}
+				{isConnected && !hasUserData && <p>No personal records</p>}
 
 				{!isConnected && <a href="/login"><button>Login</button></a>}
 				{!isConnected && <a href="/register"><button>Register</button></a>}

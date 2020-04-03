@@ -4,22 +4,27 @@ import Footer from './layouts/footer';
 
 /**
  * Transform a permission.granted or permission.granting to HTML
- * @param {{ [k: string]: string[] }}permissions permission.granted or permission.granting
- * @param {{ [k: string]: (permName: string, userName: string) => string }} V
+ * @param permissions ({{ [k: string]: string[] }}) permission.granted or permission.granting
+ * @param V ({{ [k: string]: (permName: string, userName: string) => string }})
  * being an object with 2 properties: hrefs and buttonsTexts. Each are taken in order.
  */
 function transformPermissionToHTML(permissions, V) {
 	const HTMLArr = [];
 	for (const [username, perm] of Object.entries(permissions)) {
 		let permLine = [<b key={username}>{username}</b>, ':'];
-			for (const [i, permName] of perm.entries()) {
-				permLine.push(permName);
-				permLine.push(
-					<a key={permName} href={V[i][1](permName, username)}>
-						<button type='button'>{V[i][0]}</button>
-					</a>
-				);
+		for (const [i, permName] of perm.entries()) {
+			permLine.push(permName);
+			for (const v of V) {
+				let href = v[1](permName, username);
+				if (href) {
+					permLine.push(
+						<a key={permName} href={href}>
+							<button type='button'>{v[0]}</button>
+						</a>
+					);
+				}
 			}
+		}
 		HTMLArr.push(<li key={username}>{permLine}</li>);
 	}
 	return HTMLArr;
@@ -32,7 +37,8 @@ function ProfilPage(props) {
 	const hasSuccessMsg = Boolean(successMsg.length > 0);
 	
 	const permissionsGranted = transformPermissionToHTML(permissions.granted, [
-		['Watch', (_, userName) => `/display-user?showUser=${userName}`]
+		['Cancel', (permName, username) => `?rmGranter=${username}&rmPerm=${permName}`],
+		['Watch', (permName, userName) => permName === 'read' && `/display-user?showUser=${userName}`],
 	]);
 	const permissionsGranting = transformPermissionToHTML(permissions.granting, [
 		['Revoke', (permName, userName) => `?rmUser=${userName}&rmPerm=${permName}`]
@@ -102,6 +108,7 @@ function ProfilPage(props) {
 							<label htmlFor="grantedPermission">Grant the permission to:</label>
 							<select name="permission" id="grantedPermission">
 								<option value="read">Read My Data</option>
+								<option value="aggregate">Aggregate My Data</option>
 							</select>
 							<label htmlFor="grantee">to the user:</label>
 							<input type="text" name="grantee" id="grantee" />

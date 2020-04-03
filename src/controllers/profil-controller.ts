@@ -26,7 +26,7 @@ import sanitize from "mongo-sanitize";
 
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 
-	if (req.query.rmUser) {
+	if (req.query.rmPerm) {
 		return removePermission(req, res, next);
 	}
 	try {
@@ -118,7 +118,7 @@ export async function grantPermission(req: Request, res: Response, next: NextFun
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);
 		} else {
-			req.user!.grantPermissionTo(grantee!, req.body.permission);
+			await req.user!.grantPermissionTo(grantee!, req.body.permission);
 			req.flash('successMsg', 'Permission granted.');
 		}
 		return res.redirect('/profil');
@@ -133,20 +133,26 @@ export async function removePermission(req: Request, res: Response, next: NextFu
 	try {
 		let errorMsg = null;
 		const deletedPermissionType = req.query.rmPerm;
-		const deletedPermissionGrantee = req.query.rmUser;
-		const deletedPermissionUser = await User.findOne({username: deletedPermissionGrantee});
+		const granteeName = req.query.rmUser;
+		const granterName = req.query.rmGranter;
+		const permissionGranter = granterName ? await User.findOne({username: req.query.rmGranter}) : req.user;
+		const permissionGrantee = granteeName ? await User.findOne({username: req.query.rmUser}) : req.user;
 
-		if (!deletedPermissionType || !deletedPermissionGrantee) {
-			errorMsg = 'Error while deleting permission:' + deletedPermissionType + ' to:' + deletedPermissionGrantee;
+		if (!deletedPermissionType || !(granteeName || granterName) || (req.user !== permissionGrantee && req.user !== permissionGranter)) {
+			errorMsg = `Error while deleting permission:${deletedPermissionType} from: ${granterName} to:${granteeName}`;
 		}
-		if (!deletedPermissionUser)
-			errorMsg = 'Unknow user: ' + deletedPermissionGrantee;
+		if (!permissionGrantee) {
+			errorMsg = `Unknown user: ${granteeName}`;
+		}
+		if (!permissionGranter) {
+			errorMsg = `Unknown user: ${granterName}`
+		}
 
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);
 		} else {
-			req.user!.revokePermissionFrom(deletedPermissionUser!, deletedPermissionType);
-			req.flash('successMsg', 'Remove permission ' + deletedPermissionType + ' to ' + deletedPermissionGrantee);
+			await permissionGranter!.revokePermissionFrom(permissionGrantee!, deletedPermissionType);
+			req.flash('successMsg', 'Remove permission ' + deletedPermissionType + ' to ' + (granteeName || 'myself'));
 		}
 		return res.redirect('/profil');
 	} catch (err) {

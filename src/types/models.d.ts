@@ -28,11 +28,12 @@ export namespace Model {
 	namespace Permission {
 		enum Type {
 			// Must add to Permission$isPermissionType too
-			READ = "read"
+			READ = "read",
+			AGGREGATE = "aggregate"
 		}
 	
 		type Row = Map<string, Type[]>;
-		type ResolvedRow = { [k: string]: string[] };
+		type ResolvedRow = { [permissionType: string]: string[] };
 		type ResolvedPermissionData = {
 			granted: ResolvedRow;
 			granting: ResolvedRow;
