@@ -42,7 +42,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			GROUP BY time(15m) fill(none)`
 		);
 
-		res.render("home-page", {
+		res.render('home', {
 			globalData: {
 				time: globalResults.rows.map((r: any) => r.time.toNanoISOString()),
 				production: globalResults.rows.map((r: any) => r.production),

@@ -42,7 +42,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 		const users = await User.find({ _id: { $ne: req.user!._id } })
 			.skip((page - 1) * elementPerPage)
 			.limit(elementPerPage);
-		res.render('admin-page', {
+		res.render('admin', {
 			users: users,
 			nPages: Math.ceil(count / elementPerPage),
 			errorMsg: req.flash('errorMsg'),

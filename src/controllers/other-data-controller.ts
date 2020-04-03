@@ -40,7 +40,7 @@ export async function renderOtherDataPage(req: Request, res: Response, next: Nex
 			GROUP BY time(15m) fill(none)`
 		);
 
-		res.render("other-data-page", {
+		res.render("other-data", {
 			userData: {
 				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
 				production: userResults.rows.map((r: any) => r.production),
