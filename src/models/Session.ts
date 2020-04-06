@@ -1,5 +1,5 @@
 /*
- * api.d.ts
+ * Session.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,14 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserDocument } from '../models/User';
+import { Schema } from 'mongoose';
 
-declare global {
-	namespace Express {
-		interface Response {
-			api(body?: Object | string): void;
-		}
+import MongoClient from '../db/mongodb';
 
-		interface User extends UserDocument {}
-	}
-}
+export default MongoClient.model('Session', new Schema(), 'sessions');

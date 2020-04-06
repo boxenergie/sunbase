@@ -21,7 +21,7 @@ import app from './app';
 import logger from './utils/logger';
 
 app.on('ready', () => {
-	app.listen(process.env.PORT, () => {
+	app.listen(process.env.PORT, async () => {
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
 });

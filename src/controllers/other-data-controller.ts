@@ -21,41 +21,33 @@ import { NextFunction, Response, Request } from "express";
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
+import { Model } from "models";
+import User from "../models/User";
 
-export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
+export async function renderOtherDataPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		const globalResults = await InfluxHelper.query(
-			`SELECT SUM(production) AS production,
-			SUM(consumption) AS consumption,
-			SUM(surplus) AS surplus
-			FROM "EnergyRecord"
-			WHERE time >= now() - 1d AND time <= now()
-			GROUP BY time(15m) fill(none)`
-		);
-
+		let granter = (await User.findOne({username: req.query.showUser}));
+		if (!granter || !req.user!.hasPermissionFrom(granter.id, 'read' as any)) {
+			req.flash('errorMsg', 'No read access');
+			return res.redirect('/');
+		}
 		const userResults = await InfluxHelper.query(
 			`SELECT SUM(production) AS production,
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
 			FROM "EnergyRecord"
-			WHERE created_by = '${req.user?.id}' AND time >= now() - 1d AND time <= now()
+			WHERE created_by = '${granter.id}' AND time >= now() - 1d AND time <= now()
 			GROUP BY time(15m) fill(none)`
 		);
 
-		res.render('home', {
-			globalData: {
-				time: globalResults.rows.map((r: any) => r.time.toNanoISOString()),
-				production: globalResults.rows.map((r: any) => r.production),
-				consumption: globalResults.rows.map((r: any) => r.consumption),
-				surplus: globalResults.rows.map((r: any) => r.surplus),
-			},
+		res.render("other-data", {
 			userData: {
 				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
 				production: userResults.rows.map((r: any) => r.production),
 				consumption: userResults.rows.map((r: any) => r.consumption),
 				surplus: userResults.rows.map((r: any) => r.surplus),
 			},
-			user: req.user,
+			user: granter,
 		});
 	} catch (err) {
 		logger.error(err.message);

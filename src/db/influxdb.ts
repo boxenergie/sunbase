@@ -47,9 +47,7 @@ const influxClient = new Influx.InfluxDB({
 		},
 		{
 			measurement: 'SolarRecord',
-			fields: {
-
-			},
+			fields: {},
 			tags: [
 				'created_by'
 			]

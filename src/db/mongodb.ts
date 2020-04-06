@@ -23,21 +23,21 @@ import app from '../app';
 import logger from '../utils/logger';
 
 Mongoose.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB_NAME}`,
-		{   
-			useNewUrlParser: true,
-			useUnifiedTopology: true,
-			useCreateIndex: true, // Make Mongoose's default index build use createIndex() instead of ensureIndex()
-			connectTimeoutMS: 5000
-		}
+	{
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+		useCreateIndex: true, // Make Mongoose's default index build use createIndex() instead of ensureIndex()
+		connectTimeoutMS: 5000
+	}
 ).catch((error: Mongoose.Error) => {
 	logger.error(`Could NOT connect to MongoDB: ${error.message}`);
 	process.exit(); // As MongoDB is mandotory for the server to work, exit the app if it doesn't work
 });
 
-const MongoClient = Mongoose.connection; 
-MongoClient.on('error', logger.error.bind(logger)); 
-MongoClient.once('open', () => { 
-	logger.info("Succesfully connected to MongoDB"); 
+const MongoClient = Mongoose.connection;
+MongoClient.on('error', logger.error.bind(logger));
+MongoClient.once('open', () => {
+	logger.info("Succesfully connected to MongoDB");
 	app.emit('ready'); // Tell the server to start
 });
 
