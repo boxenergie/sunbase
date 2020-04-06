@@ -1,5 +1,5 @@
 /*
- * api.d.ts
+ * models.d.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,14 +17,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { UserDocument } from '../models/User';
+export namespace Model {
+	interface User {
+		username: string;
+		password: string;
+		role: string;
+		permissions: Permission.Data;
+	}
 
-declare global {
-	namespace Express {
-		interface Response {
-			api(body?: Object | string): void;
+	namespace Permission {
+		enum Type {
+			// Must add to Permission$isPermissionType too
+			READ = "read"
 		}
-
-		interface User extends UserDocument {}
+	
+		type Row = Map<string, Type[]>;
+		type ResolvedRow = { [k: string]: string[] };
+		type ResolvedPermissionData = {
+			granted: ResolvedRow;
+			granting: ResolvedRow;
+		};
+		
+		interface Data {
+			granting: Row;
+			granted: Row;
+	
+			resolveForDisplay(): Promise<ResolvedPermissionData>;
+		}
 	}
 }

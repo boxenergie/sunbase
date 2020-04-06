@@ -23,7 +23,7 @@ import logger from '../utils/logger';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.render('login-page', {
+		res.render('login', {
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('error')
 		});
@@ -35,12 +35,12 @@ export function renderLoginPage(req: Request, res: Response, next: NextFunction)
 
 export function logOut(req: Request, res: Response, next: NextFunction) {
 	req.logout();
-	req.session?.destroy((err) => {
-        if (!err) {
-            res.clearCookie('connect.sid', { path: '/' }).redirect('/');
-        } else {
+	req.session?.destroy(err => {
+		if (!err) {
+			res.clearCookie('connect.sid', { path: '/' }).redirect('/');
+		} else {
 			logger.error(err.message);
-            res.status(500).send('Impossible to logout, please contact an admin');
-        }
-    });
+			res.status(500).send('Impossible to logout, please contact an admin');
+		}
+	});
 }

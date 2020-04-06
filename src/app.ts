@@ -30,19 +30,26 @@ import csrf from 'csurf';
 // Load .env
 dotenv.config();
 
+// Load MongoDB
+import './db/mongodb';
+
 // Controllers
 import * as adminController from './controllers/admin-controller';
 import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
+import * as otherDataController from './controllers/other-data-controller';
 
 // Create Express server
 const app = express();
 
 // Express configuration
 app.set('views', path.join(__dirname, '..', 'views'));
-app.set('view engine', 'squirrelly');
+app.set('view engine', 'jsx');
+app.engine('jsx', require('express-react-views').createEngine({
+	beautify: process.env.NODE_ENV !== 'production'
+}));
 app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -56,7 +63,8 @@ app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
 	directives: {
 		defaultSrc: [ "'self'" ],
-		styleSrc: [ "'self'" ]
+		styleSrc: [ "'self'", "'unsafe-inline'" ],	
+		scriptSrc: [ "'self'", 'https://cdnjs.cloudflare.com', "'unsafe-inline'" ],
 	}
 }));
 /* BODY-PARSER */
@@ -87,6 +95,7 @@ import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
  * App routes
  */
 appRouter.get('/', homeController.renderHomePage);
+appRouter.get('/display-user', isLoggedIn(), otherDataController.renderOtherDataPage);
 
 /**
  * Auth routes
@@ -107,6 +116,8 @@ appRouter.get('/logout', isLoggedIn(), authController.logOut);
 appRouter.get('/profil', isLoggedIn(), profilController.renderProfilPage);
 appRouter.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
 appRouter.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
+appRouter.post('/profil/update_permissions/', isLoggedIn(), profilController.grantPermission);
+appRouter.get('/profil/update_permissions/', isLoggedIn(), profilController.removePermission);
 
 /**
  * Admin routes

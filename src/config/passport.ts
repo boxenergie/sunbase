@@ -20,28 +20,26 @@
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 
-import User, { UserData } from '../models/User';
+import User, { UserDocument } from '../models/User';
 
 export default (passport: PassportStatic) => {
-	passport.serializeUser((user: UserData, done: Function) => {
+	passport.serializeUser((user: UserDocument, done: Function) => {
 		done(null, user._id);
 	});
-	  
-	passport.deserializeUser((id: Number, done: Function) => {
-		User.findById(id, (err, user: UserData) => {
-			done(err, user);
-		  });
+
+	passport.deserializeUser((id: number, done: Function) => {
+		User.findById(id, done);
 	});
-	  
+
 	passport.use(new LocalStrategy(
-		(username: String, password: String, done: Function) => {
-			User.findOne({ username: username}, (err, user: UserData) => {
+		(username: string, password: string, done: Function) => {
+			User.findOne({ username: username }, (err, user: UserDocument) => {
 				if (err) return done(err);
 				if (!user) return done(null, false);
 				if (!user.comparePassword(password)) return done(null, false);
-				
+
 				return done(null, user);
-				});
+			});
 		}
 	));
 };

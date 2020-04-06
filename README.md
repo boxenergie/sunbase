@@ -10,6 +10,8 @@ npm install -g typescript
 
 Then proceed to [install InfluxDB](#influxdb) and [install MongoDB](#mongodb).
 
+After this, *copy* and *rename* `.env.example` to `.env` and change the value as needed.
+
 Finally, use one of the [script](#scripts) below to start the server. Additionally, you can use [PM2](#pm2) to keep the server alive and restart it if a crash happens.
 
 ## Scripts
@@ -90,13 +92,15 @@ __Example :__
 GET /api/v1/energy/
 
 {
-  "0": {
-    "sum_production": 8,
-    "sum_consumption": 11,
-    "sum_surplus": -3
-  },
   "version": 1,
-  "timestamp": "2020-02-19T09:26:04.676Z"
+  "timestamp": "2020-02-19T14:10:53.346Z",
+  "rows": [
+    {
+      "sum_production": 11,
+      "sum_consumption": 14,
+      "sum_surplus": -3
+    }
+  ]
 }
 ```
 

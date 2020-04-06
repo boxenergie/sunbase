@@ -1,0 +1,15 @@
+root = true
+
+[*]
+charset = utf-8
+indent_size = 4
+indent_style = tab
+insert_final_newline = true
+max_line_length = 120
+tab_width = 4
+ij_typescript_spaces_within_object_literal_braces = true
+ij_typescript_spaces_within_imports = true
+ij_typescript_keep_simple_blocks_in_one_line = true
+
+[*.sh]
+end_of_line = lf
