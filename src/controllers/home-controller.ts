@@ -51,7 +51,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 									SUM(consumption) AS consumption,
 									SUM(surplus) AS surplus
 									FROM "EnergyRecord"
-									WHERE created_by ='${members.join("' OR created_by = '")}' AND time >= now() - 1d AND time <= now()
+									WHERE (created_by ='${members.join("' OR created_by = '")}') AND time >= now() - 1d AND time <= now()
 									GROUP BY time(15m) fill(none)`);
 						communitiesData.push({
 							name: community.username,

@@ -17,7 +17,7 @@ function HomePage(props) {
 		return (
 			<article key={community.name}>
 				<h5>{community.name}</h5>
-				{hasCommunityData && <PCSChart id={`${community.username}Chart`} data={community.data}/>}
+				{hasCommunityData && <PCSChart id={`${community.name}Chart`} data={community.data}/>}
 				{!hasCommunityData && <p>No community records</p>}
 			</article>
 		);
