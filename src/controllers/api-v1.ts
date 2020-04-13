@@ -22,7 +22,6 @@ import { Validator } from 'jsonschema';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
-import User from '../models/User';
 
 const validator = new Validator();
 const addEnergyRecordSchema = {
@@ -37,6 +36,7 @@ const addEnergyRecordSchema = {
 			minimum: 0
 		},
 		raspberry_uuid: {
+			// FIXME free sql injection
 			type: 'string'
 		}
 	}
@@ -61,6 +61,7 @@ const addWindRecordSchema = {
 			type: 'number'
 		},
 		raspberry_uuid: {
+			// FIXME free sql injection
 			type: 'string'
 		}
 	}
@@ -144,9 +145,6 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 
 	try {
 		// Check if specified user exists
-		// FIXME unknown raspberrys must be supported somehow
-		await User.findById(req.body.raspberry_uuid).orFail();
-
 		const currentIdx = req.body.production_index;
 		const previousIdx = await InfluxHelper.query(
 			`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_uuid = '${req.body.raspberry_uuid}'`
@@ -219,9 +217,6 @@ export const addWindRecord = async (req: Request, res: Response) => {
 	}
 
 	try {
-		// Check if specified user exists
-		await User.findOne({ _id: req.body.created_by }).orFail();
-
 		await InfluxHelper.insert('WindRecord', [
 			{
 				fields: {
