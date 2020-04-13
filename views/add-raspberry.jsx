@@ -21,8 +21,10 @@ function AddRaspberryPage(props) {
 					<input type="hidden" name="_csrf" value={csrfToken} />
 					<label htmlFor="label">Label:&nbsp;</label>
 					<input type="text" id="label" name="label" /><br/>
+					<label htmlFor="password">Password:&nbsp;</label>
+					<input type="text" id="password" name="password" /><br/>
 					<label htmlFor="production">Current production:&nbsp;</label>
-					<input type="text" id="production" name="production" /><br/>
+					<input type="number" min="0" id="production" name="production" /><br/>
 					<input type="submit" value="submit" />
 				</form>
 

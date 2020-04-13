@@ -43,6 +43,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const MARGIN = 5; // - 5%
 		const production:number = sanitize(Number(req.body.production));
 		const label:string = sanitize(req.body.label);
+		const password:string = sanitize(req.body.password)
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
@@ -68,6 +69,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		try {
 			const raspberry = await User.create({
 				username: `${req.user!.username}/${label}`,
+				password: password,
 				role: 'raspberry',
 				raspberry: {
 					label: label,
@@ -77,7 +79,12 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			
 			await raspberry!.grantPermissionTo(req.user!, 'aggregate' as any);
 
-			succeed('Successfully linked your raspberry to your account !');
+			succeed(`
+				Successfully linked your raspberry to your account !
+				You can connect manage this raspberry by connecting to the following account:
+				Username: ${req.user!.username}/${label}
+				Password: The one you specified
+			`);
 		}
 		catch (err) {
 			error('This raspberry is already linked to an account !')
