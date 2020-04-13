@@ -54,6 +54,7 @@ export async function registerUser(req: Request, res: Response, _: NextFunction)
 		}
 		catch (err) {
 			if (err.name !== 'MongoError') throw err;
+			logger.error(err.message);
 
 			req.flash('error', `Username '${username}' is not available.`);
 			res.redirect('/register');

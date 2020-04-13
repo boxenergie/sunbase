@@ -1,5 +1,5 @@
 /*
- * server.ts
+ * Raspberry.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,22 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import app from './app';
-import logger from './utils/logger';
-import User from './models/User';
+import { Model } from 'models';
+import { Schema } from 'mongoose';
 
-app.on('ready', () => {
-	app.listen(process.env.PORT, async () => {
-		console.log(await User.find({}));
-		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
-	});
+export interface RaspberryDocument extends Model.Raspberry, Document { }
+
+const raspberrySchema = new Schema<RaspberryDocument>({
+	label: { type: String, trim: true, required: true },
+	uuid: {
+		type: String,
+		trim: true,
+		required: true,
+		index: {
+			unique: true,
+			// @ts-ignore
+			// Unique rule only applies if 'uuid' is NOT null
+			partialFilterExpression: { 'raspberry.uuid': { $type: 'string' } }
+		},
+	},
 });
 
-process.on('unhandledRejection', function(err) {
-	// @ts-ignore
-	logger.error(`Unhandled Rejection: ${err.message}`)
-});
-
-process.on('uncaughtException', function(err) {
-	logger.error(`Uncaught Exception: ${err.message}`)
-});
+export default raspberrySchema;

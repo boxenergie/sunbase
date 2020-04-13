@@ -36,14 +36,7 @@ const addEnergyRecordSchema = {
 			type: 'number',
 			minimum: 0
 		},
-		created_by: {
-			type: 'string',
-			pattern: /^[0-9a-fA-F]{24}$/,
-		},
-		username: {
-			type: 'string'
-		},
-		password: {
+		raspberry_uuid: {
 			type: 'string'
 		}
 	}
@@ -67,14 +60,7 @@ const addWindRecordSchema = {
 		relative_orientation: {
 			type: 'number'
 		},
-		created_by: {
-			type: 'string',
-			pattern: /^[0-9a-fA-F]{24}$/,
-		},
-		username: {
-			type: 'string'
-		},
-		password: {
+		raspberry_uuid: {
 			type: 'string'
 		}
 	}
@@ -149,7 +135,7 @@ export const getAllEnergyRecords = async (req: Request, res: Response) => {
  * Required request parameters:
  *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
- *  - STRING created_by
+ *  - STRING raspberry_uuid
  */
 export const addEnergyRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
@@ -157,23 +143,25 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 	}
 
 	try {
+		// ! TODO New index (old - current)
+
 		// Check if specified user exists
-		const user = await User.findById(req.body.created_by).orFail();
+		await User.findById(req.body.created_by).orFail();
 
 		await InfluxHelper.insert('EnergyRecord', [
 			{
 				fields: {
 					production: req.body.production,
 					consumption: req.body.consumption,
-					surplus: (req.body.production - req.body.consumption)
+					surplus: (req.body.production - req.body.consumption),
 				},
-				tags: { created_by: req.body.created_by },
+				tags: { raspberry_uuid: req.body.raspberry_uuid },
 			}
 		]);
 
 		logger.debug('Successfully added Energy Record: ' +
 			`${req.body.production} | ${req.body.consumption} ` +
-			`by '${req.user?.username}' (${req.body.created_by})`
+			`by '${req.body.raspberry_uuid}'`
 		);
 
 		return res.api('Successfully added your Energy Record');
@@ -213,7 +201,7 @@ export const getAllWindRecords = async (req: Request, res: Response) => {
  *  - FLOAT production >= 0
  *  - FLOAT rotor_speed >= 0
  *  - FLOAT relative_orientation
- *  - STRING created_by
+ *  - STRING raspberry_uuid
  */
 export const addWindRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addWindRecordSchema).valid) {
@@ -222,7 +210,7 @@ export const addWindRecord = async (req: Request, res: Response) => {
 
 	try {
 		// Check if specified user exists
-		const user = await User.findOne({ _id: req.body.created_by }).orFail();
+		await User.findOne({ _id: req.body.created_by }).orFail();
 
 		await InfluxHelper.insert('WindRecord', [
 			{
@@ -230,16 +218,16 @@ export const addWindRecord = async (req: Request, res: Response) => {
 					wind_speed: req.body.wind_speed,
 					production: req.body.production,
 					rotor_speed: req.body.rotor_speed,
-					relative_orientation: req.body.relative_orientation
+					relative_orientation: req.body.relative_orientation,
 				},
-				tags: { created_by: req.body.created_by },
+				tags: { raspberry_uuid: req.body.raspberry_uuid },
 			}
 		]);
 
 		logger.debug('Successfully added Wind Record: ' +
 			`${req.body.wind_speed} | ${req.body.production} | ` +
 			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
-			`by '${req.user?.username}' (${req.body.created_by})`
+			`by '${req.body.raspberry_uuid}'`
 		);
 
 		return res.api('Successfully added your Wind Record');

@@ -1,5 +1,5 @@
 /*
- * server.ts
+ * add-raspberry-controller.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -17,22 +17,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import app from './app';
-import logger from './utils/logger';
-import User from './models/User';
+import { NextFunction, Response, Request } from 'express';
 
-app.on('ready', () => {
-	app.listen(process.env.PORT, async () => {
-		console.log(await User.find({}));
-		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
-	});
-});
+import logger from '../utils/logger';
 
-process.on('unhandledRejection', function(err) {
-	// @ts-ignore
-	logger.error(`Unhandled Rejection: ${err.message}`)
-});
+export async function renderAddRaspberryPage(req: Request, res: Response, next: NextFunction) {
+	try {
+		res.render('add-raspberry', {
+			csrfToken: req.csrfToken(),
+			errorMsg: req.flash('errorMsg'),
+			successMsg: req.flash('successMsg'),
+		});
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Something went wrong');
+	}
+}
 
-process.on('uncaughtException', function(err) {
-	logger.error(`Uncaught Exception: ${err.message}`)
-});
+export async function addRaspberry(req: Request, res: Response, next: NextFunction) {
+	try {
+		// ! TODO
+
+		return res.redirect('/profil/add-raspberry');
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Something went wrong');
+	}
+}

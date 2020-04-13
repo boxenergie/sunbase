@@ -118,6 +118,7 @@ function ProfilPage(props) {
 					</fieldset>
 				</form>
     
+				<a href="/profil/add-raspberry"><button>Add new Raspberry</button></a>
     			<a href="/"><button>Home</button></a>
 				<Footer />
 			</body>
