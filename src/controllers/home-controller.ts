@@ -21,7 +21,7 @@ import { NextFunction, Response, Request } from 'express';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
-import User from "../models/User";
+import User from '../models/User';
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {

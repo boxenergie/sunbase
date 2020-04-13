@@ -133,8 +133,8 @@ export async function removePermission(req: Request, res: Response, next: NextFu
 		const deletedPermissionType = req.query.rmPerm;
 		const granteeName = req.query.rmUser;
 		const granterName = req.query.rmGranter;
-		const permissionGranter = granterName ? await User.findOne({username: req.query.rmGranter}) : req.user;
-		const permissionGrantee = granteeName ? await User.findOne({username: req.query.rmUser}) : req.user;
+		const permissionGranter = granterName ? await User.findOne({ username: req.query.rmGranter as string }) : req.user;
+		const permissionGrantee = granteeName ? await User.findOne({ username: req.query.rmUser as string }) : req.user;
 
 		if (!deletedPermissionType || !(granteeName || granterName) || (req.user !== permissionGrantee && req.user !== permissionGranter)) {
 			errorMsg = `Error while deleting permission:${deletedPermissionType} from: ${granterName} to:${granteeName}`;
