@@ -40,6 +40,7 @@ import * as authController from './controllers/auth-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
 import * as otherDataController from './controllers/other-data-controller';
+import * as registerController from './controllers/register-controller';
 
 // Create Express server
 const app = express();
@@ -108,6 +109,8 @@ appRouter.post('/login', isNotLoggedIn(), passport.authenticate('local',
 		failureFlash: 'Invalid username or password.'
 	}
 ));
+appRouter.get('/register', isNotLoggedIn(), registerController.renderRegisterPage);
+appRouter.post('/register', isNotLoggedIn(), registerController.registerUser);
 appRouter.get('/logout', isLoggedIn(), authController.logOut);
 
 /**
