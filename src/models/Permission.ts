@@ -17,11 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Schema, Types } from 'mongoose';
-import User, { UserDocument } from '../models/User';
 import { Model } from 'models';
-import logger from "../utils/logger";
+import { Schema, Types } from 'mongoose';
 
+import User, { UserDocument } from '../models/User';
 
 export interface PermissionDocument extends Model.Permission.Data, Document { }
 

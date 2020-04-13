@@ -18,8 +18,8 @@
  */
 
 import bcrypt from 'bcrypt';
-import { Document, Schema, Types } from 'mongoose';
 import { Model } from 'models';
+import { Document, Schema, Types } from 'mongoose';
 
 import { permissionSchema, isPermissionType } from './Permission';
 import MongoClient from '../db/mongodb';

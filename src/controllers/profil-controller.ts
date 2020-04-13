@@ -18,11 +18,9 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
-import {models, Types} from 'mongoose';
 
 import logger from '../utils/logger';
-import User, { UserDocument } from '../models/User';
-import sanitize from "mongo-sanitize";
+import User from '../models/User';
 
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 
