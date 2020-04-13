@@ -149,7 +149,7 @@ export async function removePermission(req: Request, res: Response, next: NextFu
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);
 		} else {
-			await permissionGranter!.revokePermissionFrom(permissionGrantee!, deletedPermissionType);
+			await permissionGranter!.revokePermissionFrom(permissionGrantee!, deletedPermissionType as any);
 			req.flash('successMsg', 'Remove permission ' + deletedPermissionType + ' to ' + (granteeName || 'myself'));
 		}
 		return res.redirect('/profil');
