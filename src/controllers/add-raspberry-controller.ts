@@ -18,8 +18,11 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
+import sanitize from 'mongo-sanitize';
 
+import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
+import User from '../models/User';
 
 export async function renderAddRaspberryPage(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -36,9 +39,52 @@ export async function renderAddRaspberryPage(req: Request, res: Response, next: 
 
 export async function addRaspberry(req: Request, res: Response, next: NextFunction) {
 	try {
-		// ! TODO
+		// Margin of error allowed to find a correct production_index
+		const MARGIN = 5; // - 5%
+		const production:number = sanitize(Number(req.body.production));
+		const label:string = sanitize(req.body.label);
+		const error = (msg: string) => req.flash('errorMsg', msg);
+		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		return res.redirect('/profil/add-raspberry');
+		const result = await InfluxHelper.query(
+			`SELECT *
+			FROM EnergyRecord
+			WHERE 
+			production_index > ${production * ((100-MARGIN)/100)}
+			AND production_index < ${production}
+			AND time >= now() - 1h
+			AND time <= now()`
+		);
+
+		if (result.rows.length == 0) {
+			error('Your production is invalid.');
+			return res.redirect('/profil/add-raspberry');
+		}
+		else if (result.rows.length > 1) {
+			error('Please retry in 1h.');
+			return res.redirect('/profil/add-raspberry');
+		};
+
+		try {
+			const raspberry = await User.create({
+				username: `${req.user!.username}/${label}`,
+				role: 'raspberry',
+				raspberry: {
+					label: label,
+					uuid: result.rows[0].raspberry_uuid
+				}
+			});
+			
+			await raspberry!.grantPermissionTo(req.user!, 'aggregate' as any);
+
+			succeed('Successfully linked your raspberry to your account !');
+		}
+		catch (err) {
+			error('This raspberry is already linked to an account !')
+		}
+		finally {
+			return res.redirect('/profil/add-raspberry');
+		}
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');
