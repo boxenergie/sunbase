@@ -41,6 +41,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 				if (permissions.includes(AGGREGATE)) {
 					const community = await User.findById(communityId);
 					if (community) {
+						// TODO recursively gather community members (raspberry of member of member of member of community)
 						const members = [];
 						for (const [userId, perms] of community.permissions.granted) {
 							if (perms.includes(AGGREGATE)) {
@@ -51,7 +52,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 									SUM(consumption) AS consumption,
 									SUM(surplus) AS surplus
 									FROM "EnergyRecord"
-									WHERE (created_by ='${members.join("' OR created_by = '")}') AND time >= now() - 1d AND time <= now()
+									WHERE (raspberry_uuid ='${members.join("' OR created_by = '")}') AND time >= now() - 1d AND time <= now()
 									GROUP BY time(15m) fill(none)`);
 						communitiesData.push({
 							name: community.username,
@@ -72,7 +73,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
 			FROM "EnergyRecord"
-			WHERE created_by = '${req.user?.id}' AND time >= now() - 1d AND time <= now()
+			WHERE raspberry_uuid = '${req.user?.id}' AND time >= now() - 1d AND time <= now()
 			GROUP BY time(15m) fill(none)`
 		);
 
