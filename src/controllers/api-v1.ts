@@ -28,7 +28,7 @@ const validator = new Validator();
 const addEnergyRecordSchema = {
 	type: 'object',
 	properties: {
-		production: {
+		production_index: {
 			type: 'number',
 			minimum: 0
 		},
@@ -143,24 +143,34 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 	}
 
 	try {
-		// ! TODO New index (old - current)
-
 		// Check if specified user exists
-		await User.findById(req.body.created_by).orFail();
+		// FIXME unknown raspberrys must be supported somehow
+		await User.findById(req.body.raspberry_uuid).orFail();
+
+		const currentIdx = req.body.production_index;
+		const previousIdx = await InfluxHelper.query(
+			`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_uuid = '${req.body.raspberry_uuid}'`
+		);
+		// if it's the first index, we can't know the production
+		const isFirstIndex = previousIdx.rows.length == 0;
+		const production = isFirstIndex ? 0 : (currentIdx - previousIdx.rows[0].last);
+		const consumption = isFirstIndex ? 0 : (req.body.consumption);
+		const surplus = production - consumption;
 
 		await InfluxHelper.insert('EnergyRecord', [
 			{
 				fields: {
-					production: req.body.production,
-					consumption: req.body.consumption,
-					surplus: (req.body.production - req.body.consumption),
+					production_index: currentIdx,
+					production,
+					consumption,
+					surplus,
 				},
 				tags: { raspberry_uuid: req.body.raspberry_uuid },
 			}
 		]);
 
 		logger.debug('Successfully added Energy Record: ' +
-			`${req.body.production} | ${req.body.consumption} ` +
+			`${req.body.production_index} | ${req.body.consumption} ` +
 			`by '${req.body.raspberry_uuid}'`
 		);
 
