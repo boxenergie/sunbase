@@ -41,6 +41,6 @@ const fetchAFULData = async (fireDate: Date) => {
 		logger.error(`Impossible to fetch Meteo Control data: ${err.message}; ${err?.response.data.message}`)
 	}
 };
-jobs.push(['*/1 * * * *', fetchAFULData]);
+jobs.push(['*/5 * * * *', fetchAFULData]);
 
 export default jobs;
