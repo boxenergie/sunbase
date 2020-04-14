@@ -21,24 +21,26 @@ import axios from 'axios';
 
 import logger from '../utils/logger';
 
-const apiURL = 'http://ws.meteocontrol.de/api/sites/XRA24/data/energygeneration'
+const meteoControlApiURL = 'http://ws.meteocontrol.de/api/sites/XRA24/data/energygeneration';
+const sunShareApiURL = `http://localhost:${process.env.PORT}/api/v1/energy`;
+
 const jobs: Array<[string, (fireDate: Date) => void]> = [];
 
 const fetchAFULData = async (fireDate: Date) => {
 	try {
-		const data: any = await axios.get(`${apiURL}?apiKey=${process.env.METEO_CONTROL_API_KEY}`);
-        const last = data.chartData.data.reverse().find((v: [number, number]) => v[1] !== null);
+		const res: any = await axios.get(`${meteoControlApiURL}?apiKey=${process.env.METEO_CONTROL_API_KEY}`);
+        const last = res.data.chartData.data.reverse().find((v: [number, number]) => v[1] !== null);
 
-		await axios.post('/api/v1/energy', {
+		await axios.post(sunShareApiURL, {
 			production: last[1],
 			raspberry_uuid: 'AFUL',
 		});
 
-		logger.info('Succesfully fetch data from Meteo Control');
+		logger.info(`Succesfully fetch data from Meteo Control: ${last[1]} kW`);
 	} catch (err) {
-		logger.error(`Impossible to fetch Meteo Control data: ${err.message}`)
+		logger.error(`Impossible to fetch Meteo Control data: ${err.message}; ${err?.response.data.message}`)
 	}
 };
-jobs.push(['*/5 * * * *', fetchAFULData]);
+jobs.push(['*/1 * * * *', fetchAFULData]);
 
 export default jobs;
