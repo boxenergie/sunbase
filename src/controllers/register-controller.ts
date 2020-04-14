@@ -53,11 +53,23 @@ export async function registerUser(req: Request, res: Response, _: NextFunction)
 			res.redirect('/');
 		}
 		catch (err) {
-			if (err.name !== 'MongoError') throw err;
-			logger.error(err.message);
+			if (err.name === 'MongoError') {
+				logger.debug(err.message);
 
-			req.flash('error', `Username '${username}' is not available.`);
-			res.redirect('/register');
+				req.flash('error', `Username '${username}' is not available.`);
+				res.redirect('/register');
+			}
+			else if (err.name === 'ValidationError') {
+				logger.debug(err.message);
+
+				req.flash('error',
+					`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`
+				);
+				res.redirect('/register');
+			}
+			else {
+				throw err;
+			}
 		}
 	} catch (err) {
 		logger.error(err.message);

@@ -95,7 +95,17 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			`);
 		}
 		catch (err) {
-			error('This raspberry is already linked to an account !')
+			if (err.name === 'ValidationError') {
+				logger.debug(err.message);
+
+				req.flash('error',
+					`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`
+				);
+				res.redirect('/register');
+			}
+			else {
+				error('This raspberry is already linked to an account !');
+			}
 		}
 		finally {
 			return res.redirect('/profil/add-raspberry');
