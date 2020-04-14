@@ -41,38 +41,60 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 	try {
 		// Margin of error allowed to find a correct production_index
 		const MARGIN = 5; // - 5%
-		const production:number = sanitize(Number(req.body.production));
 		const label:string = sanitize(req.body.label);
-		const password:string = sanitize(req.body.password)
+		const password:string = sanitize(req.body.password);
+		const production:number = sanitize(Number(req.body?.production));
+		const uuid: string = sanitize(req.body?.uuid);
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		/**
-		 * Try to find all results between
-		 * production - 5% < ? < production
-		 * Only the latest record of each UNIQUE raspberry is kept
-		 */
-		const result = await InfluxHelper.query(
-			`SELECT *
-			FROM EnergyRecord
-			WHERE 
-			production_index > ${production * ((100-MARGIN)/100)}
-			AND production_index <= ${production}
-			AND time >= now() - 1h
-			AND time <= now()
-			GROUP BY raspberry_uuid
-			ORDER BY desc
-			LIMIT 1`
-		);
+		let result = null;
+		// Production, no UUID
+		if (production) {
+			/**
+			 * Try to find all results between
+			 * production - 5% < ? < production
+			 * Only the latest record of each UNIQUE raspberry is kept
+			 */
+			result = await InfluxHelper.query(
+				`SELECT *
+				FROM EnergyRecord
+				WHERE 
+				production_index > ${production * ((100-MARGIN)/100)}
+				AND production_index <= ${production}
+				AND time >= now() - 1h
+				AND time <= now()
+				GROUP BY raspberry_uuid
+				ORDER BY desc
+				LIMIT 1`
+			);
 
-		if (result.rows.length == 0) {
-			error('Your production is invalid.');
-			return res.redirect('/profil/add-raspberry');
+			if (result.rows.length == 0) {
+				error('Your production is invalid.');
+				return res.redirect('/profil/add-raspberry');
+			}
+			else if (result.rows.length > 1) {
+				error('Please retry in 1h.');
+				return res.redirect('/profil/add-raspberry');
+			};
 		}
-		else if (result.rows.length > 1) {
-			error('Please retry in 1h.');
-			return res.redirect('/profil/add-raspberry');
-		};
+		// UUID, no production
+		else {
+			// Check there is at least 1 record with this uuid
+			result = await InfluxHelper.query(
+				`SELECT *
+				FROM EnergyRecord
+				WHERE 
+				raspberry_uuid = '${uuid}'
+				AND time >= now() - 1h
+				AND time <= now()`
+			);
+
+			if (result.rows.length === 0) {
+				error('This UUID is not registered in the system.');
+				return res.redirect('/profil/add-raspberry');
+			}
+		}
 
 		try {
 			const raspberry = await User.create({
@@ -81,7 +103,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				role: 'raspberry',
 				raspberry: {
 					label: label,
-					uuid: result.rows[0].raspberry_uuid
+					uuid: uuid ?? result.rows[0].raspberry_uuid
 				}
 			});
 			
@@ -92,6 +114,10 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				You can connect manage this raspberry by connecting to the following account:
 				Username: ${req.user!.username}/${label}
 				Password: The one you specified
+			`);
+
+			logger.info(`
+				Succesfully linked raspberry '${uuid ?? result.rows[0].raspberry_uuid} with user ${req.user!.username}
 			`);
 		}
 		catch (err) {

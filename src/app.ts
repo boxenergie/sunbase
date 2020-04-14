@@ -23,6 +23,7 @@ import dotenv from 'dotenv-safe';
 import express, { Router } from 'express';
 import flash from 'connect-flash';
 import helmet from 'helmet';
+import schedule  from 'node-schedule';
 import passport from 'passport';
 import path from 'path';
 import csrf from 'csurf';
@@ -55,6 +56,12 @@ app.engine('jsx', require('express-react-views').createEngine({
 app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Setup jobs
+import jobs from './config/jobs';
+for (const [jobSchedule, jobFn] of jobs) {
+	schedule.scheduleJob(jobSchedule, jobFn);
+}
 
 /**
  * Middleware
