@@ -107,6 +107,6 @@ GET /api/v1/energy/
 `POST /api/v1/energy/` will let you add your own energy record.
 
 __Required parameters :__
-- `production` : Number >= 0
+- `production_index` : Number >= 0
 - `consumption` : Number >= 0
 - `raspberry_uuid` : Unique ID of the Raspberry.

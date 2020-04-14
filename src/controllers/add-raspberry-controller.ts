@@ -47,6 +47,11 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
+		/**
+		 * Try to find all results between
+		 * production - 5% < ? < production
+		 * Only the latest record of each UNIQUE raspberry is kept
+		 */
 		const result = await InfluxHelper.query(
 			`SELECT *
 			FROM EnergyRecord
@@ -54,7 +59,10 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			production_index > ${production * ((100-MARGIN)/100)}
 			AND production_index < ${production}
 			AND time >= now() - 1h
-			AND time <= now()`
+			AND time <= now()
+			GROUP BY raspberry_uuid
+			ORDER BY desc
+			LIMIT 1`
 		);
 
 		if (result.rows.length == 0) {

@@ -22,7 +22,7 @@ function AddRaspberryPage(props) {
 					<label htmlFor="label">Label:&nbsp;</label>
 					<input type="text" id="label" name="label" /><br/>
 					<label htmlFor="password">Password:&nbsp;</label>
-					<input type="text" id="password" name="password" /><br/>
+					<input type="password" id="password" name="password" /><br/>
 					<label htmlFor="production">Current production:&nbsp;</label>
 					<input type="number" min="0" id="production" name="production" /><br/>
 					<input type="submit" value="submit" />
