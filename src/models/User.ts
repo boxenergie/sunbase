@@ -65,10 +65,18 @@ export interface UserDocument extends Model.User, Document {
 // @ts-ignore
 const isRaspberry = function() { this.role === 'raspberry'; }
 
-const regexUsername = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_\/]{3,20}$/i;
-const regexPassword = /^.{8,80}$/i;
+export const regexUsername = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_][^\/]{3,20}$/i;
+export const regexUsernameRaspberry = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_\/]{7,41}$/i;
+const validateUsername = function(v: string) {
+	// @ts-ignore
+	return (this.role === 'raspberry')
+		? regexUsernameRaspberry.test(v)
+		: regexUsername.test(v);
+}
+export const regexPassword = /^.{8,80}$/i;
+
 const userSchema = new Schema<UserDocument>({
-	username: { type: String, trim: true, required: true, unique: true, validate: regexUsername },
+	username: { type: String, trim: true, required: true, unique: true, validate: validateUsername },
 	password: { type: String, trim: true, required: true, validate: regexPassword },
 	role: { type: String, required: true, default: 'user', enum: ['user', 'admin', 'raspberry'] },
 	permissions: permissionSchema,
