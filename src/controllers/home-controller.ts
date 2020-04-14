@@ -41,9 +41,9 @@ async function gatherCommunityData(community: UserDocument) {
 			continue;
 		}
 		checkedAccounts.push(aggregateAccount.id);
-		if (aggregateAccount.role === 'raspberry') {
+		if (aggregateAccount.raspberry) {
 			// account is a source of records, assume not a community
-			dataSources.push(aggregateAccount.id);
+			dataSources.push(aggregateAccount.raspberry.uuid);
 			continue;
 		}
 		// gather users that gave the AGGREGATE permission to this community
