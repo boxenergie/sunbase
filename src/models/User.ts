@@ -65,7 +65,7 @@ export interface UserDocument extends Model.User, Document {
 // @ts-ignore
 const isRaspberry = function() { this.role === 'raspberry'; }
 
-const regexUsername = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-]{3,20}$/i;
+const regexUsername = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_\/]{3,20}$/i;
 const regexPassword = /^.{8,80}$/i;
 const userSchema = new Schema<UserDocument>({
 	username: { type: String, trim: true, required: true, unique: true, validate: regexUsername },
