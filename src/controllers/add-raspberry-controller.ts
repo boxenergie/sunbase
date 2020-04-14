@@ -49,6 +49,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
 		let result = null;
+		// Production, no UUID
 		if (production) {
 			/**
 			 * Try to find all results between
@@ -77,6 +78,23 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				return res.redirect('/profil/add-raspberry');
 			};
 		}
+		// UUID, no production
+		else {
+			// Check there is at least 1 record with this uuid
+			result = await InfluxHelper.query(
+				`SELECT *
+				FROM EnergyRecord
+				WHERE 
+				raspberry_uuid = '${uuid}'
+				AND time >= now() - 1h
+				AND time <= now()`
+			);
+
+			if (result.rows.length === 0) {
+				error('This UUID is not registered in the system.');
+				return res.redirect('/profil/add-raspberry');
+			}
+		}
 
 		try {
 			const raspberry = await User.create({
@@ -85,7 +103,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				role: 'raspberry',
 				raspberry: {
 					label: label,
-					uuid: uuid ?? result!.rows[0].raspberry_uuid
+					uuid: uuid ?? result.rows[0].raspberry_uuid
 				}
 			});
 			
@@ -99,7 +117,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			`);
 
 			logger.info(`
-				Succesfully linked raspberry '${uuid ?? result!.rows[0].raspberry_uuid} with user ${req.user!.username}
+				Succesfully linked raspberry '${uuid ?? result.rows[0].raspberry_uuid} with user ${req.user!.username}
 			`);
 		}
 		catch (err) {
