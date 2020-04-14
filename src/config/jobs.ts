@@ -33,7 +33,7 @@ const fetchAFULData = async (fireDate: Date) => {
 
 		await axios.post(sunShareApiURL, {
 			production: last[1],
-			raspberry_uuid: 'AFUL',
+			raspberry_uuid: '5e800275-1f6a-afff-bbbb-0c271c1d2403',
 		});
 
 		logger.info(`Succesfully fetch data from Meteo Control: ${last[1]} kW`);
