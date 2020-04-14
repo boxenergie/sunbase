@@ -25,21 +25,46 @@ import logger from '../utils/logger';
 
 const validator = new Validator();
 const addEnergyRecordSchema = {
-	type: 'object',
-	properties: {
-		production_index: {
-			type: 'number',
-			minimum: 0,
+	"oneOf": [
+		{
+			type: 'object',
+			properties: {
+				production_index: {
+					type: 'number',
+					minimum: 0,
+				},
+				production: {type: 'undefined'},
+				consumption: {
+					type: 'number',
+					minimum: 0,
+				},
+				raspberry_uuid: {
+					type: 'string',
+					pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/
+				},
+			},
+			required: [ 'production_index', 'consumption', 'raspberry_uuid' ]
 		},
-		consumption: {
-			type: 'number',
-			minimum: 0,
-		},
-		raspberry_uuid: {
-			type: 'string',
-			pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/,
+		{
+			type: 'object',
+			properties: {
+				production_index: { type: 'undefined' },
+				production: {
+					type: 'number',
+					minimum: 0,
+				},
+				consumption: {
+					type: 'number',
+					minimum: 0,
+				},
+				raspberry_uuid: {
+					type: 'string',
+					pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/,
+				}
+			},
+			required: [ 'production', 'raspberry_uuid' ]
 		}
-	}
+	]
 };
 
 const addWindRecordSchema = {
@@ -144,21 +169,30 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 	}
 
 	try {
-		// Check if specified user exists
-		const currentIdx = req.body.production_index;
-		const previousIdx = await InfluxHelper.query(
-			`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_uuid = '${req.body.raspberry_uuid}'`
-		);
-		// if it's the first index, we can't know the production
-		const isFirstIndex = previousIdx.rows.length == 0;
-		const production = isFirstIndex ? 0 : (currentIdx - previousIdx.rows[0].last);
-		const consumption = isFirstIndex ? 0 : (req.body.consumption);
+		let production_index: number;
+		let production: number;
+		let consumption: number;
+
+		if (req.body.production_index !== undefined) {
+			production_index = req.body.production_index;
+			const previousIdx = await InfluxHelper.query(
+				`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_uuid = '${req.body.raspberry_uuid}'`
+			);
+			// if it's the first index, we can't know the production
+			const isFirstIndex = previousIdx.rows.length == 0;
+			production = isFirstIndex ? 0 : (production_index - previousIdx.rows[0].last);
+			consumption = isFirstIndex ? 0 : (req.body.consumption);
+		} else {
+			production_index = 0;
+			production = req.body.production ?? 0;
+			consumption = req.body.consumption ?? 0;
+		}
 		const surplus = production - consumption;
 
 		await InfluxHelper.insert('EnergyRecord', [
 			{
 				fields: {
-					production_index: currentIdx,
+					production_index,
 					production,
 					consumption,
 					surplus,
