@@ -57,7 +57,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			FROM EnergyRecord
 			WHERE 
 			production_index > ${production * ((100-MARGIN)/100)}
-			AND production_index < ${production}
+			AND production_index <= ${production}
 			AND time >= now() - 1h
 			AND time <= now()
 			GROUP BY raspberry_uuid
