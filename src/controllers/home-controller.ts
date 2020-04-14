@@ -17,11 +17,58 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
-import User from '../models/User';
+import User, { UserDocument } from '../models/User';
+
+async function gatherCommunityData(community: UserDocument) {
+	const AGGREGATE = 'aggregate' as any;
+	// the data producers (ie. energy boxes) in the community
+	const dataSources = [];
+	// all accounts having already been checked (avoids recursion, when 2 communities include each other)
+	const checkedAccounts: string[] = [];
+	// accounts to check
+	const accountsStack = [community.id];
+	// recursively gather community members (raspberry of user, user member of community, community member of community)
+	while (accountsStack.length > 0) {
+		// assert there is at least one element in communitiesStack
+		const accountId = accountsStack.pop();
+		const aggregateAccount = await User.findById(accountId);
+		if (!aggregateAccount || checkedAccounts.includes(aggregateAccount.id)) {
+			// no account with that id, or already checked. Skip.
+			continue;
+		}
+		checkedAccounts.push(aggregateAccount.id);
+		if (aggregateAccount.role === 'raspberry') {
+			// account is a source of records, assume not a community
+			dataSources.push(aggregateAccount.id);
+			continue;
+		}
+		// gather users that gave the AGGREGATE permission to this community
+		for (const [userId, perms] of aggregateAccount.permissions.granted) {
+			if (perms.includes(AGGREGATE)) {
+				accountsStack.push(userId);
+			}
+		}
+	}
+	const communityResult = await InfluxHelper.query(`SELECT SUM(production) AS production,
+								SUM(consumption) AS consumption,
+								SUM(surplus) AS surplus
+								FROM "EnergyRecord"
+								WHERE (raspberry_uuid ='${dataSources.join("' OR created_by = '")}') AND time >= now() - 1d AND time <= now()
+								GROUP BY time(15m) fill(none)`);
+	return {
+		name: community.username,
+		data: {
+			time: communityResult.rows.map((r: any) => r.time.toNanoISOString()),
+			production: communityResult.rows.map((r: any) => r.production),
+			consumption: communityResult.rows.map((r: any) => r.consumption),
+			surplus: communityResult.rows.map((r: any) => r.surplus),
+		}
+	};
+}
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -40,42 +87,16 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 				const AGGREGATE = 'aggregate' as any;
 				if (permissions.includes(AGGREGATE)) {
 					const community = await User.findById(communityId);
-					if (community) {
-						// TODO recursively gather community members (raspberry of member of member of member of community)
-						const members = [];
-						for (const [userId, perms] of community.permissions.granted) {
-							if (perms.includes(AGGREGATE)) {
-								members.push(userId);
-							}
-						}
-						const communityResult = await InfluxHelper.query(`SELECT SUM(production) AS production,
-									SUM(consumption) AS consumption,
-									SUM(surplus) AS surplus
-									FROM "EnergyRecord"
-									WHERE (raspberry_uuid ='${members.join("' OR created_by = '")}') AND time >= now() - 1d AND time <= now()
-									GROUP BY time(15m) fill(none)`);
-						communitiesData.push({
-							name: community.username,
-							data: {
-								time: communityResult.rows.map((r: any) => r.time.toNanoISOString()),
-								production: communityResult.rows.map((r: any) => r.production),
-								consumption: communityResult.rows.map((r: any) => r.consumption),
-								surplus: communityResult.rows.map((r: any) => r.surplus),
-							}
-						})
+					if (!community) {
+						// no community with that id, skip
+						continue;
 					}
+					communitiesData.push(await gatherCommunityData(community));
 				}
 			}
 		}
 
-		const userResults = await InfluxHelper.query(
-			`SELECT SUM(production) AS production,
-			SUM(consumption) AS consumption,
-			SUM(surplus) AS surplus
-			FROM "EnergyRecord"
-			WHERE raspberry_uuid = '${req.user?.id}' AND time >= now() - 1d AND time <= now()
-			GROUP BY time(15m) fill(none)`
-		);
+		const userData = req.user ? (await gatherCommunityData(req.user)).data : {time: [], production: [], consumption: [], surplus: []};
 
 		res.render('home', {
 			globalData: {
@@ -84,12 +105,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 				consumption: globalResults.rows.map((r: any) => r.consumption),
 				surplus: globalResults.rows.map((r: any) => r.surplus),
 			},
-			userData: {
-				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
-				production: userResults.rows.map((r: any) => r.production),
-				consumption: userResults.rows.map((r: any) => r.consumption),
-				surplus: userResults.rows.map((r: any) => r.surplus),
-			},
+			userData,
 			communitiesData,
 			user: req.user,
 		});
