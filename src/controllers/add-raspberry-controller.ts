@@ -93,6 +93,10 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				Username: ${req.user!.username}/${label}
 				Password: The one you specified
 			`);
+
+			logger.info(`
+				Succesfully linked raspberry '${result.rows[0].raspberry_uuid} with user ${req.user!.username}
+			`);
 		}
 		catch (err) {
 			if (err.name === 'ValidationError') {

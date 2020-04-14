@@ -65,7 +65,9 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 		} else {
 			try {
 				await User.deleteOne({ _id: sanitize(deletedUserId) });
+				
 				succeed('User deleted.');
+				logger.info(`User '${deletedUserId}' deleted by admin.`);
 			} catch (err) {
 				error('Username did not exist');
 			}
