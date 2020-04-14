@@ -58,7 +58,7 @@ async function gatherCommunityData(community: UserDocument) {
 								SUM(surplus) AS surplus
 								FROM "EnergyRecord"
 								WHERE (raspberry_uuid ='${dataSources.join("' OR raspberry_uuid = '")}') AND time >= now() - 1d AND time <= now()
-c								GROUP BY time(15m) fill(none)`);
+								GROUP BY time(15m) fill(none)`);
 	return {
 		name: community.username,
 		data: {
