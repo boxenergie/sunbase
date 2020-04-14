@@ -18,8 +18,8 @@
  */
 
 import bcrypt from 'bcrypt';
-import { Document, Schema, Types } from 'mongoose';
 import { Model } from 'models';
+import { Document, Schema, Types } from 'mongoose';
 
 import { permissionSchema, isPermissionType } from './Permission';
 import MongoClient from '../db/mongodb';
@@ -79,29 +79,6 @@ userSchema.methods.hasPermissionFrom = function (granter: string, permissionType
 	return false;
 };
 
-userSchema.methods.grantPermissionTo = function (user, permissionType) {
-	if (isPermissionType(permissionType)) {
-		const granting = new Set(this.permissions.granting.get(user.id));
-		granting.add(permissionType);
-		this.permissions.granting.set(user.id, [...granting]);
-
-		const granted = new Set(user.permissions.granted.get(this.id));
-		granted.add(permissionType);
-		user.permissions.granted.set(this.id, [...granting]);
-		return Promise.all([this.save(), user.save()]);
-	}
-	return Promise.resolve();
-};
-
-userSchema.methods.revokePermissionFrom = function (user, permissionType) {
-	if (isPermissionType(permissionType)) {
-		removePermRef(this.permissions.granting, user.id, permissionType);
-		removePermRef(user.permissions.granted, this.id, permissionType);
-		return Promise.all([this.save(), user.save()]);
-	}
-	return Promise.resolve();
-};
-
 userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) {
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 };
@@ -117,18 +94,17 @@ userSchema.methods.grantPermissionTo = function(user, permissionType) {
 		user.permissions.granted.set(this.id, [...granting]);
 		return Promise.all([this.save(), user.save()]);
 	}
-	logger.info('Pas une perm');
-	return Promise.resolve();
-}
+	return Promise.reject(`${permissionType} is not a valid permission`);
+};
 
-userSchema.methods.revokePermissionFrom = function(user, permissionType) {
+userSchema.methods.revokePermissionFrom = function (user, permissionType) {
 	if (isPermissionType(permissionType)) {
 		removePermRef(this.permissions.granting, user.id, permissionType);
 		removePermRef(user.permissions.granted, this.id, permissionType);
 		return Promise.all([this.save(), user.save()]);
 	}
-	return Promise.resolve();
-}
+	return Promise.reject(`${permissionType} is not a valid permission`);
+};
 
 userSchema.pre('save', function(next) {
 	const self = this as UserDocument;

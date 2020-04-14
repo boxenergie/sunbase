@@ -17,11 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Schema, Types } from 'mongoose';
-import User, { UserDocument } from '../models/User';
 import { Model } from 'models';
-import logger from "../utils/logger";
+import { Schema, Types } from 'mongoose';
 
+import User, { UserDocument } from '../models/User';
 
 export interface PermissionDocument extends Model.Permission.Data, Document { }
 
@@ -32,7 +31,8 @@ export const permissionSchema = new Schema<PermissionDocument>({
 
 export function isPermissionType(permType: any): permType is Model.Permission.Type {
 	return typeof permType === 'string' && (
-		permType === 'read'
+		permType === 'read' ||
+		permType === 'aggregate'
 	);
 }
 
@@ -46,7 +46,7 @@ permissionSchema.methods.resolveForDisplay = async function() {
 		granting: remapPermissions(this.granting, allUsers)
 	};
 	return permissions;
-}
+};
 
 function indexNames(users: UserDocument[]): {[k: string]: string} {
 	return Object.assign({}, ...users.map((u) => ({ [u._id]: u.username })));

@@ -17,16 +17,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from "express";
+import { NextFunction, Response, Request } from 'express';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
-import { Model } from "models";
 import User from "../models/User";
 
 export async function renderOtherDataPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		let granter = (await User.findOne({username: req.query.showUser}));
+		let granter = await User.findOne({ username : req.query.showUser as string });
 		if (!granter || !req.user!.hasPermissionFrom(granter.id, 'read' as any)) {
 			req.flash('errorMsg', 'No read access');
 			return res.redirect('/');
@@ -40,7 +39,7 @@ export async function renderOtherDataPage(req: Request, res: Response, next: Nex
 			GROUP BY time(15m) fill(none)`
 		);
 
-		res.render("other-data", {
+		res.render('other-data', {
 			userData: {
 				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
 				production: userResults.rows.map((r: any) => r.production),
