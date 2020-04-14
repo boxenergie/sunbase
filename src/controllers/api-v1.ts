@@ -164,8 +164,9 @@ export const getAllEnergyRecords = async (req: Request, res: Response) => {
  *  - STRING raspberry_uuid
  */
 export const addEnergyRecord = async (req: Request, res: Response) => {
-	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
-		return res.status(400).api('Missing one or more required fields or wrong type');
+	const validation = validator.validate(req.body, addEnergyRecordSchema, {nestedErrors: true} as any);
+	if (!validation.valid) {
+		return res.status(400).api(`Missing one or more required fields or wrong type (${validation})`);
 	}
 
 	try {
@@ -202,7 +203,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 		]);
 
 		logger.debug('Successfully added Energy Record: ' +
-			`${req.body.production_index} | ${req.body.consumption} ` +
+			`${production} | ${consumption} ` +
 			`by '${req.body.raspberry_uuid}'`
 		);
 
