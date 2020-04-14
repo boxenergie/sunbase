@@ -22,7 +22,8 @@ import { Schema } from 'mongoose';
 
 export interface RaspberryDocument extends Model.Raspberry, Document { }
 
-const regexLabel = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-]{3,20}$/i;
+// Care with User$regexUsernameRaspberry
+const regexLabel = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_][^\/]{3,20}$/i;
 const raspberrySchema = new Schema<RaspberryDocument>({
 	label: { type: String, trim: true, required: true, validate: regexLabel },
 	uuid: {

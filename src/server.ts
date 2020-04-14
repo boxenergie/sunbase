@@ -19,11 +19,9 @@
 
 import app from './app';
 import logger from './utils/logger';
-import User from './models/User';
 
 app.on('ready', () => {
 	app.listen(process.env.PORT, async () => {
-		console.log(await User.find({}));
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
 });
