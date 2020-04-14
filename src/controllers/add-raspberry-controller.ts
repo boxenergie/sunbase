@@ -101,7 +101,6 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				req.flash('error',
 					`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`
 				);
-				res.redirect('/profil/add-raspberry');
 			}
 			else {
 				error('This raspberry is already linked to an account !');
