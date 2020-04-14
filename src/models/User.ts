@@ -22,6 +22,7 @@ import { Model } from 'models';
 import { Document, Schema, Types } from 'mongoose';
 
 import { permissionSchema, isPermissionType } from './Permission';
+import raspberrySchema from './Raspberry'
 import MongoClient from '../db/mongodb';
 import logger from '../utils/logger';
 import Session from '../models/Session';
@@ -61,11 +62,22 @@ export interface UserDocument extends Model.User, Document {
 	disconnectFromAllDevices(cb: (err: any) => void): void;
 }
 
+// @ts-ignore
+const isRaspberry = function() { this.role === 'raspberry'; }
+
+const regexUsername = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-]{3,20}$/i;
+const regexPassword = /^.{8,80}$/i;
 const userSchema = new Schema<UserDocument>({
-	username: { type: String, required: true, unique: true },
-	password: { type: String, required: true },
-	role: { type: String, required: true, default: 'user' },
-	permissions: permissionSchema
+	username: { type: String, trim: true, required: true, unique: true, validate: regexUsername },
+	password: { type: String, trim: true, required: true, validate: regexPassword },
+	role: { type: String, required: true, default: 'user', enum: ['user', 'admin', 'raspberry'] },
+	permissions: permissionSchema,
+	raspberry: {
+		type: raspberrySchema,
+		// @ts-ignore
+		// Required only if role is 'raspberry'
+		required: isRaspberry
+	}
 });
 
 userSchema.methods.comparePassword = function (password) {
@@ -110,8 +122,13 @@ userSchema.pre('save', function(next) {
 	const self = this as UserDocument;
 
 	if (!self.permissions) {
-		self.permissions = {granted: new Map(), granting: new Map(), resolveForDisplay: permissionSchema.methods.resolveForDisplay};
+		self.permissions = {
+			granted: new Map(),
+			granting: new Map(),
+			resolveForDisplay: permissionSchema.methods.resolveForDisplay
+		};
 	}
+
 	// If the user is being created or changed, we hash the password
     if(self.isModified('password')) {
 		self.password = bcrypt.hashSync(self.password, 10);

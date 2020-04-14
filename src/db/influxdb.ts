@@ -25,12 +25,13 @@ const influxClient = new Influx.InfluxDB({
 		{
 			measurement: 'EnergyRecord',
 			fields: {
+				production_index: Influx.FieldType.INTEGER,
 				production: Influx.FieldType.INTEGER,
 				consumption: Influx.FieldType.INTEGER,
 				surplus: Influx.FieldType.INTEGER
 			},
 			tags: [
-				'created_by'
+				'raspberry_uuid'
 			]
 		},
 		{
@@ -42,16 +43,9 @@ const influxClient = new Influx.InfluxDB({
 				relative_orientation: Influx.FieldType.FLOAT
 			},
 			tags: [
-				'created_by'
+				'raspberry_uuid'
 			]
 		},
-		{
-			measurement: 'SolarRecord',
-			fields: {},
-			tags: [
-				'created_by'
-			]
-		}
 	]
 });
 

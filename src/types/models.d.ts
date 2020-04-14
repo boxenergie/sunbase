@@ -21,8 +21,14 @@ export namespace Model {
 	interface User {
 		username: string;
 		password: string;
-		role: string;
+		role: 'user' | 'admin' | 'raspberry';
 		permissions: Permission.Data;
+		raspberry?: Raspberry;
+	}
+
+	interface Raspberry {
+		label: string,
+		uuid: string,
 	}
 
 	namespace Permission {
