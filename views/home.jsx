@@ -17,7 +17,7 @@ function HomePage(props) {
 		return (
 			<article key={community.name}>
 				<h5>{community.name}</h5>
-				{hasCommunityData && <PCSChart id={`${community.name}Chart`} data={community.data}/>}
+				{hasCommunityData && <PCSChart id={`community-${community.name.replace(' ', '_')}-chart`} data={community.data}/>}
 				{!hasCommunityData && <p>No community records</p>}
 			</article>
 		);
@@ -35,14 +35,14 @@ function HomePage(props) {
 				{isConnected && <h3>Hello <i>{user.username}</i></h3>}
 				
 				<h4>Global records</h4>
-				{hasGlobalData && <PCSChart id='globalChart' data={globalData} />}
+				{hasGlobalData && <PCSChart id='global-chart' data={globalData} />}
 				{!hasGlobalData && <p>No global records</p>}
 
 				{isInCommunities && <h4>Communities records</h4>}
 				{communitiesHTML}
 
 				{isConnected && <h4>Personal records</h4>}
-				{isConnected && hasUserData && <PCSChart id='userChart' data={userData} />}
+				{isConnected && hasUserData && <PCSChart id='my-chart' data={userData} />}
 				{isConnected && !hasUserData && <p>No personal records</p>}
 
 				{!isConnected && <a href="/login"><button>Login</button></a>}
