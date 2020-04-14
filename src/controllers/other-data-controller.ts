@@ -35,7 +35,7 @@ export async function renderOtherDataPage(req: Request, res: Response, next: Nex
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
 			FROM "EnergyRecord"
-			WHERE created_by = '${granter.id}' AND time >= now() - 1d AND time <= now()
+			WHERE raspberry_uuid = '${granter.id}' AND time >= now() - 1d AND time <= now()
 			GROUP BY time(15m) fill(none)`
 		);
 
