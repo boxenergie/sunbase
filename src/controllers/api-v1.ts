@@ -29,15 +29,15 @@ const addEnergyRecordSchema = {
 	properties: {
 		production_index: {
 			type: 'number',
-			minimum: 0
+			minimum: 0,
 		},
 		consumption: {
 			type: 'number',
-			minimum: 0
+			minimum: 0,
 		},
 		raspberry_uuid: {
-			// FIXME free sql injection
-			type: 'string'
+			type: 'string',
+			pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/,
 		}
 	}
 };
@@ -47,22 +47,22 @@ const addWindRecordSchema = {
 	properties: {
 		wind_speed: {
 			type: 'number',
-			minimum: 0
+			minimum: 0,
 		},
 		production: {
 			type: 'number',
-			minimum: 0
+			minimum: 0,
 		},
 		rotor_speed: {
 			type: 'number',
-			minimum: 0
+			minimum: 0,
 		},
 		relative_orientation: {
-			type: 'number'
+			type: 'number',
 		},
 		raspberry_uuid: {
-			// FIXME free sql injection
-			type: 'string'
+			type: 'string',
+			pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/,
 		}
 	}
 };
