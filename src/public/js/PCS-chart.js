@@ -47,11 +47,24 @@ function createChart(ctx, labels, production, consumption, surplus) {
 			responsive: false,
 			scales: {
 				xAxes: [{
+					scaleLabel: {
+						display: true,
+						labelString: 'Timestamp (hh:mm)'
+					},
 					ticks: {
 						minRotation: 0,
 						maxRotation: 65,
 					},
 				}],
+				yAxes: [{
+					scaleLabel: {
+						display: true,
+						labelString: 'Energy amount (in Watts)'
+					},
+					ticks: {
+						callback: (value) => `${value}W`
+					}
+				}]
 			},
 		}
 	});
