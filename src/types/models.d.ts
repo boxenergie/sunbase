@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { ObjectId } from 'mongodb';
+
 export namespace Model {
 	interface User {
 		username: string;
@@ -29,6 +31,7 @@ export namespace Model {
 	interface Raspberry {
 		label: string,
 		mac: string,
+		owner: ObjectId,
 	}
 
 	namespace Permission {

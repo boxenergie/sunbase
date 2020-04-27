@@ -39,6 +39,7 @@ import * as adminController from './controllers/admin-controller';
 import * as addRaspberryController from './controllers/add-raspberry-controller';
 import * as apiControllerV1 from './controllers/api-v1';
 import * as authController from './controllers/auth-controller';
+import * as deleteRaspberryController from './controllers/delete-raspberry-controller';
 import * as homeController from './controllers/home-controller';
 import * as profilController from './controllers/profil-controller';
 import * as otherDataController from './controllers/other-data-controller';
@@ -131,6 +132,7 @@ appRouter.post('/profil/update_permissions/', isLoggedIn(), profilController.gra
 appRouter.get('/profil/update_permissions/', isLoggedIn(), profilController.removePermission);
 appRouter.get('/profil/add-raspberry', isLoggedIn(), addRaspberryController.renderAddRaspberryPage);
 appRouter.post('/profil/add-raspberry', isLoggedIn(), addRaspberryController.addRaspberry);
+appRouter.get('/profil/delete-raspberry', isLoggedIn(), deleteRaspberryController.renderDeleteRaspberryPage);
 
 /**
  * Admin routes

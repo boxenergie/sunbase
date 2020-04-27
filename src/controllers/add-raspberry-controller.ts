@@ -85,7 +85,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				`SELECT *
 				FROM EnergyRecord
 				WHERE 
-				raspberry_mac = '${mac}'
+				raspberry_mac =~ /(?i)${mac}/
 				AND time >= now() - 1h
 				AND time <= now()`
 			);
@@ -103,7 +103,8 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				role: 'raspberry',
 				raspberry: {
 					label: label,
-					mac: mac ?? result.rows[0].raspberry_mac
+					mac: mac ?? result.rows[0].raspberry_mac,
+					owner: req.user!._id,
 				}
 			});
 			
@@ -124,9 +125,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			if (err.name === 'ValidationError') {
 				logger.debug(err.message);
 
-				req.flash('error',
-					`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`
-				);
+				error(`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`);
 			}
 			else {
 				error('This raspberry is already linked to an account !');

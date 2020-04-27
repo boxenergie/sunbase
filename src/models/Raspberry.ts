@@ -19,11 +19,12 @@
 
 import { Model } from 'models';
 import { Schema } from 'mongoose';
+import { ObjectID } from 'mongodb';
 
 export interface RaspberryDocument extends Model.Raspberry, Document { }
 
-// Care with User$regexUsernameRaspberry
-const regexLabel = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_][^\/]{3,20}$/i;
+// Should be the same as User$regexUsernameRaspberry
+const regexLabel = /[a-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}/;
 const raspberrySchema = new Schema<RaspberryDocument>({
 	label: { type: String, trim: true, required: true, validate: regexLabel },
 	mac: {
@@ -37,6 +38,7 @@ const raspberrySchema = new Schema<RaspberryDocument>({
 			partialFilterExpression: { 'raspberry.mac': { $type: 'string' } }
 		},
 	},
+	owner: { type: ObjectID, trim: true, required: true },
 });
 
 export default raspberrySchema;
