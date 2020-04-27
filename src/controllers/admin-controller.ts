@@ -56,7 +56,7 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
 	try {
-		const deletedUserId = req.query.deleted;
+		const deletedUserId = sanitize(req.query.deleted);
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
@@ -64,12 +64,12 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 			error('You cannot delete yourself.');
 		} else {
 			try {
-				await User.deleteOne({ _id: sanitize(deletedUserId) });
+				await User.deleteOne({ _id: deletedUserId });
 				
 				succeed('User deleted.');
 				logger.info(`User '${deletedUserId}' deleted by admin.`);
 			} catch (err) {
-				error('Username did not exist');
+				error('Username did not exist.');
 			}
 		}
 
