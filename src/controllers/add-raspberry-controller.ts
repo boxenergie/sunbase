@@ -111,10 +111,10 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			await raspberry!.grantPermissionTo(req.user!, 'aggregate' as any);
 
 			succeed(`
-				Successfully linked your raspberry to your account !
-				You can connect manage this raspberry by connecting to the following account:
-				Username: ${req.user!.username}/${label}
-				Password: The one you specified
+				Successfully linked your raspberry to your account !<br>
+				You can connect manage this raspberry by connecting to the following account:<br>
+				<u>Username:</u> <i>${req.user!.username}/${label}</i><br>
+				<u>Password:</u> The one you specified
 			`);
 
 			logger.info(`

@@ -32,8 +32,8 @@ function AdminPage(props) {
 			<body>
 				<h1>Admin Board</h1>
 
-				{hasErrorMsg && <p className='errorMsg'>{errorMsg}</p>}
-				{hasSuccessMsg && <p className='successMsg'>{successMsg}</p>}
+				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
+				{hasSuccessMsg && <p className='successMsg' dangerouslySetInnerHTML={{ __html:successMsg }}></p>}
 
 				<ul>
 					{usersList}

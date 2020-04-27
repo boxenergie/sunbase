@@ -27,9 +27,9 @@ function DeleteRaspberryPage(props) {
 			<body>
 				<h1>Delete Raspberry</h1>
 
-				{hasErrorMsg && <p className='errorMsg'>{errorMsg}</p>}
-				{hasSuccessMsg && <p className='successMsg'>{successMsg}</p>}
-
+				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
+				{hasSuccessMsg && <p className='successMsg' dangerouslySetInnerHTML={{ __html:successMsg }}></p>}
+				
 				{!hasRaspberry && <p>You don't have any linked raspberry yet !</p>}
 				{hasRaspberry && <ul>{raspberryList}</ul>}
 

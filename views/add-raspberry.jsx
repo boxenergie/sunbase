@@ -14,8 +14,8 @@ function AddRaspberryPage(props) {
 			<body>
 				<h1>Add Raspberry</h1>
 
-				{hasErrorMsg && <p className='errorMsg'>{errorMsg}</p>}
-				{hasSuccessMsg && <p className='successMsg'>{successMsg}</p>}
+				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
+				{hasSuccessMsg && <p className='successMsg' dangerouslySetInnerHTML={{ __html:successMsg }}></p>}
 
 				<form action="/profil/add-raspberry" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />

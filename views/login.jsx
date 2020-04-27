@@ -13,7 +13,7 @@ function LoginPage(props) {
 			<body>
 				<h1>Login</h1>
 
-				{hasErrorMsg && <p className='errorMsg'>{errorMsg}</p>}
+				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
 
 				<form action="/login" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
