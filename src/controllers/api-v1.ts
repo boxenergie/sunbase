@@ -33,6 +33,10 @@ const addEnergyRecordSchema = {
 					type: 'number',
 					minimum: 0,
 				},
+				injection_index: {
+					type: 'number',
+					minimum: 0,
+				},
 				withdrawal_index: {
 					type: 'number',
 					minimum: 0,
@@ -51,6 +55,7 @@ const addEnergyRecordSchema = {
 			properties: {
 				production_index: { type: 'undefined' },
 				withdrawal_index: { type: 'undefined' },
+				injection_index: { type: 'undefined' },
 				production: {
 					type: 'number',
 					minimum: 0,
@@ -174,32 +179,46 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 	try {
 		let production_index: number;
 		let withdrawal_index: number;
+		let injection_index: number;
 		let production: number;
 		let consumption: number;
+		let surplus: number;
 
 		if (req.body.production_index !== undefined) {
 			production_index = req.body.production_index;
 			withdrawal_index = req.body.withdrawal_index;
+			injection_index = req.body.injection_index;
 			const previousIdx = await InfluxHelper.query(
-				`SELECT LAST("production_index") as last_production, LAST("withdrawal_index") as last_withdrawal FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
+				`SELECT 
+				LAST("production_index") as last_production, 
+				LAST("withdrawal_index") as last_withdrawal,
+				LAST("injection_index")  as last_injection,
+				FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
 			);
 			// if it's the first index, we can't know the production
 			const isFirstIndex = previousIdx.rows.length == 0;
 			production = isFirstIndex ? 0 : (production_index - previousIdx.rows[0].last_production);
-			consumption = isFirstIndex ? 0 : (withdrawal_index - previousIdx.rows[0].last_withdrawal);
+			const withdrawal = isFirstIndex ? 0 : (withdrawal_index - previousIdx.rows[0].last_withdrawal);
+			const injection = isFirstIndex ? 0 : (injection_index - previousIdx.rows[0].last_injection);
+			if (production < 0 || withdrawal < 0 || injection < 0) logger.warn("One or more indices have shrunk!");
+			if (withdrawal && injection) logger.warn(`Injection (${injection}) and withdrawal (${withdrawal}) are both non-null.`);
+			surplus = injection - withdrawal;
+			consumption = production - surplus;
 		} else {
 			production_index = 0;
 			withdrawal_index = 0;
+			injection_index = 0;
 			production = req.body.production ?? 0;
 			consumption = req.body.consumption ?? 0;
+			surplus = production - consumption
 		}
-		const surplus = production - consumption;
 
 		await InfluxHelper.insert('EnergyRecord', [
 			{
 				fields: {
 					production_index,
 					withdrawal_index,
+					injection_index,
 					production,
 					consumption,
 					surplus,
