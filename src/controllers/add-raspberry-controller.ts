@@ -43,25 +43,25 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const MARGIN = 5; // - 5%
 		const label:string = sanitize(req.body.label);
 		const password:string = sanitize(req.body.password);
-		const production:number = sanitize(Number(req.body?.production));
+		const withdrawal:number = sanitize(Number(req.body?.withdrawal));
 		const mac: string = sanitize(req.body?.mac);
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
 		let result = null;
-		// Production, no MAC
-		if (production) {
+		// Withdrawal, no MAC
+		if (withdrawal) {
 			/**
 			 * Try to find all results between
-			 * production - 5% < ? < production
+			 * [withdrawal - 5% ; withdrawal]
 			 * Only the latest record of each UNIQUE raspberry is kept
 			 */
 			result = await InfluxHelper.query(
 				`SELECT *
 				FROM EnergyRecord
 				WHERE 
-				production_index > ${production * ((100-MARGIN)/100)}
-				AND production_index <= ${production}
+				withdrawal_index >= ${withdrawal * ((100-MARGIN)/100)}
+				AND withdrawal_index <= ${withdrawal}
 				AND time >= now() - 1h
 				AND time <= now()
 				GROUP BY raspberry_mac
@@ -78,7 +78,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				return res.redirect('/profil/add-raspberry');
 			};
 		}
-		// MAC, no production
+		// MAC, no withdrawal
 		else {
 			// Check there is at least 1 record with this mac
 			result = await InfluxHelper.query(

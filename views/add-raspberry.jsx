@@ -23,8 +23,8 @@ function AddRaspberryPage(props) {
 					<input type="text" id="label" name="label" /><br/>
 					<label htmlFor="password">Password:&nbsp;</label>
 					<input type="password" id="password" name="password" /><br/>
-					<label htmlFor="production">Current production:&nbsp;</label>
-					<input type="number" min="0" id="production" name="production" /><br/>
+					<label htmlFor="withdrawal">Current withdrawal (displayed on your Linky):&nbsp;</label>
+					<input type="number" min="0" id="withdrawal" name="withdrawal" /><br/>
 					<input type="submit" value="submit" />
 				</form>
 
