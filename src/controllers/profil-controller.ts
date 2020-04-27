@@ -35,6 +35,7 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
+			user: req.user,
 			permissions,
 		});
 	} catch (err) {

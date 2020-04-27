@@ -31,10 +31,11 @@ function transformPermissionToHTML(permissions, V) {
 }
 
 function ProfilPage(props) {
-	const { errorMsg, successMsg, csrfToken, permissions } = props;
+	const { errorMsg, successMsg, csrfToken, user, permissions } = props;
 	
 	const hasErrorMsg 	= Boolean(errorMsg.length > 0);
 	const hasSuccessMsg = Boolean(successMsg.length > 0);
+	const isUser		= ['admin', 'user'].includes(user.role);
 	
 	const permissionsGranted = transformPermissionToHTML(permissions.granted, [
 		['Cancel', (permName, username) => `?rmGranter=${username}&rmPerm=${permName}`],
@@ -118,7 +119,7 @@ function ProfilPage(props) {
 					</fieldset>
 				</form>
     
-				<a href="/profil/add-raspberry"><button>Add new Raspberry</button></a>
+				{isUser && <a href="/profil/add-raspberry"><button>Add new Raspberry</button></a>}
     			<a href="/"><button>Home</button></a>
 				<Footer />
 			</body>
