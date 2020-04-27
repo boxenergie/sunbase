@@ -63,7 +63,7 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 				await req.user!.save();
 
 				// If it suceeds, change the name of all of his raspberries
-				const raspberries = await User.find({ username: new RegExp(`^${req.user!.username}`) });
+				const raspberries = await User.find({ username: new RegExp(`^${req.user!.username}/`) });
 				
 				for (const r of raspberries) {
 					r.username = r.username.replace(oldUsername, newUsername);
