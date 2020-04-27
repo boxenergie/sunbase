@@ -58,9 +58,9 @@ function ProfilPage(props) {
 				<form action="/profil/update_username/" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
 					<label htmlFor="pwd">Password:&nbsp;</label>
-					<input type="password" id="pwd" name="pwd" /><br/>
+					<input type="password" id="pwd" name="pwd" required /><br/>
 					<label htmlFor="new_username">New username:&nbsp;</label>
-					<input type="text" name="new_username" id="new_username" />
+					<input type="text" name="new_username" id="new_username" required />
 					<input type="submit" value="submit" />
 				</form>
     
@@ -68,11 +68,11 @@ function ProfilPage(props) {
 				<form action="/profil/update_password/" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
 					<label htmlFor="old_pwd">Old password:&nbsp;</label>
-					<input type="password" id="old_pwd" name="old_pwd" /><br/>
+					<input type="password" id="old_pwd" name="old_pwd" required /><br/>
 					<label htmlFor="new_pwd">New password:&nbsp;</label>
-					<input type="password" name="new_pwd" id="new_pwd" /><br/>
+					<input type="password" name="new_pwd" id="new_pwd" required /><br/>
 					<label htmlFor="new_pwd_confirm">Confirm new password:&nbsp;</label>
-					<input type="password" name="new_pwd_confirm" id="new_pwd_confirm" />
+					<input type="password" name="new_pwd_confirm" id="new_pwd_confirm" required />
 					<input type="submit" value="submit" />
 				</form>
 
@@ -112,7 +112,7 @@ function ProfilPage(props) {
 								<option value="aggregate">Aggregate My Data</option>
 							</select>
 							<label htmlFor="grantee">to the user:</label>
-							<input type="text" name="grantee" id="grantee" />
+							<input type="text" name="grantee" id="grantee" required />
 							<br/>
 							<input type="submit" value="Submit" />
 						</fieldset>
@@ -120,6 +120,7 @@ function ProfilPage(props) {
 				</form>
     
 				{isUser && <a href="/profil/add-raspberry"><button>Add new Raspberry</button></a>}
+				{isUser && <a href="/profil/delete-raspberry"><button>Delete Raspberry</button></a>}
     			<a href="/"><button>Home</button></a>
 				<Footer />
 			</body>

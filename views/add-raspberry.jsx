@@ -9,7 +9,7 @@ function AddRaspberryPage(props) {
 	const hasSuccessMsg = Boolean(successMsg.length > 0);
 
 	return (
-<html>
+		<html>
 			<Header title='SunShare' />
 			<body>
 				<h1>Add Raspberry</h1>
@@ -20,11 +20,11 @@ function AddRaspberryPage(props) {
 				<form action="/profil/add-raspberry" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
 					<label htmlFor="label">Label:&nbsp;</label>
-					<input type="text" id="label" name="label" /><br/>
+					<input type="text" id="label" name="label" required /><br/>
 					<label htmlFor="password">Password:&nbsp;</label>
-					<input type="password" id="password" name="password" /><br/>
+					<input type="password" id="password" name="password" required /><br/>
 					<label htmlFor="withdrawal">Current withdrawal (displayed on your Linky):&nbsp;</label>
-					<input type="number" min="0" id="withdrawal" name="withdrawal" /><br/>
+					<input type="number" min="0" id="withdrawal" name="withdrawal" required /><br/>
 					<input type="submit" value="submit" />
 				</form>
 
@@ -34,11 +34,11 @@ function AddRaspberryPage(props) {
 				<form action="/profil/add-raspberry" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
 					<label htmlFor="label">Label:&nbsp;</label>
-					<input type="text" id="label" name="label" /><br/>
+					<input type="text" id="label" name="label" required /><br/>
 					<label htmlFor="password">Password:&nbsp;</label>
-					<input type="password" id="password" name="password" /><br/>
+					<input type="password" id="password" name="password" required /><br/>
 					<label htmlFor="mac">MAC:&nbsp;</label>
-					<input type="string" id="mac" name="mac" /><br/>
+					<input type="string" id="mac" name="mac" required /><br/>
 					<input type="submit" value="submit" />
 				</form>
 
