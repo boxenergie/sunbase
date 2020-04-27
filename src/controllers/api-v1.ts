@@ -33,22 +33,24 @@ const addEnergyRecordSchema = {
 					type: 'number',
 					minimum: 0,
 				},
-				production: { type: 'undefined' },
-				consumption: {
+				withdrawal_index: {
 					type: 'number',
 					minimum: 0,
 				},
+				production: { type: 'undefined' },
+				consumption: { type: 'undefined' },
 				raspberry_mac: {
 					type: 'string',
 					pattern: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/
 				},
 			},
-			required: [ 'production_index', 'consumption', 'raspberry_mac' ]
+			required: [ 'production_index', 'withdrawal_index', 'raspberry_mac' ]
 		},
 		{
 			type: 'object',
 			properties: {
 				production_index: { type: 'undefined' },
+				withdrawal_index: { type: 'undefined' },
 				production: {
 					type: 'number',
 					minimum: 0,
@@ -171,20 +173,23 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 
 	try {
 		let production_index: number;
+		let withdrawal_index: number;
 		let production: number;
 		let consumption: number;
 
 		if (req.body.production_index !== undefined) {
 			production_index = req.body.production_index;
+			withdrawal_index = req.body.withdrawal_index;
 			const previousIdx = await InfluxHelper.query(
-				`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
+				`SELECT LAST("production_index") as last_production, LAST("withdrawal_index") as last_withdrawal FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
 			);
 			// if it's the first index, we can't know the production
 			const isFirstIndex = previousIdx.rows.length == 0;
-			production = isFirstIndex ? 0 : (production_index - previousIdx.rows[0].last);
-			consumption = isFirstIndex ? 0 : (req.body.consumption);
+			production = isFirstIndex ? 0 : (production_index - previousIdx.rows[0].last_production);
+			consumption = isFirstIndex ? 0 : (withdrawal_index - previousIdx.rows[0].last_withdrawal);
 		} else {
 			production_index = 0;
+			withdrawal_index = 0;
 			production = req.body.production ?? 0;
 			consumption = req.body.consumption ?? 0;
 		}
@@ -194,6 +199,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 			{
 				fields: {
 					production_index,
+					withdrawal_index,
 					production,
 					consumption,
 					surplus,

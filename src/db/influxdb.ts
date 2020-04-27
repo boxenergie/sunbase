@@ -26,6 +26,7 @@ const influxClient = new Influx.InfluxDB({
 			measurement: 'EnergyRecord',
 			fields: {
 				production_index: Influx.FieldType.INTEGER,
+				withdrawal_index: Influx.FieldType.INTEGER,
 				production: Influx.FieldType.INTEGER,
 				consumption: Influx.FieldType.INTEGER,
 				surplus: Influx.FieldType.INTEGER
