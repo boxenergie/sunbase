@@ -109,4 +109,4 @@ GET /api/v1/energy/
 __Required parameters :__
 - `production_index` : Number >= 0
 - `consumption` : Number >= 0
-- `raspberry_mac` : Unique ID of the Raspberry.
+- `raspberry_mac` : MAC of the Raspberry.
