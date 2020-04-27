@@ -48,25 +48,24 @@ export async function deleteRaspberry(req: Request, res: Response, next: NextFun
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		const targetRaspberry = await User.findById(deletedRaspberryId).orFail();
+		const targetRaspberry = await User.findById(deletedRaspberryId);
 
 		if (deletedRaspberryId === me.id)
 			error('You cannot delete yourself.');
+		else if (!targetRaspberry)
+			error('User did not exist.');
 		else if (targetRaspberry!.role !== 'raspberry')
 			error('You can only delete raspberry.');
 		else if (!targetRaspberry!.raspberry!.owner.equals(me._id))
 			error('You cannot delete a raspberry you did not create.');
 		else {
-			try {
-				await User.deleteOne({ _id: deletedRaspberryId });
+			await User.deleteOne({ _id: deletedRaspberryId });
 
-				succeed('Raspberry unlinked.');
-				logger.info(`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${me.username}.`);
-			}
-			catch (err) {
-				error('User did not exist.')
-			}
+			succeed('Raspberry unlinked.');
+			logger.info(`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${me.username}.`);
 		}
+
+		res.redirect('/profil/delete-raspberry');
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');

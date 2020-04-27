@@ -31,7 +31,7 @@ function DeleteRaspberryPage(props) {
 				{hasSuccessMsg && <p className='successMsg'>{successMsg}</p>}
 
 				{!hasRaspberry && <p>You don't have any linked raspberry yet !</p>}
-				{hasRaspberry && <ul>{raspberriesList}</ul>}
+				{hasRaspberry && <ul>{raspberryList}</ul>}
 
     			<a href="/profil"><button>Back</button></a>
 				<Footer />
