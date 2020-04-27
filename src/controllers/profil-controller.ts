@@ -53,7 +53,12 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			error('Wrong password');
 		} else {
 			try {
-				req.user!.username = req.body.new_username;
+				if (req.user!.role === 'raspberry') {
+					req.user!.username = req.user!.username.replace(/\/.*/, `/${req.body.new_username}`);
+					req.user!.raspberry!.label = req.body.new_username;
+				} else {
+					req.user!.username = req.body.new_username;
+				}
 				await req.user!.save();
 
 				succeed('Username changed.');
