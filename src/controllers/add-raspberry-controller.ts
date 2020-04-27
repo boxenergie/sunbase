@@ -44,12 +44,12 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const label:string = sanitize(req.body.label);
 		const password:string = sanitize(req.body.password);
 		const production:number = sanitize(Number(req.body?.production));
-		const uuid: string = sanitize(req.body?.uuid);
+		const mac: string = sanitize(req.body?.mac);
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
 		let result = null;
-		// Production, no UUID
+		// Production, no MAC
 		if (production) {
 			/**
 			 * Try to find all results between
@@ -64,7 +64,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				AND production_index <= ${production}
 				AND time >= now() - 1h
 				AND time <= now()
-				GROUP BY raspberry_uuid
+				GROUP BY raspberry_mac
 				ORDER BY desc
 				LIMIT 1`
 			);
@@ -78,20 +78,20 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				return res.redirect('/profil/add-raspberry');
 			};
 		}
-		// UUID, no production
+		// MAC, no production
 		else {
-			// Check there is at least 1 record with this uuid
+			// Check there is at least 1 record with this mac
 			result = await InfluxHelper.query(
 				`SELECT *
 				FROM EnergyRecord
 				WHERE 
-				raspberry_uuid = '${uuid}'
+				raspberry_mac = '${mac}'
 				AND time >= now() - 1h
 				AND time <= now()`
 			);
 
 			if (result.rows.length === 0) {
-				error('This UUID is not registered in the system.');
+				error('This MAC is not registered in the system.');
 				return res.redirect('/profil/add-raspberry');
 			}
 		}
@@ -103,7 +103,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				role: 'raspberry',
 				raspberry: {
 					label: label,
-					uuid: uuid ?? result.rows[0].raspberry_uuid
+					mac: mac ?? result.rows[0].raspberry_mac
 				}
 			});
 			
@@ -117,7 +117,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			`);
 
 			logger.info(`
-				Succesfully linked raspberry '${uuid ?? result.rows[0].raspberry_uuid} with user ${req.user!.username}
+				Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${req.user!.username}
 			`);
 		}
 		catch (err) {

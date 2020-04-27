@@ -26,15 +26,15 @@ export interface RaspberryDocument extends Model.Raspberry, Document { }
 const regexLabel = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_][^\/]{3,20}$/i;
 const raspberrySchema = new Schema<RaspberryDocument>({
 	label: { type: String, trim: true, required: true, validate: regexLabel },
-	uuid: {
+	mac: {
 		type: String,
 		trim: true,
 		required: true,
 		index: {
 			unique: true,
 			// @ts-ignore
-			// Unique rule only applies if 'uuid' is NOT null
-			partialFilterExpression: { 'raspberry.uuid': { $type: 'string' } }
+			// Unique rule only applies if 'mac' is NOT null
+			partialFilterExpression: { 'raspberry.mac': { $type: 'string' } }
 		},
 	},
 });

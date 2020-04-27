@@ -28,7 +28,7 @@ export namespace Model {
 
 	interface Raspberry {
 		label: string,
-		uuid: string,
+		mac: string,
 	}
 
 	namespace Permission {

@@ -31,7 +31,7 @@ const influxClient = new Influx.InfluxDB({
 				surplus: Influx.FieldType.INTEGER
 			},
 			tags: [
-				'raspberry_uuid'
+				'raspberry_mac'
 			]
 		},
 		{
@@ -43,7 +43,7 @@ const influxClient = new Influx.InfluxDB({
 				relative_orientation: Influx.FieldType.FLOAT
 			},
 			tags: [
-				'raspberry_uuid'
+				'raspberry_mac'
 			]
 		},
 	]

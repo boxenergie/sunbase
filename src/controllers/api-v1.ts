@@ -33,17 +33,17 @@ const addEnergyRecordSchema = {
 					type: 'number',
 					minimum: 0,
 				},
-				production: {type: 'undefined'},
+				production: { type: 'undefined' },
 				consumption: {
 					type: 'number',
 					minimum: 0,
 				},
-				raspberry_uuid: {
+				raspberry_mac: {
 					type: 'string',
-					pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/
+					pattern: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/
 				},
 			},
-			required: [ 'production_index', 'consumption', 'raspberry_uuid' ]
+			required: [ 'production_index', 'consumption', 'raspberry_mac' ]
 		},
 		{
 			type: 'object',
@@ -57,12 +57,12 @@ const addEnergyRecordSchema = {
 					type: 'number',
 					minimum: 0,
 				},
-				raspberry_uuid: {
+				raspberry_mac: {
 					type: 'string',
-					pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/,
+					pattern: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/,
 				}
 			},
-			required: [ 'production', 'raspberry_uuid' ]
+			required: [ 'production', 'raspberry_mac' ]
 		}
 	]
 };
@@ -85,7 +85,7 @@ const addWindRecordSchema = {
 		relative_orientation: {
 			type: 'number',
 		},
-		raspberry_uuid: {
+		raspberry_mac: {
 			type: 'string',
 			pattern: /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/,
 		}
@@ -161,7 +161,7 @@ export const getAllEnergyRecords = async (req: Request, res: Response) => {
  * Required request parameters:
  *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
- *  - STRING raspberry_uuid
+ *  - STRING raspberry_mac
  */
 export const addEnergyRecord = async (req: Request, res: Response) => {
 	const validation = validator.validate(req.body, addEnergyRecordSchema, {nestedErrors: true} as any);
@@ -177,7 +177,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 		if (req.body.production_index !== undefined) {
 			production_index = req.body.production_index;
 			const previousIdx = await InfluxHelper.query(
-				`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_uuid = '${req.body.raspberry_uuid}'`
+				`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
 			);
 			// if it's the first index, we can't know the production
 			const isFirstIndex = previousIdx.rows.length == 0;
@@ -198,13 +198,13 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 					consumption,
 					surplus,
 				},
-				tags: { raspberry_uuid: req.body.raspberry_uuid },
+				tags: { raspberry_mac: req.body.raspberry_mac },
 			}
 		]);
 
 		logger.debug('Successfully added Energy Record: ' +
 			`${production} | ${consumption} ` +
-			`by '${req.body.raspberry_uuid}'`
+			`by '${req.body.raspberry_mac}'`
 		);
 
 		return res.api('Successfully added your Energy Record');
@@ -244,7 +244,7 @@ export const getAllWindRecords = async (req: Request, res: Response) => {
  *  - FLOAT production >= 0
  *  - FLOAT rotor_speed >= 0
  *  - FLOAT relative_orientation
- *  - STRING raspberry_uuid
+ *  - STRING raspberry_mac
  */
 export const addWindRecord = async (req: Request, res: Response) => {
 	if (!validator.validate(req.body, addWindRecordSchema).valid) {
@@ -260,14 +260,14 @@ export const addWindRecord = async (req: Request, res: Response) => {
 					rotor_speed: req.body.rotor_speed,
 					relative_orientation: req.body.relative_orientation,
 				},
-				tags: { raspberry_uuid: req.body.raspberry_uuid },
+				tags: { raspberry_mac: req.body.raspberry_mac },
 			}
 		]);
 
 		logger.debug('Successfully added Wind Record: ' +
 			`${req.body.wind_speed} | ${req.body.production} | ` +
 			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
-			`by '${req.body.raspberry_uuid}'`
+			`by '${req.body.raspberry_mac}'`
 		);
 
 		return res.api('Successfully added your Wind Record');

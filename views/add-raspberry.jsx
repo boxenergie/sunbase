@@ -28,7 +28,8 @@ function AddRaspberryPage(props) {
 					<input type="submit" value="submit" />
 				</form>
 
-				<p>... Or with your UUID</p>
+				<p>... Or with your MAC</p>
+				<p><i>Example: A1:B2:C3:E4:D5:F6</i></p>
 
 				<form action="/profil/add-raspberry" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
@@ -36,8 +37,8 @@ function AddRaspberryPage(props) {
 					<input type="text" id="label" name="label" /><br/>
 					<label htmlFor="password">Password:&nbsp;</label>
 					<input type="password" id="password" name="password" /><br/>
-					<label htmlFor="uuid">UUID:&nbsp;</label>
-					<input type="string" id="uuid" name="uuid" /><br/>
+					<label htmlFor="mac">MAC:&nbsp;</label>
+					<input type="string" id="mac" name="mac" /><br/>
 					<input type="submit" value="submit" />
 				</form>
 

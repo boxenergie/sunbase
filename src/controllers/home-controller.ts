@@ -43,7 +43,7 @@ async function gatherCommunityData(community: UserDocument) {
 		checkedAccounts.push(aggregateAccount.id);
 		if (aggregateAccount.raspberry) {
 			// account is a source of records, assume not a community
-			dataSources.push(aggregateAccount.raspberry.uuid);
+			dataSources.push(aggregateAccount.raspberry.mac);
 			continue;
 		}
 		// gather users that gave the AGGREGATE permission to this community
@@ -57,7 +57,7 @@ async function gatherCommunityData(community: UserDocument) {
 								SUM(consumption) AS consumption,
 								SUM(surplus) AS surplus
 								FROM "EnergyRecord"
-								WHERE (raspberry_uuid ='${dataSources.join("' OR raspberry_uuid = '")}') AND time >= now() - 1d AND time <= now()
+								WHERE (raspberry_mac ='${dataSources.join("' OR raspberry_mac = '")}') AND time >= now() - 1d AND time <= now()
 								GROUP BY time(15m) fill(none)`);
 	return {
 		name: community.username,
