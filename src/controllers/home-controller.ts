@@ -58,7 +58,7 @@ async function gatherCommunityData(community: UserDocument) {
 								SUM(consumption) AS consumption,
 								SUM(surplus) AS surplus
 								FROM "EnergyRecord"
-								WHERE (raspberry_mac =~ /(?i)${dataSources.join("/ OR raspberry_mac =~ /(?i)")}/) AND time >= now() - 1d AND time <= now()
+								WHERE (raspberry_mac =~ /(?i)^${dataSources.join("$/ OR raspberry_mac =~ /(?i)^")}$/) AND time >= now() - 1d AND time <= now()
 								GROUP BY time(15m) fill(none)`);
 	return {
 		name: community.username,

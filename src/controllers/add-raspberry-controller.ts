@@ -85,7 +85,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				`SELECT *
 				FROM EnergyRecord
 				WHERE 
-				raspberry_mac =~ /(?i)${mac}/
+				raspberry_mac =~ /(?i)^${mac}$/
 				AND time >= now() - 1h
 				AND time <= now()`
 			);
@@ -117,9 +117,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				<u>Password:</u> The one you specified
 			`);
 
-			logger.info(`
-				Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${req.user!.username}
-			`);
+			logger.info(`Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${req.user!.username}`);
 		}
 		catch (err) {
 			if (err.name === 'ValidationError') {
