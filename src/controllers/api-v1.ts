@@ -177,7 +177,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 		if (req.body.production_index !== undefined) {
 			production_index = req.body.production_index;
 			const previousIdx = await InfluxHelper.query(
-				`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
+				`SELECT LAST("production_index") FROM "EnergyRecord" WHERE raspberry_mac =~ /(?i)${req.body.raspberry_mac}/`
 			);
 			// if it's the first index, we can't know the production
 			const isFirstIndex = previousIdx.rows.length == 0;
