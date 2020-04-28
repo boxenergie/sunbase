@@ -39,7 +39,7 @@ export async function renderAddRaspberryPage(req: Request, res: Response, next: 
 
 export async function addRaspberry(req: Request, res: Response, next: NextFunction) {
 	try {
-		// Margin of error allowed to find a correct production_index
+		// Margin of error allowed to find a correct withdrawal_index
 		const MARGIN = 5; // - 5%
 		const label:string = sanitize(req.body.label);
 		const password:string = sanitize(req.body.password);
@@ -70,7 +70,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			);
 
 			if (result.rows.length == 0) {
-				error('Your production is invalid.');
+				error('Your withdrawal index is invalid.');
 				return res.redirect('/profil/add-raspberry');
 			}
 			else if (result.rows.length > 1) {
