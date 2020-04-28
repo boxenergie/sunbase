@@ -192,7 +192,7 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 				`SELECT 
 				LAST("production_index") as last_production, 
 				LAST("withdrawal_index") as last_withdrawal,
-				LAST("injection_index")  as last_injection,
+				LAST("injection_index")  as last_injection
 				FROM "EnergyRecord" WHERE raspberry_mac = '${req.body.raspberry_mac}'`
 			);
 			// if it's the first index, we can't know the production
