@@ -59,7 +59,7 @@ export async function deleteRaspberry(req: Request, res: Response, next: NextFun
 		else if (!targetRaspberry!.raspberry!.owner.equals(me._id))
 			error('You cannot delete a raspberry you did not create.');
 		else {
-			await User.deleteOne({ _id: deletedRaspberryId });
+			await User.findOneAndDelete({ _id: deletedRaspberryId });
 
 			succeed('Raspberry unlinked.');
 			logger.info(`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${me.username}.`);

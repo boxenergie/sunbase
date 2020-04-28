@@ -64,7 +64,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 			error('You cannot delete yourself.');
 		} else {
 			try {
-				await User.deleteOne({ _id: deletedUserId });
+				await User.findOneAndDelete({ _id: deletedUserId });
 				
 				succeed('User deleted.');
 				logger.info(`User '${deletedUserId}' deleted by admin.`);
