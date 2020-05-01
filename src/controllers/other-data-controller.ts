@@ -40,13 +40,14 @@ export async function renderOtherDataPage(req: Request, res: Response, next: Nex
 		);
 
 		res.render('other-data', {
-			userData: {
+			otherUserData: {
 				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
 				production: userResults.rows.map((r: any) => r.production),
 				consumption: userResults.rows.map((r: any) => r.consumption),
 				surplus: userResults.rows.map((r: any) => r.surplus),
 			},
-			user: granter,
+			otherUser: granter,
+			user: req.user,
 		});
 	} catch (err) {
 		logger.error(err.message);

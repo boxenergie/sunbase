@@ -1,6 +1,17 @@
-table tr:nth-child(even) {
-  background-color: #eee;
+body {
+	display: flex;
+	min-height: 100vh;
+	flex-direction: column;
 }
-table tr:nth-child(odd) {
-  background-color: #fff;
+
+main {
+	flex: 1 0 auto;
+}
+
+button {
+	outline: none;
+}
+
+a {
+	outline: none;
 }

@@ -1,18 +1,11 @@
 import React from 'react';
 import Header from './layouts/header';
+import Nav from './layouts/nav';
 import Footer from './layouts/footer';
+import MessageHandler from './layouts/message-handler'
 
 function AdminPage(props) {
 	const { errorMsg, successMsg, users, nPages } = props;
-
-	const hasErrorMsg 				= Boolean(errorMsg.length > 0);
-	const hasSuccessMsg 			= Boolean(successMsg.length > 0);
-	const nPagesAsListFromZeroToN 	= [...Array(nPages).keys()]
-		.map(i => 
-			<a key={i} href={`?page=${i + 1}&displayLimit=10`}>
-				<button>{i +1}</button>
-			</a>
-		);
 
 	const usersList = [];
 	for (const u of users) {
@@ -20,30 +13,59 @@ function AdminPage(props) {
 			<li key={u.id}>
 				<label htmlFor={`delete-${u.id}`}>{u.username}</label>
 				<a href={`?deleted=${u.id}`}>
-					<button id={`delete-${u.id}`}>Delete User</button>
+					<button className="btn transparent" style={{boxShadow: 'none !important'}} id={`delete-${u.id}`}><i className="material-icons black-text">delete</i></button>
 				</a>
 			</li>
 		);
 	};
 
+	const nPagesAsListFromZeroToN = [...Array(nPages).keys()]
+		.map(i => 
+			<a className="pageButton" key={i} href={`?page=${i + 1}&displayLimit=10`}>
+				<button className="btn waves-effect waves-light red">{i +1}</button>
+			</a>
+		);
+
 	return (
 		<html>
-			<Header title='SunShare' />
+			<Header title="SunShare">
+				<script src="/js/tabs.js"></script>
+			</Header>
 			<body>
-				<h1>Admin Board</h1>
+				<Nav isConnected={true} isAdmin={true} />
+				<MessageHandler errorMsg={errorMsg} successMsg={successMsg} />
 
-				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
-				{hasSuccessMsg && <p className='successMsg' dangerouslySetInnerHTML={{ __html:successMsg }}></p>}
+				<main>
+					<div className="row">
+						<div className="col s12">
+							<h1>Panel administrateur</h1>
 
-				<ul>
-					{usersList}
-				</ul>
+							<ul className="tabs">
+								<li className="tab col s12"><a className="active" href="#deleteUser">Supprimer un utilisateur</a></li>
+							</ul>
+							<div id="deleteUser" className="col s12">
+								{
+									usersList.length > 0 &&
+									<div>
+										<ul>
+											{usersList}
+										</ul>
 
-				<div>
-					{nPagesAsListFromZeroToN}
-				</div>
+										<div>
+											{nPagesAsListFromZeroToN}
+										</div>
+									</div>
+								}
 
-    			<a href="/"><button>Home</button></a>
+								{
+									usersList.length <= 0 &&
+									<p>Il n'y a aucun utilisateur à supprimer</p>
+								}
+							</div>
+						</div>
+					</div>
+				</main>
+
 				<Footer />
 			</body>
 		</html>

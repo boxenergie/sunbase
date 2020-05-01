@@ -1,39 +1,52 @@
 import React from 'react';
 import Header from './layouts/header';
+import Nav from './layouts/nav';
 import Footer from './layouts/footer';
+import MessageHandler from './layouts/message-handler';
 
 function DeleteRaspberryPage(props) {
-	const { errorMsg, successMsg, csrfToken, raspberries } = props;
+	const { errorMsg, successMsg, raspberries, user } = props;
 
-	const hasErrorMsg 	= Boolean(errorMsg.length > 0);
-	const hasSuccessMsg = Boolean(successMsg.length > 0);
 	const hasRaspberry	= Boolean(raspberries.length > 0);
+	const isAdmin		= Boolean(user && user.role === 'admin');
 
 	const raspberryList = [];
 	for (const r of raspberries) {
 		raspberryList.push(
 			<li key={r.id}>
-				<label htmlFor={`delete-${r.id}`}>{r.raspberry.label}</label>
 				<a href={`?deleted=${r.id}`}>
-					<button id={`delete-${r.id}`}>Unlink</button>
+					<button id={`delete-${r.id}`}>Supprimer</button>
 				</a>
+				<label htmlFor={`delete-${r.id}`}>{r.raspberry.label}</label>
 			</li>
 		);
 	};
 
 	return (
 		<html>
-			<Header title='SunShare' />
+			<Header title="SunShare">
+				<script src="/js/tooltip.js"></script>
+			</Header>
 			<body>
-				<h1>Delete Raspberry</h1>
+				<Nav isConnected={true} isAdmin={isAdmin} />
+				<MessageHandler errorMsg={errorMsg} successMsg={successMsg} />
 
-				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
-				{hasSuccessMsg && <p className='successMsg' dangerouslySetInnerHTML={{ __html:successMsg }}></p>}
+				<main>
+					<div className="row">
+						<div className="col s12">
+							<h1>Supprimer une box énergie</h1>
+
+							{!hasRaspberry &&
+								<div>
+									<p>Vous n'avez pas encore lié de box énergie !</p>
+									<p>Ajoutez votre box énergie en cliquant <a href='/profil/add-raspberry'>ici</a>.</p>
+								</div>
+							}
+							{hasRaspberry && <ul>{raspberryList}</ul>}
+						</div>
+					</div>
+				</main>
 				
-				{!hasRaspberry && <p>You don't have any linked raspberry yet !</p>}
-				{hasRaspberry && <ul>{raspberryList}</ul>}
-
-    			<a href="/profil"><button>Back</button></a>
 				<Footer />
 			</body>
 		</html>

@@ -2,12 +2,14 @@ import React from 'react';
 import Header from './layouts/header';
 import Footer from './layouts/footer';
 import PCSChart from './layouts/pcs-chart';
+import Nav from './layouts/nav';
 
 function OtherDataPage(props) {
-	const { user, userData } = props;
+	const { user, otherUser, otherUserData } = props;
 
-	const userExists 	= Boolean(user);
-	const hasUserData 	= Boolean(userData.production.length > 0);
+	const userExists 	= Boolean(otherUser);
+	const hasUserData 	= Boolean(otherUserData.production.length > 0);
+	const isAdmin		= Boolean(user && user.role === 'admin');
 
 	return (
 		<html>
@@ -16,18 +18,24 @@ function OtherDataPage(props) {
 				<script src='/js/PCS-chart.js'></script>
 			</Header>
 			<body>
-				<h1>SunShare Board</h1>
+				<Nav isConnected={true} isAdmin={isAdmin} />
+				<h1>Visualisation des données</h1>
 
-				{userExists && 
-					<div>
-						<h4><i>{user.username}</i>'s records</h4>
+				<main>
+					<div className="row">
+						<div className="col s12">
+							{userExists && 
+								<div>
+									<h4><i>Données de {otherUser.username}</i></h4>
 
-						{hasUserData && <PCSChart id='personalChart' data={userData} />}
-						{!hasUserData && <p>No records for {user.username}</p>}
+									{hasUserData && <PCSChart id={`${otherUser.username}-Chart`} data={otherUserData} />}
+									{!hasUserData && <p>Aucune donnée enregistrée !</p>}
+								</div>
+							}
+						</div>
 					</div>
-				}
+				</main>
 
-				<a href="/"><button>Home</button></a>
 				<Footer />
 			</body>
 		</html>

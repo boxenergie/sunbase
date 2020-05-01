@@ -72,8 +72,8 @@ for (const [jobSchedule, jobFn] of jobs) {
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
 	directives: {
-		defaultSrc: [ "'self'" ],
-		styleSrc: [ "'self'", "'unsafe-inline'" ],	
+		defaultSrc: [ "'self'", 'https://fonts.gstatic.com' ],
+		styleSrc: [ "'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com' ],	
 		scriptSrc: [ "'self'", 'https://cdnjs.cloudflare.com', "'unsafe-inline'" ],
 	}
 }));
