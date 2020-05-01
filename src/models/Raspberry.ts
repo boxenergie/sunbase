@@ -33,12 +33,12 @@ const raspberrySchema = new Schema<RaspberryDocument>({
 		type: String,
 		trim: true,
 		required: true,
-		// index: {
-		// 	unique: true,
-		// 	// @ts-ignore
-		// 	// Unique rule only applies if 'mac' is NOT null
-		// 	partialFilterExpression: { 'raspberry.mac': { $type: 'string' } }
-		// },
+		index: {
+			unique: true,
+			// @ts-ignore
+			// Unique rule only applies if 'mac' is NOT null
+			partialFilterExpression: { 'raspberry.mac': { $type: 'string' } }
+		},
 	},
 	owner: { type: ObjectID, trim: true, required: true },
 });
