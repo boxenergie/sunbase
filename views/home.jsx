@@ -54,7 +54,6 @@ function HomePage(props) {
 							{!hasGlobalData && <p>Aucune donnée enregistrée !</p>}
 						</div>
 						<div id="communities" className="col s12">
-							{isInCommunities && <h4>Communities records</h4>}
 							{communitiesHTML}
 						</div>
 						<div id="my" className="col s12">
