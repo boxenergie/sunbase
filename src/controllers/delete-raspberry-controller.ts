@@ -1,5 +1,5 @@
 /*
- * admin-controller.ts
+ * add-raspberry-controller.ts
  * Copyright (C) Sunshare 2019
  *
  * This file is part of Sunbase.
@@ -20,33 +20,20 @@
 import { NextFunction, Response, Request } from 'express';
 import sanitize from 'mongo-sanitize';
 
-import User from '../models/User';
 import logger from '../utils/logger';
+import User from '../models/User';
 
-export async function renderAdminPage(req: Request, res: Response, next: NextFunction) {
-	if (req.query.deleted) {
-		return deleteUser(req, res, next);
-	}
-
-	const elementPerPage: number = Number(req.query.displayLimit) || 10;
-	let page: number = Number(req.query.page) ?? 1;
-
-	// Count number of users
-	const count = await User.countDocuments({});
-
-	// If there are less users (excluding current user) than the limit, force page to 1
-	if ((count - 1) < elementPerPage)
-		page = 1;
-
+export async function renderDeleteRaspberryPage(req: Request, res: Response, next: NextFunction) {
 	try {
-		const users = await User.find({ _id: { $ne: req.user!._id } })
-			.skip((page - 1) * elementPerPage)
-			.limit(elementPerPage);
-		res.render('admin', {
-			users: users,
-			nPages: Math.ceil(count / elementPerPage),
+		if (req.query.deleted) {
+			return deleteRaspberry(req, res, next);
+		}
+
+		res.render('delete-raspberry', {
+			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
+			raspberries: await User.find({ username: new RegExp(`^${req.user!.username}/.+`) }),
 		});
 	} catch (err) {
 		logger.error(err.message);
@@ -54,26 +41,31 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 	}
 }
 
-export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+export async function deleteRaspberry(req: Request, res: Response, next: NextFunction) {
 	try {
-		const deletedUserId = sanitize(req.query.deleted);
+		const deletedRaspberryId = sanitize(req.query.deleted);
+		const me = req.user!;
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		if (deletedUserId === req.user!.id) {
+		const targetRaspberry = await User.findById(deletedRaspberryId);
+
+		if (deletedRaspberryId === me.id)
 			error('You cannot delete yourself.');
-		} else {
-			try {
-				await User.findOneAndDelete({ _id: deletedUserId });
-				
-				succeed('User deleted.');
-				logger.info(`User '${deletedUserId}' deleted by admin.`);
-			} catch (err) {
-				error('Username did not exist.');
-			}
+		else if (!targetRaspberry)
+			error('User did not exist.');
+		else if (targetRaspberry!.role !== 'raspberry')
+			error('You can only delete raspberry.');
+		else if (!targetRaspberry!.raspberry!.owner.equals(me._id))
+			error('You cannot delete a raspberry you did not create.');
+		else {
+			await User.findOneAndDelete({ _id: deletedRaspberryId });
+
+			succeed('Raspberry unlinked.');
+			logger.info(`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${me.username}.`);
 		}
 
-		return res.redirect('/admin');
+		res.redirect('/profil/delete-raspberry');
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Something went wrong');

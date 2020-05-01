@@ -65,15 +65,16 @@ export interface UserDocument extends Model.User, Document {
 // @ts-ignore
 const isRaspberry = function() { this.role === 'raspberry'; }
 
-const regexUsername = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_][^\/]{3,20}$/i;
-const regexUsernameRaspberry = /^[a-z0-9àâçéèêëîïôûùüÿñæœ .-_\/]{7,41}$/i;
+const regexFlags = 'i';
+const regexUsername = /[a-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}/;
+const regexUsernameRaspberry = new RegExp(regexUsername.source + '/' + regexUsername.source);
 const validateUsername = function(v: string) {
 	// @ts-ignore
 	return (this.role === 'raspberry')
-		? regexUsernameRaspberry.test(v)
-		: regexUsername.test(v);
+		? new RegExp(`^${regexUsernameRaspberry.source}$`, regexFlags).test(v)
+		: new RegExp(`^${regexUsername.source}$`, regexFlags).test(v);
 }
-const regexPassword = /^.{8,80}$/i;
+const regexPassword = new RegExp(/^.{8,80}$/, regexFlags);
 
 const userSchema = new Schema<UserDocument>({
 	username: { type: String, trim: true, required: true, unique: true, validate: validateUsername },
@@ -126,11 +127,9 @@ userSchema.methods.revokePermissionFrom = function (user, permissionType) {
 	return Promise.reject(`${permissionType} is not a valid permission`);
 };
 
-userSchema.pre('save', function(next) {
-	const self = this as UserDocument;
-
-	if (!self.permissions) {
-		self.permissions = {
+userSchema.pre<UserDocument>('save', async function() {
+	if (!this.permissions) {
+		this.permissions = {
 			granted: new Map(),
 			granting: new Map(),
 			resolveForDisplay: permissionSchema.methods.resolveForDisplay
@@ -138,22 +137,16 @@ userSchema.pre('save', function(next) {
 	}
 
 	// If the user is being created or changed, we hash the password
-    if(self.isModified('password')) {
-		self.password = bcrypt.hashSync(self.password, 10);
-	}
-	
-    next();
+    if(this.isModified('password'))
+		this.password = await bcrypt.hash(this.password, 10);
 });
 
-userSchema.pre('deleteOne', async function(next) {
-	const self = this as UserDocument;
+userSchema.post<UserDocument>('findOneAndDelete', async function(doc, next) {
 	try {
-		await removeAllPermRefs(self, p => p.granted, p => p.granting);
-		await removeAllPermRefs(self, p => p.granting, p => p.granted);
+		await removeAllPermRefs(doc, p => p.granting, p => p.granted);
 	} catch (err) {
 		logger.error(`Failed to remove references to a deleted user: ${err.message}`);
 	}
-
 	next();
 });
 
@@ -184,17 +177,23 @@ function removePermRef(
 	}
 }
 
-function removeAllPermRefs(
+async function removeAllPermRefs(
 	self: UserDocument,
 	selfRowGetter: (data: Model.Permission.Data) => Model.Permission.Row,
-	otherRowGetter: (data: Model.Permission.Data) => Model.Permission.Row
+	otherRowGetter: (data: Model.Permission.Data) => Model.Permission.Row,
 ): Promise<void> {
-	// promise waiting for the iteration to end
+	// const users = await User.find({ _id: { $in: [...selfRowGetter(self.permissions).keys()]}});
+	// for (const u of users) {
+	// 	otherRowGetter(user.permissions).delete(`${self._id}`);
+	// 	u.save();
+	// }
+
 	return new Promise((resolve, reject) => {
 		// Iterate over all referenced users
-		const cursor = User.find({ _id: { $in: [...selfRowGetter(self.permissions).keys()].map(Types.ObjectId) } }).cursor();
+		const cursor = User.find({ _id: { $in: [...selfRowGetter(self.permissions).keys()] } }).cursor();
 		cursor.on('data', function (user: UserDocument) {
-			otherRowGetter(user.permissions).delete(self.id);
+			otherRowGetter(user.permissions).delete(`${self.id}`);
+			user.save();
 		});
 		cursor.on('close', resolve);
 		cursor.on('error', reject);

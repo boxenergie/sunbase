@@ -18,6 +18,7 @@
  */
 
 import { NextFunction, Response, Request } from 'express';
+import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
@@ -34,6 +35,7 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
+			user: req.user,
 			permissions,
 		});
 	} catch (err) {
@@ -44,12 +46,15 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 
 export async function changeUsername(req: Request, res: Response, next: NextFunction) {
 	try {
+		const oldUsername:string = req.user!.username;
+		const newUsername:string = req.body.new_username;
+		const checkPassword:string = req.body.pwd;
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
-		if (!req.body.pwd || !req.body.new_username) {
+		if (!checkPassword || !newUsername) {
 			error('One or more fields were not provided.');
-		} else if (!req.user?.comparePassword(req.body.pwd)) {
+		} else if (!req.user?.comparePassword(checkPassword)) {
 			error('Wrong password');
 		} else {
 			try {
@@ -60,6 +65,14 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 					req.user!.username = req.body.new_username;
 				}
 				await req.user!.save();
+
+				// If it suceeds, change the name of all of his raspberries
+				const raspberries = await User.find({ username: new RegExp(`^${req.user!.username}/.+`) });
+				
+				for (const r of raspberries) {
+					r.username = r.username.replace(oldUsername, newUsername);
+					await r.save();
+				}
 
 				succeed('Username changed.');
 			} catch (err) {
@@ -76,13 +89,16 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 
 export async function changePassword(req: Request, res: Response, next: NextFunction) {
 	try {
+		const oldPassword = sanitize(req.body.old_pwd);
+		const newPassword = req.body.new_pwd;
+		const checkNewPassword = req.body.new_pwd_confirm;
 		let errorMsg = null;
 
-		if (!req.body.old_pwd || !req.body.new_pwd || !req.body.new_pwd_confirm)
+		if (!oldPassword || !newPassword || !checkNewPassword)
 			errorMsg = 'One or more fields were not provided.';
-		else if (req.body.new_pwd !== req.body.new_pwd_confirm)
+		else if (newPassword !== checkNewPassword)
 			errorMsg = 'New passwords must match.';
-		if (!req.user?.comparePassword(req.body.old_pwd))
+		else if (!req.user?.comparePassword(oldPassword))
 			errorMsg = 'Wrong password.';
 
 		if (errorMsg) {
@@ -109,23 +125,27 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 
 export async function grantPermission(req: Request, res: Response, next: NextFunction) {
 	try{
+		const granteeName = sanitize(req.body.grantee);
+		const permissionType = sanitize(req.body.permission);
 		let  errorMsg = null;
 
-		if (!req.body.grantee)
+		if (!granteeName)
 			errorMsg = 'Please enter a username';
-		let grantee = await User.findOne({ username: req.body.grantee });
+		let grantee = await User.findOne({ username: granteeName });
+
 		if (!grantee)
 			errorMsg = 'Unknown user';
 		else if(grantee.id === req.user!.id)
 			errorMsg = 'You cannot grant a permission to yourself.';
+
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);
 		} else {
-			await req.user!.grantPermissionTo(grantee!, req.body.permission);
+			await req.user!.grantPermissionTo(grantee!, permissionType);
 			req.flash('successMsg', 'Permission granted.');
 		}
-		return res.redirect('/profil');
 
+		return res.redirect('/profil');
 	} catch (err) {
 		logger.error(err.message);
 		res.status(500).send('Someting went wrong');
@@ -135,21 +155,18 @@ export async function grantPermission(req: Request, res: Response, next: NextFun
 export async function removePermission(req: Request, res: Response, next: NextFunction) {
 	try {
 		let errorMsg = null;
-		const deletedPermissionType = req.query.rmPerm;
-		const granteeName = req.query.rmUser;
-		const granterName = req.query.rmGranter;
-		const permissionGranter = granterName ? await User.findOne({ username: req.query.rmGranter as string }) : req.user;
-		const permissionGrantee = granteeName ? await User.findOne({ username: req.query.rmUser as string }) : req.user;
+		const deletedPermissionType = sanitize(req.query.rmPerm);
+		const granteeName = sanitize(req.query.rmUser);
+		const granterName = sanitize(req.query.rmGranter);
+		const permissionGranter = granterName ? await User.findOne({ username: sanitize(req.query.rmGranter) as string }) : req.user;
+		const permissionGrantee = granteeName ? await User.findOne({ username: sanitize(req.query.rmUser) as string }) : req.user;
 
-		if (!deletedPermissionType || !(granteeName || granterName) || (req.user !== permissionGrantee && req.user !== permissionGranter)) {
+		if (!deletedPermissionType || !(granteeName || granterName) || (req.user !== permissionGrantee && req.user !== permissionGranter))
 			errorMsg = `Error while deleting permission:${deletedPermissionType} from: ${granterName} to:${granteeName}`;
-		}
-		if (!permissionGrantee) {
+		else if (!permissionGrantee)
 			errorMsg = `Unknown user: ${granteeName}`;
-		}
-		if (!permissionGranter) {
+		else if (!permissionGranter)
 			errorMsg = `Unknown user: ${granterName}`
-		}
 
 		if (errorMsg) {
 			req.flash('errorMsg', errorMsg);

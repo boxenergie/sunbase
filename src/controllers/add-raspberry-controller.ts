@@ -43,24 +43,24 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const MARGIN = 5; // - 5%
 		const label:string = sanitize(req.body.label);
 		const password:string = sanitize(req.body.password);
-		const withdrawal:number = sanitize(Number(req.body.withdrawal));
+		const withdrawal:number = sanitize(Number(req.body?.withdrawal));
 		const mac: string = sanitize(req.body?.mac);
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
 		let result = null;
-		// withdrawal, no MAC
+		// Withdrawal, no MAC
 		if (withdrawal) {
 			/**
 			 * Try to find all results between
-			 * withdrawal - 5% < ? < withdrawal
+			 * [withdrawal - 5% ; withdrawal]
 			 * Only the latest record of each UNIQUE raspberry is kept
 			 */
 			result = await InfluxHelper.query(
 				`SELECT *
 				FROM EnergyRecord
 				WHERE 
-				withdrawal_index > ${withdrawal * ((100-MARGIN)/100)}
+				withdrawal_index >= ${withdrawal * ((100-MARGIN)/100)}
 				AND withdrawal_index <= ${withdrawal}
 				AND time >= now() - 1h
 				AND time <= now()
@@ -85,7 +85,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				`SELECT *
 				FROM EnergyRecord
 				WHERE 
-				raspberry_mac = '${mac}'
+				raspberry_mac =~ /(?i)^${mac}$/
 				AND time >= now() - 1h
 				AND time <= now()`
 			);
@@ -103,30 +103,27 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 				role: 'raspberry',
 				raspberry: {
 					label: label,
-					mac: mac ?? result.rows[0].raspberry_mac
+					mac: mac ?? result.rows[0].raspberry_mac,
+					owner: req.user!._id,
 				}
 			});
 			
 			await raspberry!.grantPermissionTo(req.user!, 'aggregate' as any);
 
 			succeed(`
-				Successfully linked your raspberry to your account !
-				You can connect manage this raspberry by connecting to the following account:
-				Username: ${req.user!.username}/${label}
-				Password: The one you specified
+				Successfully linked your raspberry to your account !<br>
+				You can connect manage this raspberry by connecting to the following account:<br>
+				<u>Username:</u> <i>${req.user!.username}/${label}</i><br>
+				<u>Password:</u> The one you specified
 			`);
 
-			logger.info(`
-				Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${req.user!.username}
-			`);
+			logger.info(`Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${req.user!.username}`);
 		}
 		catch (err) {
 			if (err.name === 'ValidationError') {
 				logger.debug(err.message);
 
-				req.flash('error',
-					`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`
-				);
+				error(`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`);
 			}
 			else {
 				error('This raspberry is already linked to an account !');

@@ -13,14 +13,14 @@ function RegisterPage(props) {
 			<body>
 				<h1>Register</h1>
 
-				{hasErrorMsg && <p className='errorMsg'>{errorMsg}</p>}
-				
+				{hasErrorMsg && <p className='errorMsg' dangerouslySetInnerHTML={{ __html:errorMsg }}></p>}
+
 				<form action="/register" method="post">
 					<input type="hidden" name="_csrf" value={csrfToken} />
 					<label htmlFor="username">Username:&nbsp;</label>
-					<input type="text" id="username" name="username" /><br/>
+					<input type="text" id="username" name="username" required /><br/>
 					<label htmlFor="password">Password:&nbsp;</label>
-					<input type="password" name="password" id="password" />
+					<input type="password" name="password" id="password" required />
 					<input type="submit" value="submit" />
 				</form>
 				
