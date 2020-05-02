@@ -16,7 +16,7 @@ function transformPermissionToHTML(permissions, V) {
 	const HTMLArr = [];
 	for (const [username, perm] of Object.entries(permissions)) {
 		let permLine = [<b key={username}>{username}</b>, ": "];
-		for (const permName of perm.values()) {
+		for (const permName of perm) {
 			permLine.push(<span key={permName} style={{textTransform: 'uppercase'}}>{permName}</span>);
 			for (const v of V) {
 				let href = v[1](permName, username);

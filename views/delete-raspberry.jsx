@@ -14,10 +14,10 @@ function DeleteRaspberryPage(props) {
 	for (const r of raspberries) {
 		raspberryList.push(
 			<li key={r.id}>
-				<a href={`?deleted=${r.id}`}>
-					<button id={`delete-${r.id}`}>Supprimer</button>
-				</a>
 				<label htmlFor={`delete-${r.id}`}>{r.raspberry.label}</label>
+				<a href={`?deleted=${r.id}`}>
+					<button className="btn transparent" style={{boxShadow: 'none !important'}} id={`delete-${r.id}`}><i className="material-icons black-text">delete</i></button>
+				</a>
 			</li>
 		);
 	};
@@ -43,6 +43,12 @@ function DeleteRaspberryPage(props) {
 								</div>
 							}
 							{hasRaspberry && <ul>{raspberryList}</ul>}
+						</div>
+
+						<div className="center-align">
+							<a href="/profil">
+								<button className="btn waves-effect waves-light red">Retour</button>
+							</a>
 						</div>
 					</div>
 				</main>

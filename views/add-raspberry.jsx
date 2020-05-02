@@ -126,6 +126,12 @@ function AddRaspberryPage(props) {
 								</div>
 							</div>
 						</div>
+
+						<div className="center-align">
+							<a href="/profil">
+								<button className="btn waves-effect waves-light red">Retour</button>
+							</a>
+						</div>
 					</div>
 				</main>
 
