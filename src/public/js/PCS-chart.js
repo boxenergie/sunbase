@@ -59,10 +59,10 @@ function createChart(ctx, labels, production, consumption, surplus) {
 				yAxes: [{
 					scaleLabel: {
 						display: true,
-						labelString: 'Energy amount (in KWatts-Hour)'
+						labelString: 'Energy amount (in Watts)'
 					},
 					ticks: {
-						callback: (value) => `${value}kWh`
+						callback: (value) => `${value}W`
 					}
 				}]
 			},
