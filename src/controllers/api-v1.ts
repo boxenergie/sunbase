@@ -188,18 +188,22 @@ export const addEnergyRecord = async (req: Request, res: Response) => {
 			production_index = req.body.production_index;
 			withdrawal_index = req.body.withdrawal_index;
 			injection_index = req.body.injection_index;
+			// note: at most one function can be used in a query, else the returned timestamp is NULL
 			const previousIdx = await InfluxHelper.query(
 				`SELECT 
 				LAST("production_index") as last_production, 
-				LAST("withdrawal_index") as last_withdrawal,
-				LAST("injection_index")  as last_injection
+				"withdrawal_index" as last_withdrawal,
+				"injection_index"  as last_injection
 				FROM "EnergyRecord" WHERE raspberry_mac =~ /(?i)^${req.body.raspberry_mac}$/`
 			);
 			// if it's the first index, we can't know the production
 			const isFirstIndex = previousIdx.rows.length == 0;
-			production = isFirstIndex ? 0 : (production_index - previousIdx.rows[0].last_production);
-			const withdrawal = isFirstIndex ? 0 : (withdrawal_index - previousIdx.rows[0].last_withdrawal);
-			const injection = isFirstIndex ? 0 : (injection_index - previousIdx.rows[0].last_injection);
+			const hoursSinceLastIndex = isFirstIndex ? 0 : (Date.now() - previousIdx.rows[0].time) / 1000/*ms*/ / 60/*s*/ / 60/*mn*/;
+			if (hoursSinceLastIndex < 0) logger.warn("We got records from the future: " + previousIdx.rows[0]);
+			// stations send data in kWh, but we want kW => everything must be divided by the time in hours
+			production = isFirstIndex ? 0 : (production_index - previousIdx.rows[0].last_production) / hoursSinceLastIndex;
+			const withdrawal = isFirstIndex ? 0 : (withdrawal_index - previousIdx.rows[0].last_withdrawal) / hoursSinceLastIndex;
+			const injection = isFirstIndex ? 0 : (injection_index - previousIdx.rows[0].last_injection) / hoursSinceLastIndex;
 			if (production < 0 || withdrawal < 0 || injection < 0) logger.warn("One or more indices have shrunk!");
 			if (withdrawal && injection) logger.warn(`Injection (${injection}) and withdrawal (${withdrawal}) are both non-null.`);
 			surplus = injection - withdrawal;
