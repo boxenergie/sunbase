@@ -63,6 +63,12 @@ function AdminPage(props) {
 								}
 							</div>
 						</div>
+
+						<div className="center-align">
+							<a href="/">
+								<button className="btn waves-effect waves-light red">Retour</button>
+							</a>
+						</div>
 					</div>
 				</main>
 
