@@ -127,9 +127,11 @@ userSchema.methods.revokePermissionFrom = function (user, permissionType) {
 	return Promise.reject(`${permissionType} is not a valid permission`);
 };
 
-userSchema.pre<UserDocument>('save', async function() {
-	if (!this.permissions) {
-		this.permissions = {
+userSchema.pre('save', function(next) {
+	const self = this as UserDocument;
+
+	if (!self.permissions) {
+		self.permissions = {
 			granted: new Map(),
 			granting: new Map(),
 			resolveForDisplay: permissionSchema.methods.resolveForDisplay
@@ -137,8 +139,11 @@ userSchema.pre<UserDocument>('save', async function() {
 	}
 
 	// If the user is being created or changed, we hash the password
-    if(this.isModified('password'))
-		this.password = await bcrypt.hash(this.password, 10);
+	if(self.isModified('password')) {
+		self.password = bcrypt.hashSync(self.password, 10);
+	}
+
+	next();
 });
 
 userSchema.post<UserDocument>('findOneAndDelete', async function(doc, next) {
