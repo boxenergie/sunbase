@@ -30,10 +30,10 @@ export async function renderDeleteRaspberryPage(req: Request, res: Response, nex
 		}
 
 		res.render('delete-raspberry', {
-			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
 			raspberries: await User.find({ username: new RegExp(`^${req.user!.username}/.+`) }),
+			user: req.user,
 		});
 	} catch (err) {
 		logger.error(err.message);

@@ -24,7 +24,9 @@ import { ObjectID } from 'mongodb';
 export interface RaspberryDocument extends Model.Raspberry, Document { }
 
 // Should be the same as User$regexUsernameRaspberry
-const regexLabel = /[a-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}/;
+const regexFlags = 'i';
+const regexLabel = new RegExp(/[a-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}/, regexFlags);
+
 const raspberrySchema = new Schema<RaspberryDocument>({
 	label: { type: String, trim: true, required: true, validate: regexLabel },
 	mac: {

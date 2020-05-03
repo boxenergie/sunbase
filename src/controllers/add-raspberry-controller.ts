@@ -30,6 +30,7 @@ export async function renderAddRaspberryPage(req: Request, res: Response, next: 
 			csrfToken: req.csrfToken(),
 			errorMsg: req.flash('errorMsg'),
 			successMsg: req.flash('successMsg'),
+			user: req.user,
 		});
 	} catch (err) {
 		logger.error(err.message);
