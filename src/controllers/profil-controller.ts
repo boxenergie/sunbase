@@ -17,11 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
+import FlashMessages from "./flash-messages";
 
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 
@@ -49,13 +50,13 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 		const oldUsername:string = req.user!.username;
 		const newUsername:string = req.body.new_username;
 		const checkPassword:string = req.body.pwd;
-		const error = (msg: string) => req.flash('errorMsg', msg);
-		const succeed = (msg: string) => req.flash('successMsg', msg);
+		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
+		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
 
 		if (!checkPassword || !newUsername) {
-			error('One or more fields were not provided.');
+			error(FlashMessages.MISSING_FIELD);
 		} else if (!req.user?.comparePassword(checkPassword)) {
-			error('Wrong password');
+			error(FlashMessages.WRONG_PASSWORD);
 		} else {
 			try {
 				if (req.user!.role === 'raspberry') {
@@ -74,9 +75,9 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 					await r.save();
 				}
 
-				succeed('Username changed.');
+				succeed(FlashMessages.USERNAME_CHANGED);
 			} catch (err) {
-				error('Username already exists.');
+				error(FlashMessages.USERNAME_EXISTS);
 			}
 		}
 		return res.redirect('/profil');
@@ -92,17 +93,17 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		const oldPassword = sanitize(req.body.old_pwd);
 		const newPassword = req.body.new_pwd;
 		const checkNewPassword = req.body.new_pwd_confirm;
-		let errorMsg = null;
+		let errorMsg: FlashMessages|null = null;
 
 		if (!oldPassword || !newPassword || !checkNewPassword)
-			errorMsg = 'One or more fields were not provided.';
+			errorMsg = FlashMessages.MISSING_FIELD;
 		else if (newPassword !== checkNewPassword)
-			errorMsg = 'New passwords must match.';
+			errorMsg = FlashMessages.MISMATCHING_PASSWORDS;
 		else if (!req.user?.comparePassword(oldPassword))
-			errorMsg = 'Wrong password.';
+			errorMsg = FlashMessages.WRONG_PASSWORD;
 
 		if (errorMsg) {
-			req.flash('errorMsg', errorMsg);
+			req.flashLocalized('errorMsg', errorMsg);
 			return res.redirect('/profil');
 		}
 
@@ -114,7 +115,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		req.user!.disconnectFromAllDevices(err => {
 			// ...but not the one used to change the password
 			// ...this is handled automatically by express-session
-			req.flash('successMsg', 'Password changed.');
+			req.flashLocalized('successMsg', FlashMessages.PASSWORD_CHANGED);
 			res.redirect('/profil');
 		});
 	} catch (err) {
@@ -127,22 +128,22 @@ export async function grantPermission(req: Request, res: Response, next: NextFun
 	try{
 		const granteeName = sanitize(req.body.grantee);
 		const permissionType = sanitize(req.body.permission);
-		let  errorMsg = null;
+		let  errorMsg: FlashMessages|null = null;
 
 		if (!granteeName)
-			errorMsg = 'Please enter a username';
+			errorMsg = FlashMessages.MISSING_USERNAME;
 		let grantee = await User.findOne({ username: granteeName });
 
 		if (!grantee)
-			errorMsg = 'Unknown user';
+			errorMsg = FlashMessages.USER_NOT_FOUND;
 		else if(grantee.id === req.user!.id)
-			errorMsg = 'You cannot grant a permission to yourself.';
+			errorMsg = FlashMessages.SELF_PERMISSION;
 
 		if (errorMsg) {
-			req.flash('errorMsg', errorMsg);
+			req.flashLocalized('errorMsg', errorMsg);
 		} else {
 			await req.user!.grantPermissionTo(grantee!, permissionType);
-			req.flash('successMsg', 'Permission granted.');
+			req.flashLocalized('successMsg', FlashMessages.PERMISSION_GRANTED);
 		}
 
 		return res.redirect('/profil');
@@ -156,23 +157,24 @@ export async function removePermission(req: Request, res: Response, next: NextFu
 	try {
 		let errorMsg = null;
 		const deletedPermissionType = sanitize(req.query.rmPerm);
-		const granteeName = sanitize(req.query.rmUser);
-		const granterName = sanitize(req.query.rmGranter);
+		const granteeName = sanitize(req.query.rmUser as string|undefined);
+		const granterName = sanitize(req.query.rmGranter as string|undefined);
 		const permissionGranter = granterName ? await User.findOne({ username: sanitize(req.query.rmGranter) as string }) : req.user;
 		const permissionGrantee = granteeName ? await User.findOne({ username: sanitize(req.query.rmUser) as string }) : req.user;
 
-		if (!deletedPermissionType || !(granteeName || granterName) || (req.user !== permissionGrantee && req.user !== permissionGranter))
-			errorMsg = `Error while deleting permission:${deletedPermissionType} from: ${granterName} to:${granteeName}`;
-		else if (!permissionGrantee)
-			errorMsg = `Unknown user: ${granteeName}`;
-		else if (!permissionGranter)
-			errorMsg = `Unknown user: ${granterName}`
-
-		if (errorMsg) {
-			req.flash('errorMsg', errorMsg);
+		if (!deletedPermissionType || !(granteeName || granterName) || (req.user !== permissionGrantee && req.user !== permissionGranter)) {
+			req.flashLocalized('errorMsg', FlashMessages.REVOCATION_ERROR, deletedPermissionType, granterName || "<???>", granteeName || "<???>");
+		} else if (!permissionGrantee) {
+			req.flashLocalized('errorMsg', FlashMessages.USER_NOT_FOUND, granteeName || "<???>")
+		} else if (!permissionGranter) {
+			req.flashLocalized('errorMsg', FlashMessages.USER_NOT_FOUND, granterName || "<???>");
 		} else {
 			await permissionGranter!.revokePermissionFrom(permissionGrantee!, deletedPermissionType as any);
-			req.flash('successMsg', 'Remove permission ' + deletedPermissionType + ' to ' + (granteeName || 'myself'));
+			req.flashLocalized(
+				'successMsg',
+				granteeName && FlashMessages.PERMISSION_REVOKED || FlashMessages.SELF_PERMISSION_REVOKED,
+				deletedPermissionType, granteeName || ""
+			);
 		}
 		return res.redirect('/profil');
 	} catch (err) {

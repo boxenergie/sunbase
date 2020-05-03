@@ -22,6 +22,7 @@ import { Validator } from 'jsonschema';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
+import FlashMessages, { localize } from "./flash-messages";
 
 const validator = new Validator();
 const addEnergyRecordSchema = {
@@ -108,6 +109,10 @@ export const getApiFunction = (
 	res: Response,
 	next: NextFunction
 ) => {
+	req.flashLocalized = (event: string, message: FlashMessages, ...params: string[]) => {
+		req.flash(event, localize(message), ...params);
+	}
+
 	res.api = (body?: Object | string) => {
 		let content = {
 			version: 1.0,

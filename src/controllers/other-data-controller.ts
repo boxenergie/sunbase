@@ -22,12 +22,13 @@ import { NextFunction, Response, Request } from 'express';
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
 import User from "../models/User";
+import FlashMessages from "./flash-messages";
 
 export async function renderOtherDataPage(req: Request, res: Response, next: NextFunction) {
 	try {
 		let granter = await User.findOne({ username : req.query.showUser as string });
 		if (!granter || !req.user!.hasPermissionFrom(granter.id, 'read' as any)) {
-			req.flash('errorMsg', 'No read access');
+			req.flashLocalized('errorMsg', FlashMessages.NO_READ_ACCESS);
 			return res.redirect('/');
 		}
 		const userResults = await InfluxHelper.query(

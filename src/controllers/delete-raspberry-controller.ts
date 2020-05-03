@@ -17,11 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
+import FlashMessages from "./flash-messages";
 
 export async function renderDeleteRaspberryPage(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -45,23 +46,23 @@ export async function deleteRaspberry(req: Request, res: Response, next: NextFun
 	try {
 		const deletedRaspberryId = sanitize(req.query.deleted);
 		const me = req.user!;
-		const error = (msg: string) => req.flash('errorMsg', msg);
-		const succeed = (msg: string) => req.flash('successMsg', msg);
+		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
+		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
 
 		const targetRaspberry = await User.findById(deletedRaspberryId);
 
 		if (deletedRaspberryId === me.id)
-			error('You cannot delete yourself.');
+			error(FlashMessages.SELF_DELETION);
 		else if (!targetRaspberry)
-			error('User did not exist.');
+			error(FlashMessages.USER_NOT_FOUND);
 		else if (targetRaspberry!.role !== 'raspberry')
-			error('You can only delete raspberry.');
+			error(FlashMessages.NOT_RASPBERRY);
 		else if (!targetRaspberry!.raspberry!.owner.equals(me._id))
-			error('You cannot delete a raspberry you did not create.');
+			error(FlashMessages.INVALID_RASPBERRY);
 		else {
 			await User.findOneAndDelete({ _id: deletedRaspberryId });
 
-			succeed('Raspberry unlinked.');
+			succeed(FlashMessages.RASPBERRY_DELETED);
 			logger.info(`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${me.username}.`);
 		}
 
