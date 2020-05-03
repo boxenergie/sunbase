@@ -19,8 +19,10 @@
 
 import app from './app';
 import logger from './utils/logger';
+import * as localization from './lang/localization';
 
-app.on('ready', () => {
+app.on('ready', async () => {
+	await localization.init();
 	app.listen(process.env.PORT, async () => {
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
