@@ -46,9 +46,10 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 
 export async function changeUsername(req: Request, res: Response, next: NextFunction) {
 	try {
-		const oldUsername:string = req.user!.username;
-		const newUsername:string = req.body.new_username;
-		const checkPassword:string = req.body.pwd;
+		const user = req.user!;
+		const oldUsername:string = user.username;
+		const newUsername:string = req.body.username;
+		const checkPassword:string = req.body.password;
 		const error = (msg: string) => req.flash('errorMsg', msg);
 		const succeed = (msg: string) => req.flash('successMsg', msg);
 
@@ -58,16 +59,16 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 			error('Wrong password');
 		} else {
 			try {
-				if (req.user!.role === 'raspberry') {
-					req.user!.username = req.user!.username.replace(/\/.*/, `/${req.body.new_username}`);
-					req.user!.raspberry!.label = req.body.new_username;
+				if (user.role === 'raspberry') {
+					user.username = oldUsername.replace(/\/.*/, `/${newUsername}`);
+					user.raspberry!.label = newUsername;
 				} else {
-					req.user!.username = req.body.new_username;
+					user.username = newUsername;
 				}
-				await req.user!.save();
+				await user.save();
 
-				// If it suceeds, change the name of all of his raspberries
-				const raspberries = await User.find({ username: new RegExp(`^${req.user!.username}/.+`) });
+				// If it succeeds, change the name of all of his raspberries
+				const raspberries = await User.find({ username: new RegExp(`^${oldUsername}/.+`) });
 				
 				for (const r of raspberries) {
 					r.username = r.username.replace(oldUsername, newUsername);
@@ -89,9 +90,10 @@ export async function changeUsername(req: Request, res: Response, next: NextFunc
 
 export async function changePassword(req: Request, res: Response, next: NextFunction) {
 	try {
-		const oldPassword = sanitize(req.body.old_pwd);
-		const newPassword = req.body.new_pwd;
-		const checkNewPassword = req.body.new_pwd_confirm;
+		const passwords = req.body.password;
+		const oldPassword = passwords && sanitize(passwords[0]);
+		const newPassword = passwords && passwords[1];
+		const checkNewPassword = passwords && passwords[2];
 		let errorMsg = null;
 
 		if (!oldPassword || !newPassword || !checkNewPassword)
@@ -107,7 +109,7 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 		}
 
 		// Save password
-		req.user!.password = req.body.new_pwd;
+		req.user!.password = newPassword;
 		await req.user!.save();
 
 		// Disconnect the user from all devices...
