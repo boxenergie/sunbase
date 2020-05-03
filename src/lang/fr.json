@@ -1,0 +1,32 @@
+{
+	"flash.missing_field": "Un ou plusieurs champs étaient manquants.",
+	"flash.wrong_password": "Mauvais mot de passe",
+	"flash.username_exists": "Ce nom d'utilisateur existe déjà.",
+	"flash.mismatching_passwords": "Les nouveaux mots de passe doivent correspondre.",
+	"flash.unavailable_username": "Le nom d'utilisateur \"%s\" n'est pas disponible.",
+	"flash.username_changed": "Votre nom d'utilisateur a été changé.",
+	"flash.password_changed": "Votre mot de passe a été changé.",
+
+	"flash.invalid_raspberry_index": "Votre indice de soutirage est invalide.",
+	"flash.too_many_candidates": "Veuillez réessayer dans 1h.",
+	"flash.unrecognized_mac": "Cette adresse MAC n'est pas connue de nos systèmes.",
+	"flash.invalid_auth_field": "Merci de respecter les règles pour le champ %s.",
+	"flash.already_linked": "Ce raspberry est déjà lié à un compte !",
+
+	"flash.raspberry_linked": "Votre raspberry a été lié à votre compte !<br>Vous pouvez gérer votre raspberry en vous connectant au compte suivant :<br><u>nom d'utilisateur:</u> <i>%s/%s</i><br><u>mot de passe:</u> <em>celui que vous avez spécifié</em>",
+
+	"flash.self_deletion": "Vous ne pouvez pas supprimer votre propre compte.",
+	"flash.user_not_found": "Utilisateur inconnu: %s.",
+	"flash.not_raspberry": "Vous ne pouvez supprimer que des comptes de box énergie.",
+	"flash.invalid_raspberry": "Vous ne pouvez supprimer que des box énergie que vous possédez.",
+	"flash.user_deleted": "L'utilisateur a été supprimé.",
+	"flash.raspberry_deleted": "La box énergie a été effacée du réseau.",
+
+	"flash.missing_username": "Merci d'entrer un nom d'utilisateur.",
+	"flash.self_permission": "Vous ne pouvez pas offrir une permission à vous-même.",
+	"flash.no_read_access": "Pas d'accès en lecture",
+	"flash.revocation_error": "La permission '%s' (de %s à %s) n'a pas pu être supprimée.",
+	"flash.permission_granted": "Permission octroyée.",
+	"flash.permission_revoked": "Permission '%s' révoquée pour %s",
+	"flash.self_permission_revoked": "Permission '%s' retirée"
+}
