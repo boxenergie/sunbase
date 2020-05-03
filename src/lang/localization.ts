@@ -4,7 +4,7 @@ import logger from "../utils/logger";
 import * as path from "path";
 const fs = require('fs');
 
-const langData: {[lang: string]: {[key: string]}} = {}
+const langData: {[lang: string]: {[key: string]: string}} = {}
 
 export async function init() {
 	const files = await util.promisify(fs.readdir)(__dirname);
@@ -24,11 +24,12 @@ export function getSupportedLocales() {
 	return Object.keys(langData);
 }
 
-export function localize(lang: string, msg: FlashMessages): string {
-	const ret = langData[lang][FlashMessages[msg]];
+export function localizeFlash(lang: string, msg: FlashMessages): string {
+	const translationKey = `flash.${FlashMessages[msg].toLowerCase()}`;
+	const ret = langData[lang][translationKey];
 	if (!ret) {
 		logger.warn('No translation available for ' + msg);
-		return lang === 'en' ? FlashMessages[msg] : localize('en', msg);
+		return lang === 'en' ? translationKey : localizeFlash('en', msg);
 	}
 	return ret;
 }
