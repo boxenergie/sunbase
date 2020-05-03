@@ -19,9 +19,9 @@
 
 import bcrypt from 'bcrypt';
 import { Model } from 'models';
-import { Document, Schema, Types } from 'mongoose';
+import { Document, Schema } from 'mongoose';
 
-import { permissionSchema, isPermissionType } from './Permission';
+import { isPermissionType, permissionSchema } from './Permission';
 import raspberrySchema from './Raspberry'
 import MongoClient from '../db/mongodb';
 import logger from '../utils/logger';
@@ -127,11 +127,9 @@ userSchema.methods.revokePermissionFrom = function (user, permissionType) {
 	return Promise.reject(`${permissionType} is not a valid permission`);
 };
 
-userSchema.pre('save', function(next) {
-	const self = this as UserDocument;
-
-	if (!self.permissions) {
-		self.permissions = {
+userSchema.pre<UserDocument>('save', async function() {
+	if (!this.permissions) {
+		this.permissions = {
 			granted: new Map(),
 			granting: new Map(),
 			resolveForDisplay: permissionSchema.methods.resolveForDisplay
@@ -139,11 +137,9 @@ userSchema.pre('save', function(next) {
 	}
 
 	// If the user is being created or changed, we hash the password
-	if(self.isModified('password')) {
-		self.password = bcrypt.hashSync(self.password, 10);
+	if(this.isModified('password')) {
+		this.password = bcrypt.hashSync(this.password, 10);
 	}
-
-	next();
 });
 
 userSchema.post<UserDocument>('findOneAndDelete', async function(doc, next) {
