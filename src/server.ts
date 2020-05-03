@@ -27,10 +27,11 @@ app.on('ready', () => {
 });
 
 process.on('unhandledRejection', function(err) {
-	// @ts-ignore
-	logger.error(`Unhandled Rejection: ${err.message}`)
+	logger.error('Unhandled Rejection: ',  err);
+	console.log(err);
 });
 
 process.on('uncaughtException', function(err) {
-	logger.error(`Uncaught Exception: ${err.message}`)
+	logger.error('Uncaught Exception: ', err);
+	console.log(err);
 });
