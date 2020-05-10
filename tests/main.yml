@@ -1,7 +1,6 @@
 config:
     target: "http://localhost:80"
     phases:
-    phases:
         # Phase 1
         # 50 users every second during 60 seconds, no more than 1'000 concurrent users
         - duration: 60
