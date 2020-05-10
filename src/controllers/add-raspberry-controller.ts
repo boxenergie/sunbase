@@ -17,12 +17,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import sanitize from 'mongo-sanitize';
 
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
 import User from '../models/User';
+import FlashMessages from "./flash-messages";
 
 export async function renderAddRaspberryPage(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -46,10 +47,10 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const password:string = sanitize(req.body.password);
 		const withdrawal:number = sanitize(Number(req.body?.withdrawal));
 		const mac: string = sanitize(req.body?.mac);
-		const error = (msg: string) => req.flash('errorMsg', msg);
-		const succeed = (msg: string) => req.flash('successMsg', msg);
+		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
+		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
 
-		let result = null;
+		let result;
 		// Withdrawal, no MAC
 		if (withdrawal) {
 			/**
@@ -71,13 +72,13 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			);
 
 			if (result.rows.length == 0) {
-				error('Your withdrawal index is invalid.');
+				error(FlashMessages.INVALID_RASPBERRY_INDEX);
 				return res.redirect('/profil/add-raspberry');
 			}
 			else if (result.rows.length > 1) {
-				error('Please retry in 1h.');
+				error(FlashMessages.TOO_MANY_CANDIDATES);
 				return res.redirect('/profil/add-raspberry');
-			};
+			}
 		}
 		// MAC, no withdrawal
 		else {
@@ -92,14 +93,15 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			);
 
 			if (result.rows.length === 0) {
-				error('This MAC is not registered in the system.');
+				error(FlashMessages.UNRECOGNIZED_MAC);
 				return res.redirect('/profil/add-raspberry');
 			}
 		}
 
 		try {
+			const username = req.user!.username;
 			const raspberry = await User.create({
-				username: `${req.user!.username}/${label}`,
+				username: `${username}/${label}`,
 				password: password,
 				role: 'raspberry',
 				raspberry: {
@@ -111,23 +113,19 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 			
 			await raspberry!.grantPermissionTo(req.user!, 'aggregate' as any);
 
-			succeed(`
-				Successfully linked your raspberry to your account !<br>
-				You can connect manage this raspberry by connecting to the following account:<br>
-				<u>Username:</u> <i>${req.user!.username}/${label}</i><br>
-				<u>Password:</u> The one you specified
-			`);
+			succeed(FlashMessages.RASPBERRY_LINKED, username, label);
 
-			logger.info(`Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${req.user!.username}`);
+			logger.info(`Succesfully linked raspberry '${mac ?? result.rows[0].raspberry_mac} with user ${username}`);
 		}
 		catch (err) {
 			if (err.name === 'ValidationError') {
 				logger.debug(err.message);
 
-				error(`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`);
+				const erroringField = err.errors[Object.keys(err.errors)[0]].path;
+				error(FlashMessages.INVALID_AUTH_FIELD, erroringField);
 			}
 			else {
-				error('This raspberry is already linked to an account !');
+				error(FlashMessages.ALREADY_LINKED);
 			}
 		}
 		finally {

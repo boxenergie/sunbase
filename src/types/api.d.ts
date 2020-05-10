@@ -18,9 +18,15 @@
  */
 
 import { UserDocument } from '../models/User';
+import FlashMessages from "../controllers/flash-messages";
 
 declare global {
 	namespace Express {
+		interface Request {
+			flash(event: string, message: string, ...params: string[]): any;
+			flashLocalized(event: string, message: FlashMessages, ...params: string[]): any;
+		}
+
 		interface Response {
 			api(body?: Object | string): void;
 		}

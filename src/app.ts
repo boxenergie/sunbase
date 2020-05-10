@@ -101,6 +101,18 @@ const apiRouter = express.Router();
 
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
+import FlashMessages from "./controllers/flash-messages";
+import { localizeFlash, getSupportedLocales } from "./lang/localization";
+
+app.use((req, res, next) => {
+		req.flashLocalized = (event: string, message: FlashMessages, ...params: string[]) => {
+			const preferredLang = req.acceptsLanguages(getSupportedLocales()) || 'en';
+			req.flash(event, localizeFlash(preferredLang, message), ...params);
+		}
+		next();
+	}
+)
+
 /**
  * App routes
  */

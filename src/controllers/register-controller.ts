@@ -23,6 +23,7 @@ import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
+import FlashMessages from "./flash-messages";
 
 export async function renderRegisterPage(req: Request, res: Response, _: NextFunction) {
 	res.render('register', {
@@ -56,15 +57,14 @@ export async function registerUser(req: Request, res: Response, _: NextFunction)
 			if (err.name === 'MongoError') {
 				logger.debug(err.message);
 
-				req.flash('error', `Username '${username}' is not available.`);
+				req.flashLocalized('error', FlashMessages.UNAVAILABLE_USERNAME, username);
 				res.redirect('/register');
 			}
 			else if (err.name === 'ValidationError') {
 				logger.debug(err.message);
 
-				req.flash('error',
-					`Please respect the rules for the ${err.errors[Object.keys(err.errors)[0]].path} field.`
-				);
+				const invalidField = err.errors[Object.keys(err.errors)[0]].path;
+				req.flashLocalized('error', FlashMessages.INVALID_AUTH_FIELD, invalidField);
 				res.redirect('/register');
 			}
 			else {

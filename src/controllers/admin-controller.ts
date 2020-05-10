@@ -17,11 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import sanitize from 'mongo-sanitize';
 
 import User from '../models/User';
 import logger from '../utils/logger';
+import FlashMessages from "./flash-messages";
 
 export async function renderAdminPage(req: Request, res: Response, next: NextFunction) {
 	if (req.query.deleted) {
@@ -57,19 +58,19 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
 	try {
 		const deletedUserId = sanitize(req.query.deleted);
-		const error = (msg: string) => req.flash('errorMsg', msg);
-		const succeed = (msg: string) => req.flash('successMsg', msg);
+		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
+		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
 
 		if (deletedUserId === req.user!.id) {
-			error('You cannot delete yourself.');
+			error(FlashMessages.SELF_DELETION);
 		} else {
 			try {
 				await User.findOneAndDelete({ _id: deletedUserId });
-				
-				succeed('User deleted.');
+
+				succeed(FlashMessages.USER_DELETED);
 				logger.info(`User '${deletedUserId}' deleted by admin.`);
 			} catch (err) {
-				error('Username did not exist.');
+				error(FlashMessages.USER_NOT_FOUND);
 			}
 		}
 

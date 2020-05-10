@@ -1,0 +1,32 @@
+{
+	"flash.missing_field": "one or more fields were not provided.",
+	"flash.wrong_password": "wrong password",
+	"flash.username_exists": "username already exists.",
+	"flash.mismatching_passwords": "new passwords must match.",
+	"flash.unavailable_username": "username \"%s\" is not available.",
+	"flash.username_changed": "username changed.",
+	"flash.password_changed": "password changed.",
+
+	"flash.invalid_raspberry_index": "your withdrawal index is invalid.",
+	"flash.too_many_candidates": "please retry in 1h.",
+	"flash.unrecognized_mac": "this mac is not registered in the system.",
+	"flash.invalid_auth_field": "please respect the rules for the %s field.",
+	"flash.already_linked": "this raspberry is already linked to an account !",
+
+	"flash.raspberry_linked": "successfully linked your raspberry to your account !<br>you can connect manage this raspberry by connecting to the following account:<br><u>username:</u> <i>%s/%s</i><br><u>password:</u> the one you specified",
+
+	"flash.self_deletion": "you cannot delete yourself.",
+	"flash.user_not_found": "unknown user: %s.",
+	"flash.not_raspberry": "you can only delete a raspberry account.",
+	"flash.invalid_raspberry": "you cannot delete a raspberry you did not create.",
+	"flash.user_deleted": "user deleted.",
+	"flash.raspberry_deleted": "raspberry unlinked.",
+
+	"flash.missing_username": "please enter a username",
+	"flash.self_permission": "you cannot grant a permission to yourself.",
+	"flash.no_read_access": "no read access",
+	"flash.revocation_error": "error while deleting permission:%s from: %s to: %s",
+	"flash.permission_granted": "permission granted.",
+	"flash.permission_revoked": "removed permission %s from %s",
+	"flash.self_permission_revoked": "removed permission %s from myself"
+}
