@@ -3,7 +3,7 @@ import InputField from './input-field';
 
 function InputText(props) {
 	const {
-		password,
+		type,
 		name,
 		id = name,
 		icon,
@@ -28,7 +28,7 @@ function InputText(props) {
 			tooltip-position={tooltipPosition}
 		>
 			<input
-				type={password ? 'password' : 'text'}
+				type={type ? type : 'text'}
 				id={id}
 				name={name}
 				min-length={min}
