@@ -12,7 +12,7 @@ function InputField(props) {
 
 	const labelHTML = label
 		? <label
-			className="tooltipped"
+			className={tooltip ? 'tooltipped' : ''}
 			data-position={tooltipPosition}
 			data-html data-tooltip={tooltip}
 			htmlFor={name}>{label} {tooltip ? '(?)' : ''}
