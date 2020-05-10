@@ -26,6 +26,8 @@ Finally, use one of the [script](#scripts) below to start the server. Additional
 
 `npm run test`: Start the tests of the application.
 
+`npm run test-quiet`: Start the tests of the application quietly (no extensive output).
+
 ## InfluxDB
 
 [InfluxDB](https://www.influxdata.com) is an open-source time series database (TSDB) developed by InfluxData. It is optimized for fast, high-availability storage and retrieval of time series data in fields such as operations monitoring, application metrics, Internet of Things sensor data, and real-time analytics.
@@ -110,3 +112,27 @@ __Required parameters :__
 - `production_index` : Number >= 0
 - `consumption` : Number >= 0
 - `raspberry_mac` : MAC of the Raspberry.
+
+## Tests
+
+The tests are made with [Artillery](https://artillery.io).
+
+To run the tests, use `npm run test` or alternatively `npx artillery run ./test/main.yml`.
+
+The tests are the following:
+
+**Phase 1:** 50 users every second during 60 seconds, no more than 1'000 concurrent users
+
+**Phase 2:** 100 users every second during 60 seconds, no limit of concurrent users
+
+**Phase 3:** 100'000 requests over 10 minutes (~166 requests a second)
+
+**Phase 4:** Same as phase 1
+
+During each of these phases, each user can choose one of the following scenarios:
+
+**Home page:** The user will make a GET request on '/', resulting in showing all the records.
+
+**Register:** The user will make a GET request on '/register' then make use the form to register an account.
+
+**Raspberry-like:** The user will simulate a raspberry sending energy data to the server.
