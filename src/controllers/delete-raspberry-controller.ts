@@ -22,7 +22,7 @@ import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
-import FlashMessages from "./flash-messages";
+import FlashMessages from "../utils/flash-messages";
 
 export async function renderDeleteRaspberryPage(req: Request, res: Response, next: NextFunction) {
 	try {

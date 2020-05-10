@@ -22,7 +22,7 @@ import { NextFunction, Response, Request } from 'express';
 import * as InfluxHelper from '../utils/InfluxHelper';
 import logger from '../utils/logger';
 import User from "../models/User";
-import FlashMessages from "./flash-messages";
+import FlashMessages from "../utils/flash-messages";
 
 export async function renderOtherDataPage(req: Request, res: Response, next: NextFunction) {
 	try {
