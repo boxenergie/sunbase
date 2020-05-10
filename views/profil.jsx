@@ -51,6 +51,7 @@ function ProfilPage(props) {
 	return (
 		<html>
 			<Header title="SunShare">
+				<link rel="stylesheet" href="/css/input-fields.css" />
 				<script src="/js/tabs.js" defer></script>
 				<script src="/js/select.js" defer></script>
 				<script src="/js/tooltip.js" defer></script>
@@ -66,16 +67,53 @@ function ProfilPage(props) {
 
 							<div>
 								<ul className="tabs">
-									<li className="tab col s4"><a className="active" href="#username">Changer de nom d'utilisateur</a></li>
-									<li className="tab col s4"><a href="#password">Changer de mot de passe</a></li>
-									<li className="tab col s4"><a href="#permissions">Gérer les permissions</a></li>
+									<li className={`tab col ${isUser ? 's3' : 'hide'}`}><a className={isUser ? 'active' : ''} href="#email">Changer d'adresse e-mail</a></li>
+									<li className={`tab col ${isUser ? 's3' : 's4'}`}><a className={!isUser ? 'active' : ''} href="#username">Changer de nom d'utilisateur</a></li>
+									<li className={`tab col ${isUser ? 's3' : 's4'}`}><a href="#password">Changer de mot de passe</a></li>
+									<li className={`tab col ${isUser ? 's3' : 's4'}`}><a href="#permissions">Gérer les permissions</a></li>
 								</ul>
+								{
+									isUser &&
+										<div id="email" className="col s12">
+											<form action="/profil/update_email/" method="post">
+												<input type="hidden" name="_csrf" value={csrfToken} />
+
+												<InputText
+													type="password"
+													name="password"
+													id="changeEmailPassword"
+													icon="vpn_key"
+													label="Mot de passe actuel"
+													placeholder="••••••"
+													tooltip="Doit faire entre 8 et 80 caractères<br/>Tous les caractères sont autorisés"
+													pattern=".{8,80}"
+													required
+												/>
+
+												<InputText
+													type="email"
+													name="email"
+													id="changeEmailEmail"
+													icon="email"
+													label="Nouvelle adresse e-mail"
+													placeholder="John@gmail.com"
+													pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z.]{2,15}"
+													required
+												/>
+
+												<InputButton
+													type="submit"
+													label="Valider"
+												/>
+											</form>
+										</div>
+								}
 								<div id="username" className="col s12">
 									<form action="/profil/update_username/" method="post">
 										<input type="hidden" name="_csrf" value={csrfToken} />
 
 										<InputText
-											password
+											type="password"
 											name="password"
 											id="changeUsernamePassword"
 											icon="vpn_key"
@@ -108,8 +146,8 @@ function ProfilPage(props) {
 										<input type="hidden" name="_csrf" value={csrfToken} />
 
 										<InputText
-											password
-											name="password"
+											type="password"
+											name="old_pwd"
 											id="changePasswordOldPassword"
 											icon="vpn_key"
 											label="Mot de passe actuel"
@@ -120,8 +158,8 @@ function ProfilPage(props) {
 										/>
 
 										<InputText
-											password
-											name="password"
+											type="password"
+											name="new_pwd"
 											id="changePasswordNewPassword"
 											icon="vpn_key"
 											label="Nouveau mot de passe"
@@ -132,8 +170,8 @@ function ProfilPage(props) {
 										/>
 
 										<InputText
-											password
-											name="password"
+											type="password"
+											name="new_pwd_confirm"
 											id="changePasswordNewPasswordConfirm"
 											icon="vpn_key"
 											label="Confirmation du nouveau mot de passe"

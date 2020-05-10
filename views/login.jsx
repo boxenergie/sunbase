@@ -12,6 +12,7 @@ function LoginPage(props) {
 	return (
 		<html>
 			<Header title="SunShare">
+				<link rel="stylesheet" href="/css/input-fields.css" />
 				<script src="/js/tooltip.js"></script>
 			</Header>
 			<body>
@@ -19,7 +20,7 @@ function LoginPage(props) {
 				<MessageHandler errorMsg={errorMsg} />
 
 				<main>
-					<div className="valign-wrapper row">
+					<div className="row valign-wrapper">
 						<div className="col card hoverable s10 pull-s1 m6 pull-m3 l4 pull-l4">
 							<form action="/login" method="post">
 								<input type="hidden" name="_csrf" value={csrfToken} />
@@ -28,17 +29,18 @@ function LoginPage(props) {
 									<span className="card-title">Connexion</span>
 									<div className="row">
 										<InputText
+											type="text"
 											name="username"
 											icon="account_circle"
-											label="Nom d'utilisateur"
-											placeholder="John"
+											label="Adresse e-mail ou nom d'utilisateur"
+											placeholder="John.Doe@gmail.com ou John"
 											tooltip="Doit faire entre 3 et 20 caractères<br/>Caractères autorisés:<br/>Caractères de l'alphabet avec et sans accent<br/>Chiffres<br/>Les caractères: - _ . espace"
-											pattern="[A-Za-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}"
+											pattern="([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z.]{2,15})|([A-Za-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20})|([A-Za-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}\/[A-Za-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20})"
 											required
 										/>
 
 										<InputText
-											password
+											type="password"
 											name="password"
 											icon="vpn_key"
 											label="Mot de passe"
@@ -51,12 +53,13 @@ function LoginPage(props) {
 								</div>
 								<div className="card-action right-align">
 									<InputButton
-										size="s9"
+										size="l9 offset-l0 m9 offset-m0 s9 pull-s1"
 										type="reset"
+										color="grey"
 										label="Reset"
 									/>
 									<InputButton
-										size="s3"
+										size="l3 offset-l0 m2 offset-m0 s3 pull-s1"
 										type="submit"
 										label="Valider"
 									/>

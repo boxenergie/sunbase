@@ -12,6 +12,7 @@ function RegisterPage(props) {
 	return (
 		<html>
 			<Header title="SunShare">
+				<link rel="stylesheet" href="/css/input-fields.css" />
 				<script src="/js/tooltip.js"></script>
 			</Header>
 			<body>
@@ -28,6 +29,16 @@ function RegisterPage(props) {
 									<span className="card-title">Créer un compte</span>
 									<div className="row">
 										<InputText
+											type="email"
+											name="email"
+											icon="email"
+											label="Adresse e-mail"
+											placeholder="John@gmail.com"
+											pattern="[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z.]{2,15}"
+											required
+										/>
+										
+										<InputText
 											name="username"
 											icon="account_circle"
 											label="Nom d'utilisateur"
@@ -38,7 +49,7 @@ function RegisterPage(props) {
 										/>
 
 										<InputText
-											password
+											type="password"
 											name="password"
 											icon="vpn_key"
 											label="Mot de passe"

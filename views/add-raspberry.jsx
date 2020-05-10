@@ -15,6 +15,7 @@ function AddRaspberryPage(props) {
 	return (
 		<html>
 			<Header title="SunShare">
+				<link rel="stylesheet" href="/css/input-fields.css" />
 				<script src="/js/tabs.js" defer></script>
 				<script src="/js/tooltip.js" defer></script>
 			</Header>
@@ -50,7 +51,7 @@ function AddRaspberryPage(props) {
 										/>
 
 										<InputText
-											password
+											type="password"
 											name="password"
 											id="basicPassword"
 											icon="vpn_key"
@@ -96,7 +97,7 @@ function AddRaspberryPage(props) {
 										/>
 
 										<InputText
-											password
+											type="password"
 											name="password"
 											id="advancedPassword"
 											icon="vpn_key"
