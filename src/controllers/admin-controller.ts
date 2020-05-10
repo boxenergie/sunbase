@@ -22,7 +22,7 @@ import sanitize from 'mongo-sanitize';
 
 import User from '../models/User';
 import logger from '../utils/logger';
-import FlashMessages from "./flash-messages";
+import FlashMessages from "../utils/flash-messages";
 
 export async function renderAdminPage(req: Request, res: Response, next: NextFunction) {
 	if (req.query.deleted) {
@@ -65,10 +65,22 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 			error(FlashMessages.SELF_DELETION);
 		} else {
 			try {
+				const user = await User.findById(deletedUserId);
+
 				await User.findOneAndDelete({ _id: deletedUserId });
+				logger.info(`User '${user!.username}' (${deletedUserId}) deleted by admin.`);
+
+				if (['user', 'admin'].includes(user!.role)) {
+					const usernameRegex = new RegExp(`${user!.username}\/.+`);
+					const userRaspberries = await User.find({ username: { $regex: usernameRegex }});
+
+					for (const u of userRaspberries) {
+						await User.findOneAndDelete({ _id: u._id });
+						logger.info(`User '${u.username}' (${u._id}) deleted by admin.`);
+					}
+				}
 
 				succeed(FlashMessages.USER_DELETED);
-				logger.info(`User '${deletedUserId}' deleted by admin.`);
 			} catch (err) {
 				error(FlashMessages.USER_NOT_FOUND);
 			}
