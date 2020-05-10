@@ -1,9 +1,15 @@
 {
+	"flash.internal_error": "Une erreur interne s'est produite, merci de prévenir un administrateur.",
+	
 	"flash.missing_field": "Un ou plusieurs champs étaient manquants.",
-	"flash.wrong_password": "Mauvais mot de passe",
+	"flash.wrong_password": "Mauvais mot de passe.",
+	"flash.email_exists": "Cet adresse e-mail exite déjà.",
 	"flash.username_exists": "Ce nom d'utilisateur existe déjà.",
 	"flash.mismatching_passwords": "Les nouveaux mots de passe doivent correspondre.",
+	"flash.unavailable_email": "L'adresse e-mail \"%s\" n'est pas disponible.",
 	"flash.unavailable_username": "Le nom d'utilisateur \"%s\" n'est pas disponible.",
+	"flash.invalid_credentials": "Identifiants invalides.",
+	"flash.email_changed": "Votre adresse e-mail a été changée.",
 	"flash.username_changed": "Votre nom d'utilisateur a été changé.",
 	"flash.password_changed": "Votre mot de passe a été changé.",
 

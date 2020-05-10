@@ -74,7 +74,7 @@ app.use(helmet.contentSecurityPolicy({
 	directives: {
 		defaultSrc: [ "'self'", 'https://fonts.gstatic.com' ],
 		styleSrc: [ "'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com' ],	
-		scriptSrc: [ "'self'", 'https://cdnjs.cloudflare.com', "'unsafe-inline'" ],
+		scriptSrc: [ "'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com' ],
 	}
 }));
 /* BODY-PARSER */
@@ -101,17 +101,16 @@ const apiRouter = express.Router();
 
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
-import FlashMessages from "./controllers/flash-messages";
+import FlashMessages from "./utils/flash-messages";
 import { localizeFlash, getSupportedLocales } from "./lang/localization";
 
-app.use((req, res, next) => {
-		req.flashLocalized = (event: string, message: FlashMessages, ...params: string[]) => {
-			const preferredLang = req.acceptsLanguages(getSupportedLocales()) || 'en';
-			req.flash(event, localizeFlash(preferredLang, message), ...params);
-		}
-		next();
+app.use((req, _, next) => {
+	req.flashLocalized = (event: string, message: FlashMessages, ...params: string[]) => {
+		const preferredLang = req.acceptsLanguages(getSupportedLocales()) || 'fr';
+		req.flash(event, localizeFlash(preferredLang, message), ...params);
 	}
-)
+	next();
+});
 
 /**
  * App routes
@@ -127,7 +126,6 @@ appRouter.post('/login', isNotLoggedIn(), passport.authenticate('local',
 	{
 		failureRedirect: '/login',
 		successRedirect:'/',
-		failureFlash: 'Invalid username or password.'
 	}
 ));
 appRouter.get('/register', isNotLoggedIn(), registerController.renderRegisterPage);
@@ -138,6 +136,7 @@ appRouter.get('/logout', isLoggedIn(), authController.logOut);
  * Profil routes
  */
 appRouter.get('/profil', isLoggedIn(), profilController.renderProfilPage);
+appRouter.post('/profil/update_email/', isLoggedIn(), profilController.changeEmail);
 appRouter.post('/profil/update_username/', isLoggedIn(), profilController.changeUsername);
 appRouter.post('/profil/update_password/', isLoggedIn(), profilController.changePassword);
 appRouter.post('/profil/update_permissions/', isLoggedIn(), profilController.grantPermission);

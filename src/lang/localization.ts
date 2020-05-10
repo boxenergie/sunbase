@@ -1,8 +1,10 @@
-import FlashMessages from "../controllers/flash-messages";
-import * as util from "util";
-import logger from "../utils/logger";
-import * as path from "path";
+
+import * as util from 'util';
+import * as path from 'path';
 const fs = require('fs');
+
+import FlashMessages from '../utils/flash-messages';
+import logger from '../utils/logger';
 
 const langData: {[lang: string]: {[key: string]: string}} = {}
 

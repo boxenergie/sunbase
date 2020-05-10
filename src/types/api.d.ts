@@ -18,7 +18,7 @@
  */
 
 import { UserDocument } from '../models/User';
-import FlashMessages from "../controllers/flash-messages";
+import FlashMessages from '../utils/flash-messages';
 
 declare global {
 	namespace Express {
