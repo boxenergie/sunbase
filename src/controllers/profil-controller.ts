@@ -22,7 +22,7 @@ import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
-import FlashMessages from './flash-messages';
+import FlashMessages from '../utils/flash-messages';
 
 export async function renderProfilPage(req: Request, res: Response, next: NextFunction) {
 
@@ -45,12 +45,44 @@ export async function renderProfilPage(req: Request, res: Response, next: NextFu
 	}
 }
 
+export async function changeEmail(req: Request, res: Response, next: NextFunction) {
+	try {
+		const user = req.user!;
+		const newEmail:string = sanitize(req.body.email);
+		const checkPassword:string = sanitize(req.body.password);
+		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
+		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
+
+		if (!checkPassword || !newEmail) {
+			error(FlashMessages.MISSING_FIELD);
+		} else if (!req.user?.comparePassword(checkPassword)) {
+			error(FlashMessages.WRONG_PASSWORD);
+		} else {
+			try {
+				if (user.role === 'raspberry') return res.redirect('/profil');
+
+				user.email = newEmail;
+				await user.save();
+
+				succeed(FlashMessages.EMAIL_CHANGED);
+			} catch (err) {
+				error(FlashMessages.EMAIL_EXISTS);
+			}
+		}
+		return res.redirect('/profil');
+
+	} catch (err) {
+		logger.error(err.message);
+		res.status(500).send('Something went wrong');
+	}
+}
+
 export async function changeUsername(req: Request, res: Response, next: NextFunction) {
 	try {
 		const user = req.user!;
 		const oldUsername:string = user.username;
-		const newUsername:string = req.body.username;
-		const checkPassword:string = req.body.password;
+		const newUsername:string = sanitize(req.body.username);
+		const checkPassword:string = sanitize(req.body.password);
 		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
 		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
 
