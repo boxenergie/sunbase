@@ -68,6 +68,7 @@ const isRaspberry = function() { this.role === 'raspberry'; }
 const regexFlags = 'i';
 const regexUsername = /[a-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}/;
 const regexUsernameRaspberry = new RegExp(regexUsername.source + '/' + regexUsername.source);
+const regexEmail = new RegExp(/[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z.]{2,15}/, regexFlags);
 const validateUsername = function(v: string) {
 	// @ts-ignore
 	return (this.role === 'raspberry')
@@ -77,6 +78,7 @@ const validateUsername = function(v: string) {
 const regexPassword = new RegExp(/^.{8,80}$/, regexFlags);
 
 const userSchema = new Schema<UserDocument>({
+	email: { type: String, trim: true, required: !isRaspberry, unique: true, validate: regexEmail },
 	username: { type: String, trim: true, required: true, unique: true, validate: validateUsername },
 	password: { type: String, trim: true, required: true, validate: regexPassword },
 	role: { type: String, required: true, default: 'user', enum: ['user', 'admin', 'raspberry'] },

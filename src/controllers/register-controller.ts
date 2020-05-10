@@ -23,7 +23,7 @@ import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
-import FlashMessages from "../utils/flash-messages";
+import FlashMessages from '../utils/flash-messages';
 
 export async function renderRegisterPage(req: Request, res: Response, _: NextFunction) {
 	res.render('register', {

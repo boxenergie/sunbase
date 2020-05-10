@@ -21,6 +21,7 @@ import { ObjectId } from 'mongodb';
 
 export namespace Model {
 	interface User {
+		email: string;
 		username: string;
 		password: string;
 		role: 'user' | 'admin' | 'raspberry';
@@ -37,8 +38,8 @@ export namespace Model {
 	namespace Permission {
 		enum Type {
 			// Must add to Permission$isPermissionType too
-			READ = "read",
-			AGGREGATE = "aggregate"
+			READ = 'read',
+			AGGREGATE = 'aggregate'
 		}
 	
 		type Row = Map<string, Type[]>;
