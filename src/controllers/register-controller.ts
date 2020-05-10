@@ -23,7 +23,7 @@ import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
-import FlashMessages from "./flash-messages";
+import FlashMessages from "../utils/flash-messages";
 
 export async function renderRegisterPage(req: Request, res: Response, _: NextFunction) {
 	res.render('register', {
@@ -34,15 +34,17 @@ export async function renderRegisterPage(req: Request, res: Response, _: NextFun
 
 export async function registerUser(req: Request, res: Response, _: NextFunction) {
 	try {
+		const email:string = sanitize(req.body.email);
 		const username:string = sanitize(req.body.username);
 		const password:string = sanitize(req.body.password);
 
 		try {
 			const user = await User.create({
+				email: email,
 				username: username,
 				password: password,
 			});
-			logger.info(`New user: ${username}`);
+			logger.info(`New user: ${username} (${email})`);
 
 			const P = Q.defer();
 			req.login(user, err => {
@@ -55,6 +57,7 @@ export async function registerUser(req: Request, res: Response, _: NextFunction)
 		}
 		catch (err) {
 			if (err.name === 'MongoError') {
+				// ! TODO Unavailable email
 				logger.debug(err.message);
 
 				req.flashLocalized('error', FlashMessages.UNAVAILABLE_USERNAME, username);
