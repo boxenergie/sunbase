@@ -65,8 +65,8 @@
     "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
     "prod": "tsc && ./scripts/copyStaticAssets.sh && NODE_ENV=production node ./dist/server.js",
     "clean": "./scripts/cleanDist.sh",
-    "test": "npx artillery run ./tests/main.yml",
-    "test-quiet": "npx artillery run --quiet ./test/main.yml"
+    "test": "npx artillery run ./tests/main.yml > ./tests/result.txt",
+    "test-quiet": "npx artillery run --quiet ./test/main.yml > ./tests/result.txt"
   },
   "author": "Teddy Evrard & Fabien Hervé & Alexandre Rouchouze",
   "license": "MIT"
