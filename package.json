@@ -55,6 +55,9 @@
     "@types/passport": "^1.0.2",
     "@types/passport-local": "^1.0.33",
     "@types/q": "^1.5.2",
+    "artillery": "^1.6.0",
+    "artillery-plugin-expect": "^1.3.0",
+    "artillery-plugin-faker": "^2.1.0",
     "typescript": "^3.8.3"
   },
   "scripts": {
@@ -62,7 +65,8 @@
     "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
     "prod": "tsc && ./scripts/copyStaticAssets.sh && NODE_ENV=production node ./dist/server.js",
     "clean": "./scripts/cleanDist.sh",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx artillery run ./tests/main.yml > ./tests/result.txt",
+    "test-quiet": "npx artillery run --quiet ./test/main.yml > ./tests/result.txt"
   },
   "author": "Teddy Evrard & Fabien Hervé & Alexandre Rouchouze",
   "license": "MIT"
