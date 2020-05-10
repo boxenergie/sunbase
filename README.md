@@ -117,7 +117,11 @@ __Required parameters :__
 
 The tests are made with [Artillery](https://artillery.io).
 
-To run the tests, use `npm run test` or alternatively `npx artillery run ./test/main.yml`.
+Please change the file located at `./tests/main.yml` with a valid target, the default one should be good in most cases though.
+
+Then you will need to start the server.
+
+Finally run the tests, use `npm run test` or alternatively `npx artillery run ./test/main.yml`.
 
 The tests are the following:
 
