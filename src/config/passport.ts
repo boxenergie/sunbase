@@ -17,10 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Request } from 'express';
+import sanitize from 'mongo-sanitize';
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 
+import FlashMessages from '../utils/flash-messages';
 import User, { UserDocument } from '../models/User';
+import logger from '../utils/logger';
 
 export default (passport: PassportStatic) => {
 	passport.serializeUser((user: UserDocument, done: Function) => {
@@ -31,12 +35,24 @@ export default (passport: PassportStatic) => {
 		User.findById(id, done);
 	});
 
-	passport.use(new LocalStrategy(
-		(username: string, password: string, done: Function) => {
-			User.findOne({ username: username }, (err, user: UserDocument) => {
-				if (err) return done(err);
-				if (!user) return done(null, false);
-				if (!user.comparePassword(password)) return done(null, false);
+	passport.use(new LocalStrategy({ passReqToCallback: true },
+		(req: Request, username: string, password: string, done: Function) => {
+			username = sanitize(username);
+			
+			const criteria = (username.indexOf('@') === -1)
+				? { username: username }
+				: { email: username };
+    
+			User.findOne(criteria, (err, user: UserDocument) => {
+				if (err) {
+					logger.error(`Login error: ${err}`);
+					req.flashLocalized('error', FlashMessages.INTERNAL_ERROR);
+					return done(null, false);
+				}
+				if (!user || (user && !user.comparePassword(password))) {
+					req.flashLocalized('error', FlashMessages.INVALID_CREDENTIALS);
+					return done(null, false);
+				}
 
 				return done(null, user);
 			});
