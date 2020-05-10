@@ -14,9 +14,19 @@ const borderColor = {
 	production: 'rgba(255, 99, 132, 1)',
 	consumption: 'rgba(54, 162, 235, 1)',
 	surplus: 'rgba(255, 206, 86, 1)',
+};
+
+const borderWidth = {
+	production: 1,
+	consumption: 1,
+	surplus: 1,
 }
 
 function createChart(ctx, labels, production, consumption, surplus) {
+	production 	= production.map(e => +Number(e).toFixed(2));
+	consumption = consumption.map(e => +Number(e).toFixed(2));
+	surplus		= surplus.map(e => +Number(e).toFixed(2));
+
 	new Chart(ctx, {
 		type: 'line',
 		data: {
@@ -27,20 +37,20 @@ function createChart(ctx, labels, production, consumption, surplus) {
 				data: production,
 				backgroundColor: backgroundColor.production,
 				borderColor: borderColor.production,
-				borderWidth: 3,
+				borderWidth: borderWidth.production,
 			}, {
 				fill: false,
 				label: label.consumption,
 				data: consumption,
 				backgroundColor: backgroundColor.consumption,
 				borderColor: borderColor.consumption,
-				borderWidth: 3,
+				borderWidth: borderWidth.consumption,
 			}, {
 				label: label.surplus,
 				data: surplus,
 				backgroundColor: backgroundColor.surplus,
 				borderColor: borderColor.surplus,
-				borderWidth: 3,
+				borderWidth: borderWidth.surplus,
 			}],
 		},
 		options: {
