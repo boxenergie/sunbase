@@ -1,14 +1,14 @@
 config:
     target: "http://localhost:80"
     phases:
-        # Phase 2
+        # Phase 1
         # 10 users every second and gradually increase to 125 over 180 seconds
         - duration: 180
           arrivalRate: 10
           rampTo: 125
           maxVusers: 1000
           name: "Warm up"
-        # Phase 3
+        # Phase 2
         # 125 users every second during 10 minutes (~125 requests a second)
         - duration: 600
           arrivalRate: 125
