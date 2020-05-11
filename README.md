@@ -125,13 +125,9 @@ Finally run the tests, use `npm run test` or alternatively `npx artillery run ./
 
 The tests are the following:
 
-**Phase 1:** 50 users every second during 60 seconds, no more than 1'000 concurrent users
+**Phase 1:** 10 users every second and gradually increase to 125 over 180 seconds, no more than 1'000 concurrent users.
 
-**Phase 2:** 100 users every second during 60 seconds, no limit of concurrent users
-
-**Phase 3:** 100'000 requests over 10 minutes (~166 requests a second)
-
-**Phase 4:** Same as phase 1
+**Phase 2:** 125 users every second during 10 minutes, no more than 1'000 concurrent users.
 
 During each of these phases, each user can choose one of the following scenarios:
 
