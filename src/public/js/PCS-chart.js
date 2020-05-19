@@ -59,7 +59,7 @@ function createChart(ctx, labels, production, consumption, surplus) {
 				xAxes: [{
 					scaleLabel: {
 						display: true,
-						labelString: 'Timestamp (hh:mm)'
+						labelString: 'Temps (hh:mm)'
 					},
 					ticks: {
 						minRotation: 0,
@@ -69,7 +69,7 @@ function createChart(ctx, labels, production, consumption, surplus) {
 				yAxes: [{
 					scaleLabel: {
 						display: true,
-						labelString: 'Energy amount (in watts)'
+						labelString: 'Montant d\'énergie (en Watts)'
 					},
 					ticks: {
 						callback: (kw) => `${kw * 1000}W`
