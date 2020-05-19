@@ -2,16 +2,16 @@ config:
     target: "http://localhost:80"
     phases:
         # Phase 1
-        # 10 users every second and gradually increase to 125 over 180 seconds
+        # 10 users every second and gradually increase to 50 over 180 seconds
         - duration: 180
           arrivalRate: 10
-          rampTo: 125
+          rampTo: 50
           maxVusers: 1000
           name: "Warm up"
         # Phase 2
-        # 125 users every second during 10 minutes (~125 requests a second)
+        # 50 users every second during 10 minutes
         - duration: 600
-          arrivalRate: 125
+          arrivalRate: 50
           maxVusers: 1000
           name: "Sustained max load"
     plugins:
