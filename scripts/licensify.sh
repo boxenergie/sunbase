@@ -30,7 +30,7 @@ comment_middle=' *'
 comment_end=' */'
 
 license='{{file_name}}
-Copyright (C) {{author}} {{year}}
+Copyright (C) {{year}} {{author}}
 
 This file is part of {{project_name}}.
 This program is free software: you can redistribute it and/or modify

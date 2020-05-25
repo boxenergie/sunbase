@@ -1,6 +1,6 @@
 /*
  * Permission.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
