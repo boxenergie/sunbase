@@ -109,10 +109,19 @@ GET /api/v1/energy/
 `POST /api/v1/energy/` will let you add your own energy record.
 
 __Required parameters :__
-- `production_index` : Number >= 0
-- `injection_index` : Number >= 0
-- `withdrawal_index` : Number >= 0
-- `raspberry_mac` : MAC of the Raspberry.
+Either the 4 following fields:
+- `production_index`: Number >= 0
+- `injection_index`: Number >= 0
+- `withdrawal_index`: Number >= 0
+- `raspberry_mac`: MAC of the Raspberry.
+Or the 3 following fields:
+- `production`: Number >= 0
+- `consumption`: Number >= 0
+- `raspberry_mac`: MAC of the Raspberry.
+
+The full description of the format can be found in [src/controllers/api-v1.ts](https://github.com/boxenergie/sunbase/blob/master/src/controllers/api-v1.ts).
+
+There is also an API at `/api/v1/wind/` for adding and viewing wind records collected by windmills, although this data is currently unused by the application.
 
 ## Tests
 
