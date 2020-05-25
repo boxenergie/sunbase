@@ -1,7 +1,7 @@
 const label = {
 	production: 'Production',
-	consumption: 'Consumption',
-	surplus: 'Surplus',
+	consumption: 'Consommation',
+	surplus: 'Bilan énergétique',
 }
 
 const backgroundColor = {
