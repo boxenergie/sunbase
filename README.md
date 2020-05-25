@@ -137,3 +137,7 @@ During each of these phases, each user can choose one of the following scenarios
 **Register:** The user will make a GET request on '/register' then make use the form to register an account.
 
 **Raspberry-like:** The user will simulate a raspberry sending energy data to the server.
+
+## Credit
+
+This application was made for Sunshare by Teddy Evrard, Fabien Hervé, and Alexandre Rouchouze.
