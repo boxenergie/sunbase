@@ -22,53 +22,42 @@ import sanitize from 'mongo-sanitize';
 
 import logger from '../utils/logger';
 import User from '../models/User';
-import FlashMessages from "../utils/flash-messages";
+import FlashMessages from '../utils/flash-messages';
 
 export async function renderDeleteRaspberryPage(req: Request, res: Response, next: NextFunction) {
-	try {
-		if (req.query.deleted) {
-			return deleteRaspberry(req, res, next);
-		}
-
-		res.render('delete-raspberry', {
-			errorMsg: req.flash('errorMsg'),
-			successMsg: req.flash('successMsg'),
-			raspberries: await User.find({ username: new RegExp(`^${req.user!.username}/.+`) }),
-			user: req.user,
-		});
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
+	if (req.query.deleted) {
+		return deleteRaspberry(req, res, next);
 	}
+
+	res.render('delete-raspberry', {
+		errorMsg   : req.flash('errorMsg'),
+		successMsg : req.flash('successMsg'),
+		raspberries: await User.find({ username: new RegExp(`^${req.user!.username}/.+`) }),
+		user       : req.user,
+	});
 }
 
 export async function deleteRaspberry(req: Request, res: Response, next: NextFunction) {
-	try {
-		const deletedRaspberryId = sanitize(req.query.deleted);
-		const me = req.user!;
-		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
-		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
+	const deletedRaspberryId = sanitize(req.query.deleted);
+	const me                 = req.user!;
 
-		const targetRaspberry = await User.findById(deletedRaspberryId);
+	const targetRaspberry = await User.findById(deletedRaspberryId);
 
-		if (deletedRaspberryId === me.id)
-			error(FlashMessages.SELF_DELETION);
-		else if (!targetRaspberry)
-			error(FlashMessages.USER_NOT_FOUND);
-		else if (targetRaspberry!.role !== 'raspberry')
-			error(FlashMessages.NOT_RASPBERRY);
-		else if (!targetRaspberry!.raspberry!.owner.equals(me._id))
-			error(FlashMessages.INVALID_RASPBERRY);
-		else {
-			await User.findOneAndDelete({ _id: deletedRaspberryId });
+	if (deletedRaspberryId === me.id) req.flashError(FlashMessages.SELF_DELETION);
+	else if (!targetRaspberry) req.flashError(FlashMessages.USER_NOT_FOUND, '<???>');
+	else if (targetRaspberry!.role !== 'raspberry') req.flashError(FlashMessages.NOT_RASPBERRY);
+	else if (!targetRaspberry!.raspberry!.owner.equals(me._id))
+		req.flashError(FlashMessages.INVALID_RASPBERRY);
+	else {
+		await User.findOneAndDelete({ _id: deletedRaspberryId });
 
-			succeed(FlashMessages.RASPBERRY_DELETED);
-			logger.info(`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${me.username}.`);
-		}
-
-		res.redirect('/profil/delete-raspberry');
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
+		req.flashSuccess(FlashMessages.RASPBERRY_DELETED);
+		logger.info(
+			`Raspberry ${targetRaspberry!.username} (${deletedRaspberryId}) deleted by ${
+				me.username
+			}.`
+		);
 	}
+
+	res.redirect('/profil/delete-raspberry');
 }

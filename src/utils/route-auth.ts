@@ -20,8 +20,8 @@
 import { NextFunction, Response, Request, RequestHandler } from 'express';
 
 type OptionalRedirect = {
-    failureRedirect?: string;
-}
+	failureRedirect?: string;
+};
 
 /**
  * This function provides a middleware to prevent non-logged in user to access

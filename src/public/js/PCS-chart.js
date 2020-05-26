@@ -1,65 +1,71 @@
-const label = {
-	production: 'Production',
-	consumption: 'Consommation',
-	surplus: 'Bilan énergétique',
-}
-
-const backgroundColor = {
-	production: 'rgba(255, 99, 132, 0.2)',
-	consumption: 'rgba(54, 162, 235, 0.2)',
-	surplus: 'rgba(255, 206, 86, 0.2)',
+const PRODUCTION = {
+	label          : 'Production',
+	backgroundColor: 'rgba(255, 99, 132, 0.2)',
+	borderColor    : 'rgba(255, 99, 132, 1)',
+	borderWidth    : 1,
 };
 
-const borderColor = {
-	production: 'rgba(255, 99, 132, 1)',
-	consumption: 'rgba(54, 162, 235, 1)',
-	surplus: 'rgba(255, 206, 86, 1)',
+const CONSUMPTION = {
+	label          : 'Consommation',
+	backgroundColor: 'rgba(54, 162, 235, 0.2)',
+	borderColor    : 'rgba(54, 162, 235, 1)',
+	borderWidth    : 1,
 };
 
-const borderWidth = {
-	production: 1,
-	consumption: 1,
-	surplus: 1,
-}
+const SURPLUS = {
+	label          : 'Bilan énergétique',
+	backgroundColor: 'rgba(255, 206, 86, 0.2)',
+	borderColor    : 'rgba(255, 206, 86, 1)',
+	borderWidth    : 1,
+};
+
+const X_AXES = {
+	label: 'Temps (hh:mm)',
+};
+
+const Y_AXES = {
+	label: 'Montant d\'énergie (en Watts)',
+	callback: (kw) => `${kw * 1000}W`,
+};
 
 function createChart(ctx, labels, production, consumption, surplus) {
-	production 	= production.map(e => +Number(e).toFixed(2));
+	production  = production.map(e => +Number(e).toFixed(2));
 	consumption = consumption.map(e => +Number(e).toFixed(2));
-	surplus		= surplus.map(e => +Number(e).toFixed(2));
+	surplus     = surplus.map(e => +Number(e).toFixed(2));
 
 	new Chart(ctx, {
 		type: 'line',
 		data: {
-			labels: labels,
+			labels  : labels,
 			datasets: [{
-				fill: false,
-				label: label.production,
-				data: production,
-				backgroundColor: backgroundColor.production,
-				borderColor: borderColor.production,
-				borderWidth: borderWidth.production,
+				fill           : false,
+				label          : PRODUCTION.label,
+				data           : production,
+				backgroundColor: PRODUCTION.backgroundColor,
+				borderColor    : PRODUCTION.borderColor,
+				borderWidth    : PRODUCTION.borderWidth,
 			}, {
-				fill: false,
-				label: label.consumption,
-				data: consumption,
-				backgroundColor: backgroundColor.consumption,
-				borderColor: borderColor.consumption,
-				borderWidth: borderWidth.consumption,
+				fill           : false,
+				label          : CONSUMPTION.label,
+				data           : consumption,
+				backgroundColor: CONSUMPTION.backgroundColor,
+				borderColor    : CONSUMPTION.borderColor,
+				borderWidth    : CONSUMPTION.borderWidth,
 			}, {
-				label: label.surplus,
-				data: surplus,
-				backgroundColor: backgroundColor.surplus,
-				borderColor: borderColor.surplus,
-				borderWidth: borderWidth.surplus,
+				label          : SURPLUS.label,
+				data           : surplus,
+				backgroundColor: SURPLUS.backgroundColor,
+				borderColor    : SURPLUS.borderColor,
+				borderWidth    : SURPLUS.borderWidth,
 			}],
 		},
 		options: {
 			responsive: false,
-			scales: {
+			scales    : {
 				xAxes: [{
 					scaleLabel: {
-						display: true,
-						labelString: 'Temps (hh:mm)'
+						display    : true,
+						labelString: X_AXES.label,
 					},
 					ticks: {
 						minRotation: 0,
@@ -68,11 +74,11 @@ function createChart(ctx, labels, production, consumption, surplus) {
 				}],
 				yAxes: [{
 					scaleLabel: {
-						display: true,
-						labelString: 'Montant d\'énergie (en Watts)'
+						display    : true,
+						labelString: Y_AXES.label,
 					},
 					ticks: {
-						callback: (kw) => `${kw * 1000}W`
+						callback: Y_AXES.callback,
 					}
 				}]
 			},

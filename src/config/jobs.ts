@@ -26,10 +26,12 @@ const sunShareApiURL = `http://localhost:${process.env.PORT}/api/v1/energy`;
 
 const jobs: Array<[string, (fireDate: Date) => void]> = [];
 
-const fetchAFULData = async (fireDate: Date) => {
+const fetchAFULData = async (_: Date) => {
 	try {
-		const res: any = await axios.get(`${meteoControlApiURL}?apiKey=${process.env.METEO_CONTROL_API_KEY}`);
-        const last = res.data.chartData.data.reverse().find((v: [number, number]) => v[1] !== null);
+		const res: any = await axios.get(
+			`${meteoControlApiURL}?apiKey=${process.env.METEO_CONTROL_API_KEY}`
+		);
+		const last = res.data.chartData.data.reverse().find((v: [number, number]) => v[1] !== null);
 
 		await axios.post(sunShareApiURL, {
 			production: last[1],
@@ -38,9 +40,12 @@ const fetchAFULData = async (fireDate: Date) => {
 
 		logger.info(`Succesfully fetch data from Meteo Control: ${last[1]} kW`);
 	} catch (err) {
-		logger.error(`Impossible to fetch Meteo Control data: ${err.message}; ${err?.response.data.message}`)
+		logger.error(
+			`Impossible to fetch Meteo Control data: ${err.message}; ${err?.response.data.Message}`
+		);
 	}
 };
+// Every 5mn, i.e XX:00 XX:05 XX:10 XX:15...
 jobs.push(['*/5 * * * *', fetchAFULData]);
 
 export default jobs;

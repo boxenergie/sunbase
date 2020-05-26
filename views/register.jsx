@@ -64,6 +64,7 @@ function RegisterPage(props) {
 									<InputButton
 										size="s9"
 										type="reset"
+										color="grey"
 										label="Reset"
 									/>
 									<InputButton

@@ -28,12 +28,13 @@ app.on('ready', async () => {
 	});
 });
 
-process.on('unhandledRejection', function(err) {
-	logger.error('Unhandled Rejection: ',  err);
-	console.log(err);
+process.on('unhandledRejection', function (err) {
+	logger.error('Unhandled Rejection:');
+	// @ts-ignore
+	logger.error(err.stack ?? err.message);
 });
 
-process.on('uncaughtException', function(err) {
-	logger.error('Uncaught Exception: ', err);
-	console.log(err);
+process.on('uncaughtException', function (err) {
+	logger.error('Uncaught Exception:');
+	logger.error(err.stack ?? err.message);
 });

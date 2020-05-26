@@ -20,10 +20,10 @@
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv-safe';
-import express, { Router } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import flash from 'connect-flash';
 import helmet from 'helmet';
-import schedule  from 'node-schedule';
+import schedule from 'node-schedule';
 import passport from 'passport';
 import path from 'path';
 import csrf from 'csurf';
@@ -31,8 +31,9 @@ import csrf from 'csurf';
 // Load .env
 dotenv.config();
 
-// Load MongoDB
+// Load MongoDB & InfluxDb
 import './db/mongodb';
+import './db/influxdb';
 
 // Controllers
 import * as adminController from './controllers/admin-controller';
@@ -51,9 +52,12 @@ const app = express();
 // Express configuration
 app.set('views', path.join(__dirname, '..', 'views'));
 app.set('view engine', 'jsx');
-app.engine('jsx', require('express-react-views').createEngine({
-	beautify: process.env.NODE_ENV !== 'production'
-}));
+app.engine(
+	'jsx',
+	require('express-react-views').createEngine({
+		beautify: process.env.NODE_ENV !== 'production',
+	})
+);
 app.disable('strict routing');
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -68,17 +72,24 @@ for (const [jobSchedule, jobFn] of jobs) {
  * Middleware
  */
 
- /* HELMET */
+/* HELMET */
 app.use(helmet());
-app.use(helmet.contentSecurityPolicy({
-	directives: {
-		defaultSrc: [ "'self'", 'https://fonts.gstatic.com' ],
-		styleSrc: [ "'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com' ],	
-		scriptSrc: [ "'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com' ],
-	}
-}));
+app.use(
+	helmet.contentSecurityPolicy({
+		directives: {
+			defaultSrc: ["'self'", 'https://fonts.gstatic.com'],
+			styleSrc: [
+				"'self'",
+				"'unsafe-inline'",
+				'https://fonts.googleapis.com',
+				'https://cdnjs.cloudflare.com',
+			],
+			scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+		},
+	})
+);
 /* BODY-PARSER */
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 /* COOKIE-PARSER */
 app.use(cookieParser());
@@ -96,19 +107,25 @@ app.use(passport.session());
 /**
  * Router
  */
-const appRouter = express.Router();
-const apiRouter = express.Router();
-
+import Router from 'express-promise-router';
+const appRouter = Router();
+const apiRouter = Router();
 
 import { isLoggedIn, isNotLoggedIn, isAdmin } from './utils/route-auth';
-import FlashMessages from "./utils/flash-messages";
-import { localizeFlash, getSupportedLocales } from "./lang/localization";
+import FlashMessages from './utils/flash-messages';
+import { localizeFlash, getSupportedLocales } from './lang/localization';
+import logger from './utils/logger';
 
 app.use((req, _, next) => {
-	req.flashLocalized = (event: string, message: FlashMessages, ...params: string[]) => {
+	const flashLocalized = (event: string, message: FlashMessages, ...params: string[]) => {
 		const preferredLang = req.acceptsLanguages(getSupportedLocales()) || 'fr';
 		req.flash(event, localizeFlash(preferredLang, message), ...params);
-	}
+	};
+	req.flashError = (msg: FlashMessages, ...params: string[]) =>
+		flashLocalized('errorMsg', msg, ...params);
+	req.flashSuccess = (msg: FlashMessages, ...params: string[]) =>
+		flashLocalized('successMsg', msg, ...params);
+
 	next();
 });
 
@@ -122,12 +139,14 @@ appRouter.get('/display-user', isLoggedIn(), otherDataController.renderOtherData
  * Auth routes
  */
 appRouter.get('/login', isNotLoggedIn(), authController.renderLoginPage);
-appRouter.post('/login', isNotLoggedIn(), passport.authenticate('local',
-	{
+appRouter.post(
+	'/login',
+	isNotLoggedIn(),
+	passport.authenticate('local', {
 		failureRedirect: '/login',
-		successRedirect:'/',
-	}
-));
+		successRedirect: '/',
+	})
+);
 appRouter.get('/register', isNotLoggedIn(), registerController.renderRegisterPage);
 appRouter.post('/register', isNotLoggedIn(), registerController.registerUser);
 appRouter.get('/logout', isLoggedIn(), authController.logOut);
@@ -143,7 +162,11 @@ appRouter.post('/profil/update_permissions/', isLoggedIn(), profilController.gra
 appRouter.get('/profil/update_permissions/', isLoggedIn(), profilController.removePermission);
 appRouter.get('/profil/add-raspberry', isLoggedIn(), addRaspberryController.renderAddRaspberryPage);
 appRouter.post('/profil/add-raspberry', isLoggedIn(), addRaspberryController.addRaspberry);
-appRouter.get('/profil/delete-raspberry', isLoggedIn(), deleteRaspberryController.renderDeleteRaspberryPage);
+appRouter.get(
+	'/profil/delete-raspberry',
+	isLoggedIn(),
+	deleteRaspberryController.renderDeleteRaspberryPage
+);
 
 /**
  * Admin routes
@@ -158,15 +181,35 @@ apiRouter.get('/v1', apiControllerV1.getApiInfo);
 
 apiRouter.get('/v1/energy/', apiControllerV1.getAllEnergyRecords);
 apiRouter.post('/v1/energy/', apiControllerV1.addEnergyRecord);
-apiRouter.get('/v1/wind/', apiControllerV1.getAllWindRecords);
-apiRouter.post('/v1/wind/', apiControllerV1.addWindRecord);
+
+// Error handler
+apiRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+	logger.error(err.stack ?? err.message);
+	res.status(500).api('Something went wrong');
+});
 app.use('/api', apiRouter);
 
 /**
  * Unknown route
  */
-appRouter.use((_, res) => {
-	res.sendStatus(404);
+appRouter.use((req, res) => {
+	res.render('404', {
+		user: req.user,
+	});
+});
+
+/**
+ * Error route
+ */
+appRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+	logger.error(err.stack ?? err.message);
+
+	// Best pratice to let express handle it if headers are already sent
+	if (res.headersSent) return next(err);
+
+	res.render('500', {
+		user: req.user,
+	});
 });
 
 app.use('/api', apiRouter);

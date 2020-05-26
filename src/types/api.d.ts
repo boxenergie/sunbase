@@ -24,7 +24,8 @@ declare global {
 	namespace Express {
 		interface Request {
 			flash(event: string, message: string, ...params: string[]): any;
-			flashLocalized(event: string, message: FlashMessages, ...params: string[]): any;
+			flashError(message: FlashMessages, ...params: string[]): any;
+			flashSuccess(message:FlashMessages, ...params: string[]): any;
 		}
 
 		interface Response {

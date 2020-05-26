@@ -27,55 +27,52 @@ import FlashMessages from '../utils/flash-messages';
 
 export async function renderRegisterPage(req: Request, res: Response, _: NextFunction) {
 	res.render('register', {
-		csrfToken	: req.csrfToken(),
-		errorMsg	: req.flash('error')
+		csrfToken: req.csrfToken(),
+		errorMsg : req.flash('errorMsg'),
 	});
 }
 
 export async function registerUser(req: Request, res: Response, _: NextFunction) {
+	const email: string    = sanitize(req.body.email);
+	const username: string = sanitize(req.body.username);
+	const password: string = sanitize(req.body.password);
+
 	try {
-		const email:string = sanitize(req.body.email);
-		const username:string = sanitize(req.body.username);
-		const password:string = sanitize(req.body.password);
+		const user = await User.create({
+			email   : email,
+			username: username,
+			password: password,
+		});
+		logger.info(`New user: ${username} (${email})`);
 
-		try {
-			const user = await User.create({
-				email: email,
-				username: username,
-				password: password,
-			});
-			logger.info(`New user: ${username} (${email})`);
+		const P = Q.defer();
+		req.login(user, (err) => {
+			if (!err) P.resolve();
+			else P.reject(err);
+		});
+		await P.promise;
 
-			const P = Q.defer();
-			req.login(user, err => {
-				if (!err) P.resolve();
-				else P.reject(err);
-			});
-			await P.promise;
-
-			res.redirect('/');
-		}
-		catch (err) {
-			if (err.name === 'MongoError') {
-				// ! TODO Unavailable email
-				logger.debug(err.message);
-
-				req.flashLocalized('error', FlashMessages.UNAVAILABLE_USERNAME, username);
-				res.redirect('/register');
-			}
-			else if (err.name === 'ValidationError') {
-				logger.debug(err.message);
-
-				const invalidField = err.errors[Object.keys(err.errors)[0]].path;
-				req.flashLocalized('error', FlashMessages.INVALID_AUTH_FIELD, invalidField);
-				res.redirect('/register');
-			}
-			else {
-				throw err;
-			}
-		}
+		res.redirect('/');
 	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
+		// MongoError occurs when creating a user with an already existing username / mail
+		if (err.name === 'MongoError') {
+			logger.debug(err.message);
+
+			req.flashError(FlashMessages.UNAVAILABLE_CREDENTIALS);
+			res.redirect('/register');
+		}
+		// ValidationError occurs when the validation rules from the Mongoose Schema are not
+		// respected
+		else if (err.name === 'ValidationError') {
+			logger.debug(err.message);
+
+			const invalidField = err.errors[Object.keys(err.errors)[0]].path;
+			req.flashError(FlashMessages.INVALID_AUTH_FIELD, invalidField);
+			res.redirect('/register');
+		}
+		// Any other errors is when something went wrong
+		else {
+			throw err;
+		}
 	}
 }

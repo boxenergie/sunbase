@@ -22,7 +22,7 @@ import { Model } from 'models';
 import { Document, Schema } from 'mongoose';
 
 import { isPermissionType, permissionSchema } from './Permission';
-import raspberrySchema from './Raspberry'
+import raspberrySchema from './Raspberry';
 import MongoClient from '../db/mongodb';
 import logger from '../utils/logger';
 import Session from '../models/Session';
@@ -62,33 +62,40 @@ export interface UserDocument extends Model.User, Document {
 	disconnectFromAllDevices(cb: (err: any) => void): void;
 }
 
-// @ts-ignore
-const isRaspberry = function() { this.role === 'raspberry'; }
+const isRaspberry = function () {
+	// @ts-ignore
+	this.role === 'raspberry';
+};
 
 const regexFlags = 'i';
 const regexUsername = /[a-z0-9àâçéèêëîïôûùüÿñæœ \.\-_]{3,20}/;
 const regexUsernameRaspberry = new RegExp(regexUsername.source + '/' + regexUsername.source);
 const regexEmail = new RegExp(/[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z.]{2,15}/, regexFlags);
-const validateUsername = function(v: string) {
+const validateUsername = function (v: string) {
 	// @ts-ignore
-	return (this.role === 'raspberry')
+	return this.role === 'raspberry'
 		? new RegExp(`^${regexUsernameRaspberry.source}$`, regexFlags).test(v)
 		: new RegExp(`^${regexUsername.source}$`, regexFlags).test(v);
-}
+};
 const regexPassword = new RegExp(/^.{8,80}$/, regexFlags);
 
 const userSchema = new Schema<UserDocument>({
-	email: { type: String, trim: true, required: !isRaspberry, unique: true, validate: regexEmail },
-	username: { type: String, trim: true, required: true, unique: true, validate: validateUsername },
-	password: { type: String, trim: true, required: true, validate: regexPassword },
-	role: { type: String, required: true, default: 'user', enum: ['user', 'admin', 'raspberry'] },
+	email   : { type: String, trim: true, required: !isRaspberry, unique: true, validate: regexEmail },
+	username: {
+		type    : String,
+		trim    : true,
+		required: true,
+		unique  : true,
+		validate: validateUsername,
+	},
+	password   : { type: String, trim: true, required: true, validate: regexPassword },
+	role       : { type: String, required: true, default: 'user', enum: ['user', 'admin', 'raspberry'] },
 	permissions: permissionSchema,
-	raspberry: {
+	raspberry  : {
 		type: raspberrySchema,
-		// @ts-ignore
 		// Required only if role is 'raspberry'
-		required: isRaspberry
-	}
+		required: isRaspberry,
+	},
 });
 
 userSchema.methods.comparePassword = function (password) {
@@ -106,7 +113,7 @@ userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) 
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 };
 
-userSchema.methods.grantPermissionTo = function(user, permissionType) {
+userSchema.methods.grantPermissionTo = function (user, permissionType) {
 	if (isPermissionType(permissionType)) {
 		const granting = new Set(this.permissions.granting.get(user.id));
 		granting.add(permissionType);
@@ -115,6 +122,7 @@ userSchema.methods.grantPermissionTo = function(user, permissionType) {
 		const granted = new Set(user.permissions.granted.get(this.id));
 		granted.add(permissionType);
 		user.permissions.granted.set(this.id, [...granting]);
+		
 		return Promise.all([this.save(), user.save()]);
 	}
 	return Promise.reject(`${permissionType} is not a valid permission`);
@@ -124,29 +132,34 @@ userSchema.methods.revokePermissionFrom = function (user, permissionType) {
 	if (isPermissionType(permissionType)) {
 		removePermRef(this.permissions.granting, user.id, permissionType);
 		removePermRef(user.permissions.granted, this.id, permissionType);
+		
 		return Promise.all([this.save(), user.save()]);
 	}
 	return Promise.reject(`${permissionType} is not a valid permission`);
 };
 
-userSchema.pre<UserDocument>('save', async function() {
+userSchema.pre<UserDocument>('save', async function () {
 	if (!this.permissions) {
 		this.permissions = {
-			granted: new Map(),
-			granting: new Map(),
-			resolveForDisplay: permissionSchema.methods.resolveForDisplay
+			granted          : new Map(),
+			granting         : new Map(),
+			resolveForDisplay: permissionSchema.methods.resolveForDisplay,
 		};
 	}
 
 	// If the user is being created or changed, we hash the password
-	if(this.isModified('password')) {
+	if (this.isModified('password')) {
 		this.password = bcrypt.hashSync(this.password, 10);
 	}
 });
 
-userSchema.post<UserDocument>('findOneAndDelete', async function(doc, next) {
+userSchema.post<UserDocument>('findOneAndDelete', async function (doc, next) {
 	try {
-		await removeAllPermRefs(doc, p => p.granting, p => p.granted);
+		await removeAllPermRefs(
+			doc,
+			(p) => p.granting,
+			(p) => p.granted
+		);
 	} catch (err) {
 		logger.error(`Failed to remove references to a deleted user: ${err.message}`);
 	}
@@ -160,11 +173,12 @@ userSchema.post<UserDocument>('findOneAndDelete', async function(doc, next) {
  * @param permissionType the permission type to remove
  */
 function removePermRef(
-	permRow: Model.Permission.Row,
-	referencedId: string,
-	permissionType: Model.Permission.Type,
+	permRow       : Model.Permission.Row,
+	referencedId  : string,
+	permissionType: Model.Permission.Type
 ) {
 	const permTypes = permRow.get(referencedId);
+	
 	if (permTypes) {
 		let i = permTypes.indexOf(permissionType);
 		// In case of multiple elements in the array (bug or manual edit), remove all
@@ -172,28 +186,26 @@ function removePermRef(
 			permTypes.splice(i, 1);
 			i = permTypes.indexOf(permissionType);
 		}
+
 		if (permTypes.length > 0) {
 			permRow.set(referencedId, permTypes);
-		} else {
+		}
+		else {
 			permRow.delete(referencedId);
 		}
 	}
 }
 
 async function removeAllPermRefs(
-	self: UserDocument,
-	selfRowGetter: (data: Model.Permission.Data) => Model.Permission.Row,
-	otherRowGetter: (data: Model.Permission.Data) => Model.Permission.Row,
+	self          : UserDocument,
+	selfRowGetter : (data: Model.Permission.Data) => Model.Permission.Row,
+	otherRowGetter: (data: Model.Permission.Data) => Model.Permission.Row
 ): Promise<void> {
-	// const users = await User.find({ _id: { $in: [...selfRowGetter(self.permissions).keys()]}});
-	// for (const u of users) {
-	// 	otherRowGetter(user.permissions).delete(`${self._id}`);
-	// 	u.save();
-	// }
-
 	return new Promise((resolve, reject) => {
 		// Iterate over all referenced users
-		const cursor = User.find({ _id: { $in: [...selfRowGetter(self.permissions).keys()] } }).cursor();
+		const cursor = User.find({
+			_id: { $in: [...selfRowGetter(self.permissions).keys()] },
+		}).cursor();
 		cursor.on('data', function (user: UserDocument) {
 			otherRowGetter(user.permissions).delete(`${self.id}`);
 			user.save();

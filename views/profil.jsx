@@ -194,14 +194,14 @@ function ProfilPage(props) {
 											{permissionsGranted}
 										</ul>
 									</fieldset>
-									<form action="/profil/update_permissions/" method="POST">
-										<input type="hidden" name="_csrf" value={csrfToken} />
 
-										<fieldset>
-											<legend>Liste des permissions que vous donnez aux autres utilisateurs <i>Sun</i>Share</legend>
-											<ul>
-												{permissionsGranting}
-											</ul>
+									<fieldset>
+										<legend>Liste des permissions que vous donnez aux autres utilisateurs <i>Sun</i>Share</legend>
+										<ul>
+											{permissionsGranting}
+										</ul>
+										<form action="/profil/update_permissions/" method="POST">
+											<input type="hidden" name="_csrf" value={csrfToken} />
 											<fieldset>
 												<legend>Donner une permission</legend>
 												<div className="input-field col s2">
@@ -228,8 +228,8 @@ function ProfilPage(props) {
 													label="Valider"
 												/>
 											</fieldset>
-										</fieldset>
-									</form>
+										</form>
+									</fieldset>
 								</div>
 							</div>
 

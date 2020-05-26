@@ -7,11 +7,11 @@ import PCSChart from './layouts/pcs-chart';
 function HomePage(props) {
 	const { user, globalData, communitiesData, userData } = props;
 
-	const isConnected 	= Boolean(user);
+	const isConnected     = Boolean(user);
 	const isInCommunities = Boolean(communitiesData.length > 0);
-	const isAdmin 		= Boolean(user && user.role === 'admin');
-	const hasGlobalData = Boolean(globalData.production.length > 0);
-	const hasUserData 	= Boolean(userData.production.length > 0);
+	const isAdmin         = Boolean(user && user.role === 'admin');
+	const hasGlobalData   = Boolean(globalData.production.length > 0);
+	const hasUserData     = Boolean(userData.production.length > 0);
 
 	const communitiesHTML = communitiesData.map((community) => {
 		const hasCommunityData = community.data.production.length > 0;

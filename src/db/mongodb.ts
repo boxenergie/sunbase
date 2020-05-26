@@ -22,12 +22,13 @@ import Mongoose from 'mongoose';
 import app from '../app';
 import logger from '../utils/logger';
 
-Mongoose.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB_NAME}`,
+Mongoose.connect(
+	`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB_NAME}`,
 	{
-		useNewUrlParser: true,
+		useNewUrlParser   : true,
 		useUnifiedTopology: true,
-		useCreateIndex: true, // Make Mongoose's default index build use createIndex() instead of ensureIndex()
-		connectTimeoutMS: 5000
+		useCreateIndex    : true,   // Make Mongoose's default index build use createIndex() instead of ensureIndex()
+		connectTimeoutMS  : 5000,
 	}
 ).catch((error: Mongoose.Error) => {
 	logger.error(`Could NOT connect to MongoDB: ${error.message}`);
@@ -37,7 +38,7 @@ Mongoose.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/
 const MongoClient = Mongoose.connection;
 MongoClient.on('error', logger.error.bind(logger));
 MongoClient.once('open', () => {
-	logger.info("Succesfully connected to MongoDB");
+	logger.info('Succesfully connected to MongoDB');
 	app.emit('ready'); // Tell the server to start
 });
 

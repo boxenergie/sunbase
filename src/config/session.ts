@@ -21,16 +21,15 @@ import { Express } from 'express';
 import expressSession from 'express-session';
 
 const MongoStore = require('connect-mongo')(expressSession);
-
 import MongoClient from '../db/mongodb';
 
 export default (app: Express) => {
 	const session = {
-		secret: process.env.SESSION_SECRET,
-		resave: true,
+		secret           : process.env.SESSION_SECRET,
+		resave           : true,
 		saveUninitialized: false,
-		cookie: { secure: false },
-		store: new MongoStore({ mongooseConnection: MongoClient })
+		cookie           : { secure: false }, // Not secure in dev
+		store            : new MongoStore({ mongooseConnection: MongoClient }),
 	};
 
 	if (app.get('env') === 'production') {
@@ -40,4 +39,4 @@ export default (app: Express) => {
 
 	// @ts-ignore
 	app.use(expressSession(session));
-}
+};

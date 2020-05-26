@@ -21,34 +21,20 @@ import * as Influx from 'influx';
 
 const influxClient = new Influx.InfluxDB({
 	database: process.env.INFLUX_DB_NAME ?? 'SunShare',
-	schema: [
+	schema  : [
 		{
 			measurement: 'EnergyRecord',
-			fields: {
+			fields     : {
 				production_index: Influx.FieldType.INTEGER,
-				injection_index: Influx.FieldType.INTEGER,
+				injection_index : Influx.FieldType.INTEGER,
 				withdrawal_index: Influx.FieldType.INTEGER,
-				production: Influx.FieldType.INTEGER,
-				consumption: Influx.FieldType.INTEGER,
-				surplus: Influx.FieldType.INTEGER
+				production      : Influx.FieldType.INTEGER,
+				consumption     : Influx.FieldType.INTEGER,
+				surplus         : Influx.FieldType.INTEGER,
 			},
-			tags: [
-				'raspberry_mac'
-			]
-		},
-		{
-			measurement: 'WindRecord',
-			fields: {
-				wind_speed: Influx.FieldType.FLOAT,
-				production: Influx.FieldType.FLOAT,
-				rotor_speed: Influx.FieldType.FLOAT,
-				relative_orientation: Influx.FieldType.FLOAT
-			},
-			tags: [
-				'raspberry_mac'
-			]
-		},
-	]
+			tags: ['raspberry_mac'],
+		}
+	],
 });
 
 influxClient.createDatabase(process.env.INFLUX_DB_NAME ?? 'SunShare');

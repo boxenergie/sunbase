@@ -121,8 +121,6 @@ Or the 3 following fields:
 
 The full description of the format can be found in [src/controllers/api-v1.ts](https://github.com/boxenergie/sunbase/blob/master/src/controllers/api-v1.ts).
 
-There is also an API at `/api/v1/wind/` for adding and viewing wind records collected by windmills, although this data is currently unused by the application.
-
 ## Tests
 
 The tests are made with [Artillery](https://artillery.io).

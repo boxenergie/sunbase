@@ -22,8 +22,8 @@ import sanitize from 'mongo-sanitize';
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 
-import FlashMessages from '../utils/flash-messages';
 import User, { UserDocument } from '../models/User';
+import FlashMessages from '../utils/flash-messages';
 import logger from '../utils/logger';
 
 export default (passport: PassportStatic) => {
@@ -35,27 +35,29 @@ export default (passport: PassportStatic) => {
 		User.findById(id, done);
 	});
 
-	passport.use(new LocalStrategy({ passReqToCallback: true },
-		(req: Request, username: string, password: string, done: Function) => {
-			username = sanitize(username);
-			
-			const criteria = (username.indexOf('@') === -1)
-				? { username: username }
-				: { email: username };
-    
-			User.findOne(criteria, (err, user: UserDocument) => {
-				if (err) {
-					logger.error(`Login error: ${err}`);
-					req.flashLocalized('error', FlashMessages.INTERNAL_ERROR);
-					return done(null, false);
-				}
-				if (!user || (user && !user.comparePassword(password))) {
-					req.flashLocalized('error', FlashMessages.INVALID_CREDENTIALS);
-					return done(null, false);
-				}
+	passport.use(
+		new LocalStrategy(
+			{ passReqToCallback: true },
+			async (req: Request, username: string, password: string, done: Function) => {
+				username = sanitize(username);
 
-				return done(null, user);
-			});
-		}
-	));
+				// Define whether we are searching for a username or an email
+				const criteria =
+					username.indexOf('@') === -1 ? { username: username } : { email: username };
+
+				try {
+					const user = await User.findOne(criteria).exec();
+					if (!user || (user && !user.comparePassword(password))) {
+						req.flashError(FlashMessages.INVALID_CREDENTIALS);
+						return done(null, false);
+					}
+					done(null, user);
+				} catch (err) {
+					logger.error(`Login error: ${err}`);
+					req.flashError(FlashMessages.INTERNAL_ERROR);
+					return done(null, false);
+				}
+			}
+		)
+	);
 };
