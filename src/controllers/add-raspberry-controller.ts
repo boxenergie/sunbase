@@ -45,7 +45,7 @@ export async function addRaspberry(req: Request, res: Response, next: NextFuncti
 		const MARGIN = 5; // - 5%
 		const label:string = sanitize(req.body.label);
 		const password:string = sanitize(req.body.password);
-		const withdrawal:number = sanitize(Number(req.body?.withdrawal));
+		const withdrawal:number = sanitize(Number(req.body?.withdrawal * 1000));
 		const mac: string = sanitize(req.body?.mac);
 		const error = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('errorMsg', msg, ...params);
 		const succeed = (msg: FlashMessages, ...params: string[]) => req.flashLocalized('successMsg', msg, ...params);
