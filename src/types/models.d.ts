@@ -1,6 +1,6 @@
 /*
  * models.d.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -17,22 +17,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { ObjectId } from 'mongodb';
+
 export namespace Model {
 	interface User {
+		email: string;
 		username: string;
 		password: string;
-		role: string;
+		role: 'user' | 'admin' | 'raspberry';
 		permissions: Permission.Data;
+		raspberry?: Raspberry;
+	}
+
+	interface Raspberry {
+		label: string,
+		mac: string,
+		owner: ObjectId,
 	}
 
 	namespace Permission {
 		enum Type {
 			// Must add to Permission$isPermissionType too
-			READ = "read"
+			READ = 'read',
+			AGGREGATE = 'aggregate'
 		}
 	
 		type Row = Map<string, Type[]>;
-		type ResolvedRow = { [k: string]: string[] };
+		type ResolvedRow = { [permissionType: string]: string[] };
 		type ResolvedPermissionData = {
 			granted: ResolvedRow;
 			granting: ResolvedRow;

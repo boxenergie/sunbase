@@ -1,6 +1,6 @@
 /*
  * passport.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Request } from 'express';
+import sanitize from 'mongo-sanitize';
 import { PassportStatic } from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 
 import User, { UserDocument } from '../models/User';
+import FlashMessages from '../utils/flash-messages';
+import logger from '../utils/logger';
 
 export default (passport: PassportStatic) => {
 	passport.serializeUser((user: UserDocument, done: Function) => {
@@ -31,15 +35,29 @@ export default (passport: PassportStatic) => {
 		User.findById(id, done);
 	});
 
-	passport.use(new LocalStrategy(
-		(username: string, password: string, done: Function) => {
-			User.findOne({ username: username }, (err, user: UserDocument) => {
-				if (err) return done(err);
-				if (!user) return done(null, false);
-				if (!user.comparePassword(password)) return done(null, false);
+	passport.use(
+		new LocalStrategy(
+			{ passReqToCallback: true },
+			async (req: Request, username: string, password: string, done: Function) => {
+				username = sanitize(username);
 
-				return done(null, user);
-			});
-		}
-	));
+				// Define whether we are searching for a username or an email
+				const criteria =
+					username.indexOf('@') === -1 ? { username: username } : { email: username };
+
+				try {
+					const user = await User.findOne(criteria).exec();
+					if (!user || (user && !user.comparePassword(password))) {
+						req.flashError(FlashMessages.INVALID_CREDENTIALS);
+						return done(null, false);
+					}
+					done(null, user);
+				} catch (err) {
+					logger.error(`Login error: ${err}`);
+					req.flashError(FlashMessages.INTERNAL_ERROR);
+					return done(null, false);
+				}
+			}
+		)
+	);
 };

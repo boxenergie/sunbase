@@ -1,0 +1,37 @@
+{
+	"flash.internal_error": "An internal error occured, please contact an administrator.",
+	
+	"flash.missing_field": "One or more fields were not provided.",
+	"flash.wrong_password": "Wrong password.",
+	"flash.email_exists": "Email already exists.",
+	"flash.username_exists": "Username already exists.",
+	"flash.mismatching_passwords": "New passwords must match.",
+	"flash.unavailable_credentials": "Username and/or email are not available.",
+	"flash.invalid_credentials": "Invalid credentials.",
+	"flash.email_changed": "Email changed.",
+	"flash.username_changed": "Username changed.",
+	"flash.password_changed": "Password changed.",
+
+	"flash.invalid_raspberry_index": "Your withdrawal index is invalid.",
+	"flash.too_many_candidates": "Please retry in 1h.",
+	"flash.unrecognized_mac": "This mac is not registered in the system.",
+	"flash.invalid_auth_field": "Please respect the rules for the %s field.",
+	"flash.already_linked": "This raspberry is already linked to an account !",
+
+	"flash.raspberry_linked": "Successfully linked your raspberry to your account !<br>You can connect manage this raspberry by connecting to the following account:<br><u>Username:</u> <i>%s/%s</i><br><u>Password:</u> the one you specified",
+
+	"flash.self_deletion": "You cannot delete yourself.",
+	"flash.user_not_found": "Unknown user: %s.",
+	"flash.not_raspberry": "You can only delete a raspberry account.",
+	"flash.invalid_raspberry": "You cannot delete a raspberry you did not create.",
+	"flash.user_deleted": "User deleted.",
+	"flash.raspberry_deleted": "Raspberry unlinked.",
+
+	"flash.missing_username": "Please enter a username",
+	"flash.self_permission": "You cannot grant a permission to yourself.",
+	"flash.no_read_access": "No read access",
+	"flash.revocation_error": "Error while deleting permission:%s from: %s to: %s",
+	"flash.permission_granted": "Permission granted.",
+	"flash.permission_revoked": "Removed permission %s from %s",
+	"flash.self_permission_revoked": "Removed permission %s from myself"
+}

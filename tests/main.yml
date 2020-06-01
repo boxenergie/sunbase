@@ -1,0 +1,74 @@
+config:
+    target: "http://localhost:80"
+    phases:
+        # Phase 1
+        # 10 users every second and gradually increase to 50 over 180 seconds
+        - duration: 180
+          arrivalRate: 10
+          rampTo: 50
+          maxVusers: 1000
+          name: "Warm up"
+        # Phase 2
+        # 50 users every second during 10 minutes
+        - duration: 600
+          arrivalRate: 50
+          maxVusers: 1000
+          name: "Sustained max load"
+    plugins:
+      # Faker.js lets us generate fake data
+      faker:
+        locale: fr
+      # Expect lets us mark scenarios as failed or not
+      expect: {}
+    variables:
+      email: "$faker.internet.email"
+      username: "$faker.internet.userName"
+      password: "$faker.internet.password"
+      production: "$faker.random.number"
+      consumption: "$faker.random.number"
+      mac: "$faker.internet.mac"
+scenarios:
+    - name: "Home page"
+      flow:
+          # Simulate a new user on the web site checking the global / community or personnal records
+          - get:
+                url: "/"
+                expect:
+                 - statusCode: 200
+    - name: "Register"
+      flow:
+          # User arrives on the register page
+          - get:
+                url: "/register"
+                capture:
+                  - selector: "input[name=_csrf]"
+                    attr: "value"
+                    as: "csrf"
+                expect:
+                  - statusCode: 200
+          # Simulate the fact the user needs to write / auto complete with browser the form
+          - think: 5
+          # User submits the form
+          - post:
+              url: "/register"
+              form:
+                _csrf: "{{ csrf }}"
+                email: "{{ email }}"
+                username: "{{ username }}"
+                password: "{{ password }}"
+              # Don't follow redirect as it would lead to another scenario
+              followRedirect: false
+              expect:
+                # Expect to be redirected
+                - statusCode: 302
+    - name: "Add energy data"
+      flow:
+          # Simulate raspberry API request
+          - post:
+              url: "/api/v1/energy/"
+              json:
+                production: "{{ production }}"
+                consumption: "{{ consumption }}"
+                raspberry_mac: "{{ mac }}"
+              expect:
+                - statusCode: 200

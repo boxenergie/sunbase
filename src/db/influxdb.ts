@@ -1,6 +1,6 @@
 /*
  * influxdb.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -21,38 +21,20 @@ import * as Influx from 'influx';
 
 const influxClient = new Influx.InfluxDB({
 	database: process.env.INFLUX_DB_NAME ?? 'SunShare',
-	schema: [
+	schema  : [
 		{
 			measurement: 'EnergyRecord',
-			fields: {
-				production: Influx.FieldType.INTEGER,
-				consumption: Influx.FieldType.INTEGER,
-				surplus: Influx.FieldType.INTEGER
+			fields     : {
+				production_index: Influx.FieldType.INTEGER,
+				injection_index : Influx.FieldType.INTEGER,
+				withdrawal_index: Influx.FieldType.INTEGER,
+				production      : Influx.FieldType.INTEGER,
+				consumption     : Influx.FieldType.INTEGER,
+				surplus         : Influx.FieldType.INTEGER,
 			},
-			tags: [
-				'created_by'
-			]
-		},
-		{
-			measurement: 'WindRecord',
-			fields: {
-				wind_speed: Influx.FieldType.FLOAT,
-				production: Influx.FieldType.FLOAT,
-				rotor_speed: Influx.FieldType.FLOAT,
-				relative_orientation: Influx.FieldType.FLOAT
-			},
-			tags: [
-				'created_by'
-			]
-		},
-		{
-			measurement: 'SolarRecord',
-			fields: {},
-			tags: [
-				'created_by'
-			]
+			tags: ['raspberry_mac'],
 		}
-	]
+	],
 });
 
 influxClient.createDatabase(process.env.INFLUX_DB_NAME ?? 'SunShare');

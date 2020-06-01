@@ -1,6 +1,6 @@
 /*
  * api.d.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,16 @@
  */
 
 import { UserDocument } from '../models/User';
+import FlashMessages from '../utils/flash-messages';
 
 declare global {
 	namespace Express {
+		interface Request {
+			flash(event: string, message: string, ...params: string[]): any;
+			flashError(message: FlashMessages, ...params: string[]): any;
+			flashSuccess(message:FlashMessages, ...params: string[]): any;
+		}
+
 		interface Response {
 			api(body?: Object | string): void;
 		}

@@ -1,6 +1,6 @@
 /*
  * auth.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,8 @@
 import { NextFunction, Response, Request, RequestHandler } from 'express';
 
 type OptionalRedirect = {
-    failureRedirect?: string;
-}
+	failureRedirect?: string;
+};
 
 /**
  * This function provides a middleware to prevent non-logged in user to access

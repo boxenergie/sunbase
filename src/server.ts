@@ -1,6 +1,6 @@
 /*
  * server.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -19,18 +19,22 @@
 
 import app from './app';
 import logger from './utils/logger';
+import * as localization from './lang/localization';
 
-app.on('ready', () => {
+app.on('ready', async () => {
+	await localization.init();
 	app.listen(process.env.PORT, async () => {
 		logger.info(`Now listening on http://localhost:${process.env.PORT}`);
 	});
 });
 
-process.on('unhandledRejection', function(err) {
+process.on('unhandledRejection', function (err) {
+	logger.error('Unhandled Rejection:');
 	// @ts-ignore
-	logger.error(`Unhandled Rejection: ${err.message}`)
+	logger.error(err.stack ?? err.message);
 });
 
-process.on('uncaughtException', function(err) {
-	logger.error(`Uncaught Exception: ${err.message}`)
+process.on('uncaughtException', function (err) {
+	logger.error('Uncaught Exception:');
+	logger.error(err.stack ?? err.message);
 });

@@ -1,6 +1,6 @@
 /*
  * auth-controller.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -22,25 +22,21 @@ import { NextFunction, Response, Request } from 'express';
 import logger from '../utils/logger';
 
 export function renderLoginPage(req: Request, res: Response, next: NextFunction) {
-	try {
-		res.render('login-page', {
-			csrfToken: req.csrfToken(),
-			errorMsg: req.flash('error')
-		});
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
-	}
+	res.render('login', {
+		csrfToken: req.csrfToken(),
+		errorMsg : req.flash('errorMsg'),
+	});
 }
 
 export function logOut(req: Request, res: Response, next: NextFunction) {
 	req.logout();
-	req.session?.destroy(err => {
-		if (!err) {
-			res.clearCookie('connect.sid', { path: '/' }).redirect('/');
-		} else {
+	req.session?.destroy((err) => {
+		if (err) {
 			logger.error(err.message);
 			res.status(500).send('Impossible to logout, please contact an admin');
+		}
+		else {
+			res.clearCookie('connect.sid', { path: '/' }).redirect('/');
 		}
 	});
 }

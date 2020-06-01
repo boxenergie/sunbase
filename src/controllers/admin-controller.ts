@@ -1,6 +1,6 @@
 /*
  * admin-controller.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import sanitize from 'mongo-sanitize';
 
 import User from '../models/User';
 import logger from '../utils/logger';
+import FlashMessages from '../utils/flash-messages';
 
 export async function renderAdminPage(req: Request, res: Response, next: NextFunction) {
 	if (req.query.deleted) {
@@ -29,51 +30,59 @@ export async function renderAdminPage(req: Request, res: Response, next: NextFun
 	}
 
 	const elementPerPage: number = Number(req.query.displayLimit) || 10;
-	let page: number = Number(req.query.page) ?? 1;
+	let   page: number           = Number(req.query.page) ?? 1;
 
 	// Count number of users
-	const count = await User.countDocuments({});
+	const count = await User.countDocuments();
 
 	// If there are less users (excluding current user) than the limit, force page to 1
-	if ((count - 1) < elementPerPage)
-		page = 1;
+	if (count - 1 < elementPerPage) page = 1;
 
-	try {
-		const users = await User.find({ _id: { $ne: req.user!._id } })
-			.skip((page - 1) * elementPerPage)
-			.limit(elementPerPage);
-		res.render('admin-page', {
-			users: users,
-			nPages: Math.ceil(count / elementPerPage),
-			errorMsg: req.flash('errorMsg'),
-			successMsg: req.flash('successMsg'),
-		});
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
-	}
+	// Find all users but the current one
+	const users = await User.find({ _id: { $ne: req.user!._id } })
+		.skip((page - 1) * elementPerPage)
+		.limit(elementPerPage);
+
+	res.render('admin', {
+		users     : users,
+		nPages    : Math.ceil(count / elementPerPage),
+		errorMsg  : req.flash('errorMsg'),
+		successMsg: req.flash('successMsg'),
+	});
 }
 
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
-	try {
-		const deletedUserId = req.query.deleted;
-		const error = (msg: string) => req.flash('errorMsg', msg);
-		const succeed = (msg: string) => req.flash('successMsg', msg);
+	const deletedUserId = sanitize(req.query.deleted);
 
-		if (deletedUserId === req.user!.id) {
-			error('You cannot delete yourself.');
-		} else {
-			try {
-				await User.deleteOne({ _id: sanitize(deletedUserId) });
-				succeed('User deleted.');
-			} catch (err) {
-				error('Username did not exist');
-			}
-		}
-
-		return res.redirect('/admin');
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
+	if (deletedUserId === req.user!.id) {
+		req.flashError(FlashMessages.SELF_DELETION);
 	}
+	else {
+		try {
+			const user = await User.findById(deletedUserId);
+
+			await User.findOneAndDelete({ _id: deletedUserId });
+			logger.info(`User '${user!.username}' (${deletedUserId}) deleted by admin.`);
+
+			// Cascade delete of the user's raspberry
+			if (['user', 'admin'].includes(user!.role)) {
+				const usernameRegex = new RegExp(`${user!.username}\/.+`);
+				const userRaspberries = await User.find({
+					username: { $regex: usernameRegex },
+				});
+
+				for (const u of userRaspberries) {
+					await User.findOneAndDelete({ _id: u._id });
+					logger.info(`User '${u.username}' (${u._id}) deleted by admin.`);
+				}
+			}
+			logger.debug('Deleted all associated raspberries.');
+
+			req.flashSuccess(FlashMessages.USER_DELETED);
+		} catch (err) {
+			req.flashError(FlashMessages.USER_NOT_FOUND, '<???>');
+		}
+	}
+
+	return res.redirect('/admin');
 }

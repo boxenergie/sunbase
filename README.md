@@ -26,6 +26,8 @@ Finally, use one of the [script](#scripts) below to start the server. Additional
 
 `npm run test`: Start the tests of the application.
 
+`npm run test-quiet`: Start the tests of the application quietly (no extensive output).
+
 ## InfluxDB
 
 [InfluxDB](https://www.influxdata.com) is an open-source time series database (TSDB) developed by InfluxData. It is optimized for fast, high-availability storage and retrieval of time series data in fields such as operations monitoring, application metrics, Internet of Things sensor data, and real-time analytics.
@@ -107,8 +109,42 @@ GET /api/v1/energy/
 `POST /api/v1/energy/` will let you add your own energy record.
 
 __Required parameters :__
-- `production` : Number >= 0
-- `consumption` : Number >= 0
-- `created_by` : String | ID of the user who created this energy record.
-- `username` : String | Your username.
-- `password` : String | Your password.
+Either the 4 following fields:
+- `production_index`: Number >= 0
+- `injection_index`: Number >= 0
+- `withdrawal_index`: Number >= 0
+- `raspberry_mac`: MAC of the Raspberry.
+Or the 3 following fields:
+- `production`: Number >= 0
+- `consumption`: Number >= 0
+- `raspberry_mac`: MAC of the Raspberry.
+
+The full description of the format can be found in [src/controllers/api-v1.ts](https://github.com/boxenergie/sunbase/blob/master/src/controllers/api-v1.ts).
+
+## Tests
+
+The tests are made with [Artillery](https://artillery.io).
+
+Please change the file located at `./tests/main.yml` with a valid target, the default one should be good in most cases though.
+
+Then you will need to start the server.
+
+Finally run the tests, use `npm run test` or alternatively `npx artillery run ./test/main.yml`.
+
+The tests are the following:
+
+**Phase 1:** 10 users every second and gradually increase to 50 over 180 seconds, no more than 1'000 concurrent users.
+
+**Phase 2:** 50 users every second during 10 minutes, no more than 1'000 concurrent users.
+
+During each of these phases, each user can choose one of the following scenarios:
+
+**Home page:** The user will make a GET request on '/', resulting in showing all the records.
+
+**Register:** The user will make a GET request on '/register' then make use the form to register an account.
+
+**Raspberry-like:** The user will simulate a raspberry sending energy data to the server.
+
+## Credit
+
+This application was made for Sunshare by Teddy Evrard, Fabien Hervé, and Alexandre Rouchouze.

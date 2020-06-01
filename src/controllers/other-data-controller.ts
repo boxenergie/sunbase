@@ -1,6 +1,6 @@
 /*
  * home-controller.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -17,40 +17,41 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NextFunction, Response, Request } from "express";
+import { NextFunction, Response, Request } from 'express';
+import sanitize from 'mongo-sanitize';
 
-import * as InfluxHelper from '../utils/InfluxHelper';
-import logger from '../utils/logger';
-import { Model } from "models";
-import User from "../models/User";
+import * as InfluxHelper from '../utils/influxHelper';
+import User from '../models/User';
+import FlashMessages from '../utils/flash-messages';
 
 export async function renderOtherDataPage(req: Request, res: Response, next: NextFunction) {
-	try {
-		let granter = (await User.findOne({username: req.query.showUser}));
-		if (!granter || !req.user!.hasPermissionFrom(granter.id, 'read' as any)) {
-			req.flash('errorMsg', 'No read access');
-			return res.redirect('/');
-		}
-		const userResults = await InfluxHelper.query(
-			`SELECT SUM(production) AS production,
+	const showUser: any = sanitize(req.query.showUser);
+
+	let granter = await User.findOne({ username: showUser });
+	if (!granter || !req.user!.hasPermissionFrom(granter.id, 'read' as any)) {
+		req.flashError(FlashMessages.NO_READ_ACCESS);
+		return res.redirect('/');
+	}
+
+	const userResults = await InfluxHelper.query(
+		`SELECT SUM(production) AS production,
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
-			FROM "EnergyRecord"
-			WHERE created_by = '${granter.id}' AND time >= now() - 1d AND time <= now()
+			FROM EnergyRecord
+			WHERE raspberry_mac =~ /(?i)^${granter.id}$/
+			AND time >= now() - 1d
+			AND time <= now()
 			GROUP BY time(15m) fill(none)`
-		);
+	);
 
-		res.render("other-data-page", {
-			userData: {
-				time: userResults.rows.map((r: any) => r.time.toNanoISOString()),
-				production: userResults.rows.map((r: any) => r.production),
-				consumption: userResults.rows.map((r: any) => r.consumption),
-				surplus: userResults.rows.map((r: any) => r.surplus),
-			},
-			user: granter,
-		});
-	} catch (err) {
-		logger.error(err.message);
-		res.status(500).send('Something went wrong');
-	}
+	res.render('other-data', {
+		otherUserData: {
+			time       : userResults.rows.map((r: any) => r.time.toNanoISOString()),
+			production : userResults.rows.map((r: any) => r.production),
+			consumption: userResults.rows.map((r: any) => r.consumption),
+			surplus    : userResults.rows.map((r: any) => r.surplus),
+		},
+		otherUser: granter,
+		user     : req.user,
+	});
 }

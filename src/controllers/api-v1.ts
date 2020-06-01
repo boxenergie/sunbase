@@ -1,6 +1,6 @@
 /*
  * api-v1.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -19,79 +19,70 @@
 
 import { Response, Request, NextFunction } from 'express';
 import { Validator } from 'jsonschema';
+import sanitize from 'mongo-sanitize';
 
-import * as InfluxHelper from '../utils/InfluxHelper';
+import * as InfluxHelper from '../utils/influxHelper';
 import logger from '../utils/logger';
-import User from '../models/User';
 
 const validator = new Validator();
 const addEnergyRecordSchema = {
-	type: 'object',
-	properties: {
-		production: {
-			type: 'number',
-			minimum: 0
+	oneOf: [
+		{
+			type      : 'object',
+			properties: {
+				production_index: {
+					type   : 'number',
+					minimum: 0,
+				},
+				injection_index: {
+					type   : 'number',
+					minimum: 0,
+				},
+				withdrawal_index: {
+					type   : 'number',
+					minimum: 0,
+				},
+				production   : { type: 'undefined' },
+				consumption  : { type: 'undefined' },
+				raspberry_mac: {
+					type: 'string',
+					pattern: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/,
+				},
+			},
+			required: ['production_index', 'withdrawal_index', 'raspberry_mac'],
 		},
-		consumption: {
-			type: 'number',
-			minimum: 0
+		{
+			type: 'object',
+			properties: {
+				production_index: { type: 'undefined' },
+				withdrawal_index: { type: 'undefined' },
+				injection_index : { type: 'undefined' },
+				production      : {
+					type   : 'number',
+					minimum: 0,
+				},
+				consumption: {
+					type   : 'number',
+					minimum: 0,
+				},
+				raspberry_mac: {
+					type   : 'string',
+					pattern: /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/,
+				},
+			},
+			required: ['production', 'raspberry_mac'],
 		},
-		created_by: {
-			type: 'string',
-			pattern: /^[0-9a-fA-F]{24}$/,
-		},
-		username: {
-			type: 'string'
-		},
-		password: {
-			type: 'string'
-		}
-	}
-};
-
-const addWindRecordSchema = {
-	type: 'object',
-	properties: {
-		wind_speed: {
-			type: 'number',
-			minimum: 0
-		},
-		production: {
-			type: 'number',
-			minimum: 0
-		},
-		rotor_speed: {
-			type: 'number',
-			minimum: 0
-		},
-		relative_orientation: {
-			type: 'number'
-		},
-		created_by: {
-			type: 'string',
-			pattern: /^[0-9a-fA-F]{24}$/,
-		},
-		username: {
-			type: 'string'
-		},
-		password: {
-			type: 'string'
-		}
-	}
+	],
 };
 
 /**
  * Get middleware which adds one function to the Response object from Express:
  * 		api(body?: Object | string): void;
  */
-export const getApiFunction = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+export const getApiFunction = (req: Request, res: Response, next: NextFunction) => {
 	res.api = (body?: Object | string) => {
 		let content = {
-			version: 1.0,
+			version  : 1.0,
 			timestamp: new Date(),
 		};
 
@@ -104,11 +95,11 @@ export const getApiFunction = (
 	// [HTTP version] [Client IP] [Method] API call on https://...
 	// Will also show who did the request if the user is authenticated
 	const format =
-		`[HTTP v${req.httpVersion}] `
-		+ `[${req.headers['x-forwarded-for'] ?? req.connection.remoteAddress}] `
-		+ `[${req.method}] `
-		+ `API call on ${req.originalUrl}`
-		+ (req.isAuthenticated() ? ` by ${req.user?.username}` : '');
+		`[HTTP v${req.httpVersion}] ` +
+		`[${req.headers['x-forwarded-for'] ?? req.connection.remoteAddress}] ` +
+		`[${req.method}] ` +
+		`API call on ${req.originalUrl}` +
+		(req.isAuthenticated() ? ` by ${req.user?.username}` : '');
 
 	logger.info(format);
 
@@ -128,19 +119,15 @@ export const getApiInfo = (_: Request, res: Response) => {
  * Get a sum of all production, consumption, surplus records
  */
 export const getAllEnergyRecords = async (req: Request, res: Response) => {
-	try {
-		const results = await InfluxHelper.query(
-			`SELECT SUM("production") AS "sum_production",
-			SUM("consumption") AS "sum_consumption",
-			SUM("surplus") AS "sum_surplus" 
-			FROM "EnergyRecord"`, { deleteTimestamp: true }
-		);
+	const results = await InfluxHelper.query(
+		`SELECT SUM("production") AS "sum_production",
+		SUM("consumption") AS "sum_consumption",
+		SUM("surplus") AS "sum_surplus" 
+		FROM "EnergyRecord"`,
+		{ deleteTimestamp: true }
+	);
 
-		res.api(results);
-	} catch (err) {
-		logger.error(err.message);
-		return res.status(500).api('Something went wrong');
-	}
+	res.api(results);
 };
 
 /**
@@ -149,102 +136,97 @@ export const getAllEnergyRecords = async (req: Request, res: Response) => {
  * Required request parameters:
  *  - INTEGER production >= 0
  *  - INTEGER consumption >= 0
- *  - STRING created_by
+ *  - STRING raspberry_mac
  */
 export const addEnergyRecord = async (req: Request, res: Response) => {
-	if (!validator.validate(req.body, addEnergyRecordSchema).valid) {
-		return res.status(400).api('Missing one or more required fields or wrong type');
+	const validation = validator.validate(req.body, addEnergyRecordSchema, {
+		nestedErrors: true,
+	} as any);
+
+	if (!validation.valid) {
+		return res
+			.status(400)
+			.api(`Missing one or more required fields or wrong type (${validation})`);
 	}
 
-	try {
-		// Check if specified user exists
-		const user = await User.findById(req.body.created_by).orFail();
+	let production_index: number;
+	let withdrawal_index: number;
+	let injection_index : number;
+	let production      : number;
+	let consumption     : number;
+	let surplus         : number;
 
-		await InfluxHelper.insert('EnergyRecord', [
-			{
-				fields: {
-					production: req.body.production,
-					consumption: req.body.consumption,
-					surplus: (req.body.production - req.body.consumption)
-				},
-				tags: { created_by: req.body.created_by },
-			}
-		]);
+	if (req.body.production_index !== undefined) {
+		production_index = sanitize(req.body.production_index);
+		withdrawal_index = sanitize(req.body.withdrawal_index);
+		injection_index  = sanitize(req.body.injection_index);
 
-		logger.debug('Successfully added Energy Record: ' +
-			`${req.body.production} | ${req.body.consumption} ` +
-			`by '${req.user?.username}' (${req.body.created_by})`
-		);
-
-		return res.api('Successfully added your Energy Record');
-	} catch (err) {
-		logger.error(err.message);
-		return res.status(500).api('Something went wrong');
-	}
-};
-
-/**
- * GET /api/v1/wind/
- * Get a mean of all wind records
- */
-export const getAllWindRecords = async (req: Request, res: Response) => {
-	try {
-		const results = await InfluxHelper.query(
+		// Note: at most one function can be used in a query, else the returned timestamp is NULL
+		const previousIdx = await InfluxHelper.query(
 			`SELECT 
-			MEAN("wind_speed"),
-			MEAN("production"),
-			MEAN("rotor_speed"),
-			MEAN("relative_orientation") 
-			FROM "WindRecord"`, { deleteTimestamp: true }
+			LAST(production_index) AS last_production, 
+			withdrawal_index AS last_withdrawal,
+			injection_index  AS last_injection
+			FROM "EnergyRecord" WHERE raspberry_mac =~ /(?i)^${req.body.raspberry_mac}$/`
 		);
+		// If it's the first index, we can't know the production
+		const isFirstIndex        = previousIdx.rows.length == 0;
+		const hoursSinceLastIndex = isFirstIndex
+			? 0
+			: (Date.now() - previousIdx.rows[0].time) / 1000 /*ms*/ / 60 /*s*/ / 60; /*mn*/
+		
+		if (hoursSinceLastIndex < 0)
+			logger.warn('We got records from the future: ' + previousIdx.rows[0]);
+		
+		// Stations send data in kWh, but we want kW => everything must be divided by the time in hours
+		production = isFirstIndex
+			? 0
+			: (production_index - previousIdx.rows[0].last_production) / hoursSinceLastIndex;
+		const withdrawal = isFirstIndex
+			? 0
+			: (withdrawal_index - previousIdx.rows[0].last_withdrawal) / hoursSinceLastIndex;
+		const injection = isFirstIndex
+			? 0
+			: (injection_index - previousIdx.rows[0].last_injection) / hoursSinceLastIndex;
+		
+		if (production < 0 || withdrawal < 0 || injection < 0)
+			logger.warn('One or more indices have shrunk!');
+		if (withdrawal && injection)
+			logger.warn(
+				`Injection (${injection}) and withdrawal (${withdrawal}) are both non-null.`
+			);
 
-		res.api(results);
-	} catch (err) {
-		logger.error(err.message);
-		return res.status(500).api('Something went wrong');
+		surplus     = injection - withdrawal;
+		consumption = production - surplus;
 	}
-};
-
-/**
- * POST /api/v1/wind/
- * Add a Wind Record to the database
- * Required request parameters:
- *  - FLOAT wind_speed >= 0
- *  - FLOAT production >= 0
- *  - FLOAT rotor_speed >= 0
- *  - FLOAT relative_orientation
- *  - STRING created_by
- */
-export const addWindRecord = async (req: Request, res: Response) => {
-	if (!validator.validate(req.body, addWindRecordSchema).valid) {
-		return res.status(400).api('Missing one or more required fields or wrong type');
+	else {
+		production_index = 0;
+		withdrawal_index = 0;
+		injection_index  = 0;
+		production       = req.body.production ?? 0;
+		consumption      = req.body.consumption ?? 0;
+		surplus          = production - consumption;
 	}
 
-	try {
-		// Check if specified user exists
-		const user = await User.findOne({ _id: req.body.created_by }).orFail();
+	await InfluxHelper.insert('EnergyRecord', [
+		{
+			fields: {
+				production_index,
+				withdrawal_index,
+				injection_index,
+				production,
+				consumption,
+				surplus,
+			},
+			tags: { raspberry_mac: req.body.raspberry_mac },
+		},
+	]);
 
-		await InfluxHelper.insert('WindRecord', [
-			{
-				fields: {
-					wind_speed: req.body.wind_speed,
-					production: req.body.production,
-					rotor_speed: req.body.rotor_speed,
-					relative_orientation: req.body.relative_orientation
-				},
-				tags: { created_by: req.body.created_by },
-			}
-		]);
+	logger.debug(
+		'Successfully added Energy Record: ' +
+			`${production} | ${consumption} ` +
+			`by '${req.body.raspberry_mac}'`
+	);
 
-		logger.debug('Successfully added Wind Record: ' +
-			`${req.body.wind_speed} | ${req.body.production} | ` +
-			`${req.body.rotor_speed} | ${req.body.relative_orientation} ` +
-			`by '${req.user?.username}' (${req.body.created_by})`
-		);
-
-		return res.api('Successfully added your Wind Record');
-	} catch (err) {
-		logger.error(err.message);
-		return res.status(500).api('Something went wrong');
-	}
+	return res.api('Successfully added your Energy Record');
 };

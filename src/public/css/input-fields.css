@@ -1,0 +1,15 @@
+/* label focus color */
+.input-field input:focus + label {
+	color: #f44336 !important;
+}
+
+/* label underline focus color */
+.input-field input:focus {
+	border-bottom: 1px solid rgba(0,0,0,0.75) !important;
+	box-shadow   : 0 1px 0 0 rgba(0,0,0,0.75) !important;
+}
+
+/* icon prefix focus color */
+.input-field .prefix.active {
+	color: #f44336 !important;
+}

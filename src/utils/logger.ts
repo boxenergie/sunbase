@@ -1,6 +1,6 @@
 /*
  * logger.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -20,21 +20,18 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-const logFormat = winston.format.printf(i => `[${i.timestamp}] [${i.level}] ${i.message}`);
+const logFormat = winston.format.printf((i) => `[${i.timestamp}] [${i.level}] ${i.message}`);
 
 const logger = winston.createLogger({
-	level: process.env.LOG_LEVEL,
-	format: winston.format.combine(
-		winston.format.timestamp(),
-		logFormat
-	),
+	level     : process.env.LOG_LEVEL,
+	format    : winston.format.combine(winston.format.timestamp(), logFormat),
 	transports: [
 		//
 		// - Write to all logs with level `info` and below to `combined.log`
 		// - Write all logs error (and below) to `error.log`.
 		//
 		new DailyRotateFile({
-			filename: './logs/%DATE%-combined.log'
+			filename: './logs/%DATE%-combined.log',
 		}),
 		new DailyRotateFile({
 			filename: './logs/%DATE%-error.log',
@@ -50,7 +47,7 @@ const logger = winston.createLogger({
 if (process.env.NODE_ENV !== 'production') {
 	logger.add(
 		new winston.transports.Console({
-			level:  process.env.DEBUG_LOG_LEVEL,
+			level : process.env.DEBUG_LOG_LEVEL,
 			format: winston.format.combine(
 				winston.format.colorize({
 					level: true,

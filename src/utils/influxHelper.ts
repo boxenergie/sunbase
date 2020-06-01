@@ -1,6 +1,6 @@
 /*
  * InfluxHelper.ts
- * Copyright (C) Sunshare 2019
+ * Copyright (C) 2019-2020 Sunshare, Evrard Teddy, Hervé Fabien, Rouchouze Alexandre
  *
  * This file is part of Sunbase.
  * This program is free software: you can redistribute it and/or modify
@@ -22,23 +22,26 @@ import InfluxClient from '../db/influxdb';
 
 export interface InfluxHelperOptions {
 	// Delete the timestamp field on all results
-	deleteTimestamp?: boolean
+	deleteTimestamp?: boolean;
 }
 
 export interface InfluxQueryResponse {
 	// Name of the table
-	name: string,
-	rows: Array<InfluxRows>,
-	tags: {}
+	name: string;
+	rows: Array<InfluxRows>;
+	tags: {};
 }
 
 export interface InfluxRows {
-	time?: string,
+	time?: string;
 
-	[key: string]: any
+	[key: string]: any;
 }
 
-export async function query<T>(query: string, options: InfluxHelperOptions = {}): Promise<InfluxRows> {
+export async function query<T>(
+	query  : string,
+	options: InfluxHelperOptions = {}
+): Promise<InfluxRows> {
 	return InfluxClient.query<T>(query)
 		.then((res: any) => res.groupRows[0])
 		.then((res: InfluxQueryResponse) => {
@@ -46,15 +49,13 @@ export async function query<T>(query: string, options: InfluxHelperOptions = {})
 				for (const r of res.rows) delete r.time;
 			}
 
-			return res
-				? { rows: res.rows }
-				: { rows: [] };
+			return res ? { rows: res.rows } : { rows: [] };
 		});
 }
 
 export interface InfluxPoint {
-	fields: { [key: string]: any },
-	tags: { [key: string]: string }
+	fields: { [key: string]: any };
+	tags: { [key: string]: string };
 }
 
 export async function insert(tableName: string, data: InfluxPoint[]) {
@@ -65,13 +66,11 @@ export async function insert(tableName: string, data: InfluxPoint[]) {
 			point.tags[key] = escape.tag(point.tags[key]);
 		}
 
-		points.push(
-			{
-				measurement: escape.measurement(tableName),
-				fields: point.fields,
-				tags: point.tags,
-			}
-		);
+		points.push({
+			measurement: escape.measurement(tableName),
+			fields: point.fields,
+			tags: point.tags,
+		});
 	}
 
 	return InfluxClient.writePoints(points);
