@@ -110,6 +110,7 @@ userSchema.methods.hasPermissionFrom = function (granter: string, permissionType
 };
 
 userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) {
+	// @ts-ignore
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 };
 
@@ -153,6 +154,7 @@ userSchema.pre<UserDocument>('save', async function () {
 	}
 });
 
+// @ts-ignore
 userSchema.post<UserDocument>('findOneAndDelete', async function (doc, next) {
 	try {
 		await removeAllPermRefs(

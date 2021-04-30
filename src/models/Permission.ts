@@ -24,6 +24,7 @@ import User, { UserDocument } from '../models/User';
 
 export interface PermissionDocument extends Model.Permission.Data, Document {}
 
+// @ts-ignore
 export const permissionSchema = new Schema<PermissionDocument>({
 	granting: { type: Schema.Types.Map, of: [String] },
 	granted: { type: Schema.Types.Map, of: [String] },
