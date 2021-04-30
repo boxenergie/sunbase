@@ -95,7 +95,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 
 	// If user is authenticated
 	if (req.user) {
-		for (const [communityId, permissions] of req.user.permissions.granting.entries()) {
+		for (const [communityId, permissions] of req.user.permissions.granted.entries()) {
 			const AGGREGATE = 'aggregate' as any;
 			if (permissions.includes(AGGREGATE)) {
 				const community = await User.findById(communityId);
@@ -109,7 +109,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 	}
 
 	const userData = req.user
-		? (await gatherCommunityData(req.user)).data
+		? communitiesData.splice(0,1)[0].data
 		:  { time: [], production: [], consumption: [], surplus: [] };
 
 	res.render('home', {
