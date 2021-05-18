@@ -11,6 +11,7 @@
 	"flash.email_changed": "Email changed.",
 	"flash.username_changed": "Username changed.",
 	"flash.password_changed": "Password changed.",
+	"flash.successful_registration": "Successful registration.",
 
 	"flash.invalid_raspberry_index": "Your withdrawal index is invalid.",
 	"flash.too_many_candidates": "Please retry in 1h.",

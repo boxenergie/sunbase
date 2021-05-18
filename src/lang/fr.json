@@ -11,6 +11,7 @@
 	"flash.email_changed": "Votre adresse e-mail a été changée.",
 	"flash.username_changed": "Votre nom d'utilisateur a été changé.",
 	"flash.password_changed": "Votre mot de passe a été changé.",
+	"flash.successful_registration": "Inscription réussie.",
 
 	"flash.invalid_raspberry_index": "Votre indice de soutirage est invalide.",
 	"flash.too_many_candidates": "Veuillez réessayer dans 1h.",
