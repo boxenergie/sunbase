@@ -25,7 +25,7 @@ const X_AXES = {
 
 const Y_AXES = {
 	label: 'Montant d\'énergie (en Watts)',
-	callback: (kw) => `${kw * 1000}W`,
+	callback: (kw) => `${kw}W`,
 };
 
 function createChart(ctx, labels, production, consumption, surplus) {
