@@ -33,12 +33,21 @@ export async function renderOtherDataPage(req: Request, res: Response, next: Nex
 		return res.redirect('/');
 	}
 
+	let raspberrys = await User.find({role: 'raspberry'});
+	let raspgranter = "";
+
+	raspberrys.forEach(function(rasp) {
+		if(rasp.raspberry!.owner == granter!.id){
+			raspgranter = rasp.raspberry!.mac;
+		}
+	});
+
 	const userResults = await InfluxHelper.query(
 		`SELECT SUM(production) AS production,
 			SUM(consumption) AS consumption,
 			SUM(surplus) AS surplus
 			FROM EnergyRecord
-			WHERE raspberry_mac =~ /(?i)^${granter.id}$/
+			WHERE raspberry_mac =~ /(?i)^${raspgranter}$/
 			AND time >= now() - 1d
 			AND time <= now()
 			GROUP BY time(15m) fill(none)`
