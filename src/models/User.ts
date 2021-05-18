@@ -110,6 +110,7 @@ userSchema.methods.hasPermissionFrom = function (granter: string, permissionType
 };
 
 userSchema.methods.disconnectFromAllDevices = function (cb: (err: any) => void) {
+	// @ts-ignore
 	Session.deleteMany({ session: { $regex: `.*"user":"${this._id}".*` } }, cb);
 };
 
@@ -121,7 +122,7 @@ userSchema.methods.grantPermissionTo = function (user, permissionType) {
 
 		const granted = new Set(user.permissions.granted.get(this.id));
 		granted.add(permissionType);
-		user.permissions.granted.set(this.id, [...granting]);
+		user.permissions.granted.set(this.id, [...granted]);
 		
 		return Promise.all([this.save(), user.save()]);
 	}
@@ -153,6 +154,7 @@ userSchema.pre<UserDocument>('save', async function () {
 	}
 });
 
+// @ts-ignore
 userSchema.post<UserDocument>('findOneAndDelete', async function (doc, next) {
 	try {
 		await removeAllPermRefs(

@@ -52,7 +52,9 @@ export async function registerUser(req: Request, res: Response, _: NextFunction)
 		});
 		await P.promise;
 
-		res.redirect('/');
+		req.flashSuccess(FlashMessages.SUCCESSFUL_REGISTRATION);
+
+		res.redirect('/profil');
 	} catch (err) {
 		// MongoError occurs when creating a user with an already existing username / mail
 		if (err.name === 'MongoError') {

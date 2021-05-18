@@ -58,9 +58,9 @@ async function gatherCommunityData(community: UserDocument) {
 		}
 	}
 
-	const communityResult = await InfluxHelper.query(`SELECT MEAN(production) AS production,
-								MEAN(consumption) AS consumption,
-								MEAN(surplus) AS surplus
+	const communityResult = await InfluxHelper.query(`SELECT SUM(production) AS production,
+								SUM(consumption) AS consumption,
+								SUM(surplus) AS surplus
 								FROM EnergyRecord
 								WHERE (raspberry_mac =~ /(?i)^${dataSources.join(
 									'$/ OR raspberry_mac =~ /(?i)^'
@@ -82,9 +82,9 @@ async function gatherCommunityData(community: UserDocument) {
 
 export async function renderHomePage(req: Request, res: Response, next: NextFunction) {
 	const globalResults = await InfluxHelper.query(
-		`SELECT MEAN(production) AS production,
-		MEAN(consumption) AS consumption,
-		MEAN(surplus) AS surplus
+		`SELECT SUM(production) AS production,
+		SUM(consumption) AS consumption,
+		SUM(surplus) AS surplus
 		FROM EnergyRecord
 		WHERE time >= now() - 1d
 		AND time <= now()
@@ -95,7 +95,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 
 	// If user is authenticated
 	if (req.user) {
-		for (const [communityId, permissions] of req.user.permissions.granting.entries()) {
+		for (const [communityId, permissions] of req.user.permissions.granted.entries()) {
 			const AGGREGATE = 'aggregate' as any;
 			if (permissions.includes(AGGREGATE)) {
 				const community = await User.findById(communityId);
@@ -109,7 +109,7 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
 	}
 
 	const userData = req.user
-		? (await gatherCommunityData(req.user)).data
+		? communitiesData.splice(0,1)[0].data
 		:  { time: [], production: [], consumption: [], surplus: [] };
 
 	res.render('home', {

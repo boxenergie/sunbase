@@ -50,7 +50,6 @@
     "@types/helmet": "0.0.45",
     "@types/mongo-sanitize": "^1.0.1",
     "@types/mongodb": "^3.5.2",
-    "@types/mongoose": "^5.7.0",
     "@types/node": "^12.12.29",
     "@types/node-schedule": "^1.3.0",
     "@types/passport": "^1.0.2",
@@ -63,7 +62,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",
     "prod": "tsc && ./scripts/copyStaticAssets.sh && NODE_ENV=production node ./dist/server.js",
     "clean": "./scripts/cleanDist.sh",
     "test": "npx artillery run ./tests/main.yml > ./tests/result.txt",

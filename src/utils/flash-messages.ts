@@ -33,6 +33,7 @@ enum FlashMessages {
 	EMAIL_CHANGED,
 	USERNAME_CHANGED,
 	PASSWORD_CHANGED,
+	SUCCESSFUL_REGISTRATION,
 
 	/* adding raspberries */
 	// error
