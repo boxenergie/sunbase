@@ -147,4 +147,4 @@ During each of these phases, each user can choose one of the following scenarios
 
 ## Credit
 
-This application was made for Sunshare by Teddy Evrard, Fabien Hervé, and Alexandre Rouchouze.
+This application was made for Sunshare by Teddy Evrard, Manon Baillet, and Alexandre Rouchouze.
